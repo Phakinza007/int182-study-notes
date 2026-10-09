@@ -1,0 +1,243 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="INT182 Data Science and AI notes for weeks 1–9, with diagrams and key formulas"><meta name="theme-color" content="#f7f6f3"><title>Classification and Model Validation · INT182</title><link rel="icon" href="../favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="../style.css"><script src="../app.js" defer></script></head>
+<body data-base="../" data-page="note"><a class="skip" href="#main">Skip to content</a>
+<header class="topbar"><div class="topbar-inner"><a class="brand" href="../en.html"><span class="brand-mark">182</span><span>INT182 <small>Study notes</small></span></a><nav aria-label="Main menu"><button class="search-trigger" data-search-open aria-haspopup="dialog">Search notes <kbd>/</kbd></button><a class="lang" href="w06-classification-and-model-validation.html" lang="th">ภาษาไทย</a></nav></div></header>
+<div class="reader-layout"><aside class="reader-sidebar"><details class="week-menu" open><summary>All weeks</summary><nav aria-label="Choose a week"><a href="w01-course-intro.en.html" ><span class="week-no">01</span><span>Course Introduction and Project Structure</span></a><a href="w02-ds-ai-landscape-and-tools.en.html" ><span class="week-no">02</span><span>The DS/AI Landscape (continued) and the Orange Toolkit</span></a><a href="w03-eda-and-model-fitting.en.html" ><span class="week-no">03</span><span>EDA and Model Fitting — Box Plot, Correlation, Linear Regression</span></a><a href="w04-association-rules.en.html" ><span class="week-no">04</span><span>Association Rules — Market Basket Analysis, Apriori and Support/Confidence/Lift</span></a><a href="w05-decision-trees-and-k-means.en.html" ><span class="week-no">05</span><span>Decision Trees, K-means Clustering, and the Exam 1 scope review</span></a><a href="w06-classification-and-model-validation.en.html" aria-current="page"><span class="week-no">06</span><span>Classification and Model Validation</span></a><a href="w07-classification-performance-metrics.en.html" ><span class="week-no">07</span><span>Classification Performance Metrics and Evaluation Methods</span></a><a href="w08-introduction-to-ai-and-agents.en.html" ><span class="week-no">08</span><span>Introduction to AI, Rational Agents, and PEAS</span></a><a href="w09-introduction-to-ml-and-nearest-neighbors.en.html" ><span class="week-no">09</span><span>Introduction to Machine Learning, k-NN, and AI Search</span></a></nav></details></aside><main id="main" class="reader"><div class="note-meta">WEEK 06 <span>2026-09-18</span></div><h1>Classification and Model Validation</h1><div class="reader-actions"><button data-read-week="6" aria-pressed="false">Mark as read</button><button data-print>Print this note</button></div><article class="prose"><blockquote>
+<p>Based on <code>Classification and Metrics.pdf</code> (71 pages) and the G2 lecture transcript dated 18 September 2026. This deck covers classifiers and metrics; this chapter emphasizes models and data splitting, with deeper evaluation in W07. Additions from the recording are marked <em>(from the transcript)</em>; technical names in the automatic transcript are sometimes distorted.</p>
+</blockquote>
+<h2 id="01-overview-what-is-predicted">01 Overview: what is predicted?</h2>
+<p>Classification learns from features and known <mark>class labels</mark> to predict a class for a new example. Regression instead has a numeric target, such as a house price (slides 4, 35).</p>
+<figure class="figure"><a href="../assets/w06-classification-and-model-validation/w6-classification.svg" target="_blank" rel="noopener" class="diagram-link" aria-label="Enlarge image: Classification takes features and produces binary, multi-class, or multi-label outputs"><img src="../assets/w06-classification-and-model-validation/w6-classification.svg" alt="Classification takes features and produces binary, multi-class, or multi-label outputs" loading="lazy" decoding="async"></a><figcaption>Classification takes features and produces binary, multi-class, or multi-label outputs<a href="../assets/w06-classification-and-model-validation/w6-classification.svg" target="_blank" rel="noopener" class="diagram-link figure-open">Enlarge ↗</a></figcaption></figure>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Type</th><th>Output per example</th><th>Example</th></tr></thead><tbody><tr><td>Binary</td><td>One of two classes</td><td>Spam / Not spam</td></tr><tr><td>Multi-class</td><td>One of more than two classes</td><td>Flower species</td></tr><tr><td>Multi-label</td><td>Zero or several labels together</td><td>A picture containing a dog, cat, and bird</td></tr></tbody></table></div>
+<p><em>(From the transcript)</em> The lecturer compares multi-class prediction with a multiple-choice question requiring one answer. Multi-label prediction can assign several answers.</p>
+<h2 id="02-k-nearest-neighbors">02 k-Nearest Neighbors</h2>
+<p><mark>k-NN</mark> stores training examples and finds the k examples nearest to a query. Classification uses their majority label; regression uses their average target (slides 5, 58–67).</p>
+<ol>
+<li>Choose k.</li>
+<li>Compute distances from the query to training examples.</li>
+<li>Sort distances and select the k nearest examples.</li>
+<li>Combine labels by majority vote.</li>
+</ol>
+<p>It is <strong>nonparametric</strong> and uses <strong>lazy learning</strong>: no compact fitted equation summarizes the data beforehand. Most work happens during prediction. Its simple idea is an advantage; expensive queries and sensitivity to k, scale, and dimension are limitations. See W09 for a visual comparison of k values.</p>
+<h2 id="03-distances-and-data-types">03 Distances and data types</h2>
+<p>Slides 62–65 distinguish numeric and categorical distances:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Distance</th><th>Idea</th></tr></thead><tbody><tr><td>Euclidean</td><td><code>sqrt(sum((x_j - z_j)^2))</code>, straight-line distance</td></tr><tr><td>Manhattan / L1</td><td><code>sum(abs(x_j - z_j))</code>, summed axis distances</td></tr><tr><td>Minkowski</td><td>General form; p = 1 gives Manhattan, p = 2 gives Euclidean</td></tr><tr><td>Hamming</td><td>Count categorical feature positions with different values</td></tr></tbody></table></div>
+<p>Normalize when feature scales dominate distance. Both Euclidean and Manhattan distances depend on scale; choosing Manhattan does not itself remove a units problem.</p>
+<h2 id="04-decision-trees-and-gini-impurity">04 Decision Trees and Gini impurity</h2>
+<p>A Decision Tree splits examples using feature questions until a leaf supplies the answer. It supports classification and regression. This week adds <mark>Gini impurity</mark> to the Entropy/Information Gain approach in W05 (slides 9–17).</p>
+<p><code>Gini = 1 - sum(p_i^2)</code></p>
+<p>Gini = 0 means a pure group. For binary classification the maximum is 0.5, with equally frequent classes. Choose the candidate split with the <strong>lowest weighted Gini</strong>.</p>
+<figure class="figure"><a href="../assets/w06-classification-and-model-validation/w6-gini.svg" target="_blank" rel="noopener" class="diagram-link" aria-label="Enlarge image: Split 10 houses by neighborhood and calculate weighted Gini"><img src="../assets/w06-classification-and-model-validation/w6-gini.svg" alt="Split 10 houses by neighborhood and calculate weighted Gini" loading="lazy" decoding="async"></a><figcaption>Split 10 houses by neighborhood and calculate weighted Gini<a href="../assets/w06-classification-and-model-validation/w6-gini.svg" target="_blank" rel="noopener" class="diagram-link figure-open">Enlarge ↗</a></figcaption></figure>
+<p>For 5 High and 5 Low houses, initial Gini is 0.5. Splitting by Neighborhood produces groups with ratios 4:1 and 1:4; each has Gini = 0.32, so weighted Gini is 0.32. This evaluates one candidate split; other features must still be compared before calling it the best split.</p>
+<h2 id="05-naïve-bayes">05 Naïve Bayes</h2>
+<p><mark>Naïve Bayes</mark> estimates class probability given features, assuming features are independent <strong>conditional on the class</strong> (slides 18–26).</p>
+<p><code>P(c | x) = P(x | c) × P(c) / P(x)</code></p>
+<ul>
+<li><code>P(c)</code> is the class prior.</li>
+<li><code>P(x | c)</code> is the feature likelihood within that class.</li>
+<li><code>P(c | x)</code> is the posterior after observing features.</li>
+</ul>
+<p>For the same x, the denominator <code>P(x)</code> is shared across classes, so compare <code>P(x | c) × P(c)</code>. The spam example gives <code>0.1 × 0.2 × 0.2 × 0.3 × 0.4 = 0.00048</code> as the Spam score for “Dear friend free money”. Compare it with the Ham score before choosing a class. It is not yet a normalized posterior probability.</p>
+<p>Advantages include simplicity and fast training; the independence assumption may not match real data.</p>
+<h2 id="06-logistic-regression">06 Logistic Regression</h2>
+<p>Despite its name, this model performs classification by mapping a linear score into 0–1 using the <mark>sigmoid</mark> function (slides 27–31).</p>
+<p><code>p = 1 / (1 + exp(-(β0 + β1 x1 + ...)))</code></p>
+<p>Compare p with a threshold to choose a class. Slides use 0.5 as an example; a rule is also needed for equality at the threshold. Encode categorical features numerically, for example with one-hot encoding.</p>
+<p>The slide asks whether a customer spending 3.5 minutes on a website will click Buy. Learned β coefficients are needed before computing a probability; time on the site alone does not determine the numeric answer.</p>
+<h2 id="07-support-vector-machines">07 Support Vector Machines</h2>
+<p><mark>SVM</mark> seeks a separating hyperplane with a wide margin. <strong>Support vectors</strong> are nearby data points that influence the boundary (slides 32–34).</p>
+<ul>
+<li>A two-dimensional boundary is a line; higher-dimensional data use a hyperplane.</li>
+<li>For data not linearly separable in the original representation, the <strong>kernel trick</strong> handles more complex relationships.</li>
+<li>Results depend on the kernel and settings; large datasets can be computationally expensive.</li>
+</ul>
+<p><em>(From the transcript)</em> The lecturer uses posture recognition from joint positions to connect real-world features with classification.</p>
+<h2 id="08-reduce-multiple-classes-to-binary-problems">08 Reduce multiple classes to binary problems</h2>
+<p>Slides 36–38 combine binary classifiers for C classes:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Method</th><th>Classifiers</th><th>Example with four colors</th></tr></thead><tbody><tr><td>One-vs-Rest (OvR)</td><td>C</td><td>Red vs other colors, Green vs others, etc.: 4 models</td></tr><tr><td>One-vs-One (OvO)</td><td>C(C−1)/2</td><td>Compare every pair of colors: 6 models</td></tr></tbody></table></div>
+<p>OvR separates each class from the rest. OvO separates each pair of classes, then combines predictions to obtain a multi-class output.</p>
+<h2 id="09-training-validation-and-final-testing">09 Training, validation, and final testing</h2>
+<p>Slides 41–45 separate data roles to measure <mark>generalization</mark>: performance on unseen data.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Dataset</th><th>Role</th></tr></thead><tbody><tr><td>Training</td><td>Fit model parameters</td></tr><tr><td>Validation / Dev</td><td>Compare models and choose hyperparameters</td></tr><tr><td>Test</td><td>Evaluate the final model after all choices are made</td></tr></tbody></table></div>
+<p>Splits such as 70:10:20 or 80:20 are examples, not mandatory ratios. <em>(From the transcript)</em> Very large datasets may need a smaller test percentage.</p>
+<p>For <strong>5-fold CV</strong>, first reserve 20% for testing. Divide the remaining 80% into five folds. Train on four and validate on one, rotating through all folds. Use average validation performance to choose hyperparameters, refit on the entire 80%, then evaluate on the reserved 20%.</p>
+<p>Underfitting has high training and test errors; overfitting has low training error but high test error. Multiple folds support model selection, while the final test must remain reserved.</p>
+<h2 id="10-start-reading-a-confusion-matrix">10 Start reading a confusion matrix</h2>
+<p>Slides 46–57 introduce TP, TN, FP, FN, Accuracy, Precision, Recall, F1, Specificity, ROC, and AUC. <strong>Define the positive class first</strong>, and check which axis is actual versus predicted.</p>
+<p><em>(From the transcript)</em> In the fishing analogy, precision asks how much of the catch is the desired fish; recall asks how much of all the desired fish in the pond was caught. W07 provides formulas, calculations, and guidance on metric choice.</p>
+<h2 id="glossary">Glossary</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Term</th><th>Meaning</th></tr></thead><tbody><tr><td>Class label</td><td>Categorical target used to train a classifier</td></tr><tr><td>k-NN</td><td>Predict from the k nearest stored examples</td></tr><tr><td>Gini impurity</td><td>Class mixture measure: 1 − sum(p_i²)</td></tr><tr><td>Naïve Bayes</td><td>Probabilistic classifier assuming conditional independence</td></tr><tr><td>Sigmoid</td><td>S-shaped function mapping scores into 0–1</td></tr><tr><td>Support vector</td><td>Point near the separating boundary that influences the SVM hyperplane</td></tr><tr><td>OvR</td><td>One class versus all remaining classes</td></tr><tr><td>OvO</td><td>Pairwise classification across all class pairs</td></tr><tr><td>Validation set</td><td>Data for choosing models or hyperparameters</td></tr><tr><td>Generalization</td><td>Ability to predict unseen examples</td></tr></tbody></table></div>
+<h2 id="chapter-summary">Chapter summary</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Topic</th><th>Key idea</th></tr></thead><tbody><tr><td>Classification</td><td>Categorical targets; distinguish binary, multi-class, and multi-label</td></tr><tr><td>Classifiers</td><td>k-NN, Decision Tree, Naïve Bayes, Logistic Regression, SVM</td></tr><tr><td>Gini</td><td>Compare weighted impurity across candidate splits</td></tr><tr><td>Multiple classes</td><td>OvR = C, OvO = C(C−1)/2</td></tr><tr><td>Evaluation</td><td>Train to fit, validate to select, test for the final evaluation</td></tr></tbody></table></div></article><nav class="pagination" aria-label="Previous and next notes"><a href="w05-decision-trees-and-k-means.en.html"><small>← Previous</small>Decision Trees, K-means Clustering, and the Exam 1 scope review</a><a href="w07-classification-performance-metrics.en.html"><small>Next →</small>Classification Performance Metrics and Evaluation Methods</a></nav></main><aside class="toc-sidebar"><nav class="toc" aria-label="On this page"><strong>On this page</strong><a href="#01-overview-what-is-predicted">01 Overview: what is predicted?</a><a href="#02-k-nearest-neighbors">02 k-Nearest Neighbors</a><a href="#03-distances-and-data-types">03 Distances and data types</a><a href="#04-decision-trees-and-gini-impurity">04 Decision Trees and Gini impurity</a><a href="#05-naïve-bayes">05 Naïve Bayes</a><a href="#06-logistic-regression">06 Logistic Regression</a><a href="#07-support-vector-machines">07 Support Vector Machines</a><a href="#08-reduce-multiple-classes-to-binary-problems">08 Reduce multiple classes to binary problems</a><a href="#09-training-validation-and-final-testing">09 Training, validation, and final testing</a><a href="#10-start-reading-a-confusion-matrix">10 Start reading a confusion matrix</a><a href="#glossary">Glossary</a><a href="#chapter-summary">Chapter summary</a></nav></aside></div>
+<footer class="site-footer"><span>INT182 · Data Science & AI<br>Study summaries based on course materials</span><a href="https://github.com/Phakinza007/int182-study-notes">GitHub ↗</a></footer>
+<dialog id="search-dialog" aria-labelledby="search-title"><div class="dialog-heading"><h2 id="search-title">Search the notes</h2><button data-close-dialog aria-label="Close search">×</button></div><label for="search-input">Keyword, e.g. precision, PEAS, kNN</label><input id="search-input" type="search" autocomplete="off"><p id="search-status" role="status">Type a keyword to start</p><ul id="search-results"></ul></dialog>
+<dialog id="image-dialog" aria-labelledby="image-title"><div class="dialog-heading"><h2 id="image-title">Diagram</h2><button data-close-dialog aria-label="Close image">×</button></div><div class="image-controls"><button data-zoom="out" aria-label="Zoom out">−</button><button data-zoom="in" aria-label="Zoom in">+</button><button data-zoom="reset">Fit</button><a id="image-original" target="_blank" rel="noopener">Open original ↗</a></div><div class="image-stage"><img id="zoom-image" alt=""></div><p id="image-caption"></p></dialog>
+</body></html>

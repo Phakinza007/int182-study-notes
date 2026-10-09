@@ -1,0 +1,94 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="สรุป INT182 Data Science และ AI สัปดาห์ 1–9 พร้อมไดอะแกรมและสูตรสำคัญ"><meta name="theme-color" content="#f7f6f3"><title>แนะนำวิชา + โครงสร้างโปรเจกต์ · INT182</title><link rel="icon" href="../favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="../style.css"><script src="../app.js" defer></script></head>
+<body data-base="../" data-page="note"><a class="skip" href="#main">ข้ามไปเนื้อหา</a>
+<header class="topbar"><div class="topbar-inner"><a class="brand" href="../index.html"><span class="brand-mark">182</span><span>INT182 <small>Study notes</small></span></a><nav aria-label="เมนูหลัก"><button class="search-trigger" data-search-open aria-haspopup="dialog">ค้นหาเนื้อหา <kbd>/</kbd></button><a class="lang" href="w01-course-intro.en.html" lang="en">English</a></nav></div></header>
+<div class="reader-layout"><aside class="reader-sidebar"><details class="week-menu" open><summary>ทุกสัปดาห์</summary><nav aria-label="เลือกสัปดาห์"><a href="w01-course-intro.html" aria-current="page"><span class="week-no">01</span><span>แนะนำวิชา + โครงสร้างโปรเจกต์</span></a><a href="w02-ds-ai-landscape-and-tools.html" ><span class="week-no">02</span><span>ภาพรวม DS/AI (ต่อ) + เครื่องมือ Orange</span></a><a href="w03-eda-and-model-fitting.html" ><span class="week-no">03</span><span>EDA และ Model Fitting — Box Plot, Correlation, Linear Regression</span></a><a href="w04-association-rules.html" ><span class="week-no">04</span><span>Association Rules — Market Basket Analysis, Apriori และ Support/Confidence/Lift</span></a><a href="w05-decision-trees-and-k-means.html" ><span class="week-no">05</span><span>Decision Trees, K-means Clustering และการทวนขอบเขต Exam 1</span></a><a href="w06-classification-and-model-validation.html" ><span class="week-no">06</span><span>Classification และการตรวจสอบโมเดล</span></a><a href="w07-classification-performance-metrics.html" ><span class="week-no">07</span><span>Classification Performance Metrics และการเลือกวิธีประเมิน</span></a><a href="w08-introduction-to-ai-and-agents.html" ><span class="week-no">08</span><span>พื้นฐาน AI, Rational Agents และ PEAS</span></a><a href="w09-introduction-to-ml-and-nearest-neighbors.html" ><span class="week-no">09</span><span>พื้นฐาน Machine Learning, k-NN และ AI Search</span></a></nav></details></aside><main id="main" class="reader"><div class="note-meta">WEEK 01 <span>2026-08-07</span></div><h1>แนะนำวิชา + โครงสร้างโปรเจกต์</h1><div class="reader-actions"><button data-read-week="1" aria-pressed="false">ทำเครื่องหมายว่าอ่านแล้ว</button><button data-print>พิมพ์บทนี้</button></div><article class="prose"><blockquote>
+<p>หมายเหตุ: สรุปจาก transcript อัตโนมัติของคลาส (INT182_G2, 7 ส.ค. 2569) ช่วงต้นคาบ (~0-7 นาที) เป็นบทสนทนานอกเรื่อง/เสียงไม่ชัดจากระบบถอดความอัตโนมัติ จึงไม่นำมาสรุป เริ่มสรุปจากช่วงที่อาจารย์แนะนำตัวและอธิบายเนื้อหาวิชา (นาทีที่ 7:57 เป็นต้นไป)</p>
+</blockquote>
+<h2 id="ผู้สอน">ผู้สอน</h2>
+<ul>
+<li><strong>ผศ.ดร.ชาคริดา นุกูลกิจ</strong> (<a href="mailto:chakarida@sit.kmutt.ac.th">chakarida@sit.kmutt.ac.th</a>) — ผู้สอนหลัก <mark>ครึ่งแรก</mark> <em>(ชื่อในคำถอดความไม่ชัด ยืนยันตัวสะกดจาก <code>../Syllabus-INT182-DS_AI-1-69.pdf</code> แล้ว)</em></li>
+<li><strong>รศ.ดร.พรชัย มงคลนาม</strong> (<a href="mailto:pornchai@sit.kmutt.ac.th">pornchai@sit.kmutt.ac.th</a>) — ผู้สอน<mark>ครึ่งหลัง</mark></li>
+</ul>
+<h2 id="ภาพรวมวิชา">ภาพรวมวิชา</h2>
+<ul>
+<li>เนื้อหาแบ่งเป็น 2 ส่วนเท่า ๆ กัน: <strong>Data Science</strong> และ <strong>Artificial Intelligence (AI)</strong></li>
+<li>เนื้อหาทั้งสองส่วนมี <mark>overlap</mark> กัน ไม่ได้แยกขาวกับดำชัดเจน</li>
+<li>เป้าหมายผู้เรียน: วิเคราะห์ปัญหาหน้างานทางธุรกิจ/วิทยาศาสตร์ → หาว่าต้องการ solution แบบไหน → เลือกเทคโนโลยีที่เหมาะสม</li>
+</ul>
+<h2 id="การเช็คชื่อ">การเช็คชื่อ</h2>
+<ul>
+<li>คาบแรก: เซ็นชื่อ attendance เฉย ๆ</li>
+<li>คาบอื่น ๆ อาจารย์พรชัยจะปรับรูปแบบการเช็คชื่อตามความเหมาะสม เช่น เรียกตอบในคลาส หรือให้ทำแบบฝึกหัด/โครงงาน</li>
+</ul>
+<h2 id="โครงสร้างโปรเจกต์">โครงสร้างโปรเจกต์</h2>
+<ul>
+<li>ทำเป็นกลุ่ม <strong>4–5 คน</strong></li>
+<li>แบ่งออกเป็น <strong>3 เฟส</strong> (transcript พูดถึงเฉพาะเฟส 1 ในคาบนี้)
+<ol>
+<li>เฟส 1: แต่ละทีมหาไอเดียว่าจะทำ solution อะไร</li>
+</ol>
+</li>
+<li><strong>ไม่บังคับ</strong> ให้สร้าง/เทรนโมเดลเองทั้งหมด — สามารถเรียกใช้ <mark>Generative AI API</mark> เป็นส่วนหนึ่งของ solution ได้</li>
+<li>ทีมที่อยากสร้าง/เทรนโมเดลเองก็ทำได้เช่นกัน</li>
+</ul>
+<h3 id="ข้อแนะนำเรื่องข้อมูล-สาย-data-science">ข้อแนะนำเรื่องข้อมูล (สาย Data Science)</h3>
+<ul>
+<li>ควรเลือกปัญหาที่ <strong>ข้อมูลพร้อมใช้แล้ว</strong> (ไฟล์แบบใดก็ได้) เพื่อลดเวลาหาข้อมูล เอาเวลาไปทำโครงงานแทน</li>
+<li>ขั้นตอนคร่าว ๆ ที่พูดถึง:
+<ol>
+<li>หา data science practice ที่ตอบโจทย์ธุรกิจ</li>
+<li>ทำความเข้าใจข้อมูลเบื้องต้น ผ่าน <mark>visualization/data exploration</mark> (อาจมีสถิติช่วย)</li>
+<li>Modeling — ขึ้นกับลักษณะปัญหา เช่น
+<ul>
+<li><strong>Clustering</strong>: จัดกลุ่ม/เข้าใจการเรียงตัวของข้อมูล — ตัวอย่างที่พูดถึง: แบ่งฐานลูกค้า <mark>20,000</mark> คน ออกเป็น <mark>5 กลุ่ม</mark>ตามลักษณะ</li>
+<li><strong>Predictive model</strong>: ทำนายผลจากข้อมูล — ตัวอย่างที่พูดถึง: โมเดลช่วยวินิจฉัยว่าผู้ป่วยมีโอกาสเป็นมะเร็งลำไส้ (colon cancer) หรือไม่ จากผลตรวจ (transcript ตัดที่ประโยคยังไม่จบ)</li>
+</ul>
+</li>
+</ol>
+</li>
+</ul>
+<h2 id="ตารางสรุป">ตารางสรุป</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>หัวข้อ</th><th>รายละเอียด</th></tr></thead><tbody><tr><td>วิชา</td><td>INT182 (Group 2)</td></tr><tr><td>เนื้อหา</td><td>Data Science (ครึ่งแรก) + AI (ครึ่งหลัง)</td></tr><tr><td>ผู้สอน</td><td>ผศ.ดร.ชาคริดา นุกูลกิจ + รศ.ดร.พรชัย มงคลนาม</td></tr><tr><td>รูปแบบโครงงาน</td><td>กลุ่ม 4–5 คน, 3 เฟส, ใช้ Gen AI API ได้ ไม่ต้องเทรนโมเดลเองทั้งหมด</td></tr><tr><td>โมเดลตัวอย่างที่พูดถึง</td><td>Clustering (แบ่งกลุ่มลูกค้า), Predictive model (วินิจฉัยมะเร็งลำไส้)</td></tr><tr><td>งาน/deadline ที่ประกาศ</td><td>ยังไม่มีการประกาศ due date ชัดเจนในคาบนี้</td></tr></tbody></table></div>
+<h2 id="️-ข้อจำกัดของสรุปนี้">⚠️ ข้อจำกัดของสรุปนี้</h2>
+<ul>
+<li>Transcript มาจากระบบถอดเสียงอัตโนมัติ คุณภาพต่ำในหลายช่วง (มีคำผิด/ประโยคขาดตอน) — สรุปนี้คงเฉพาะเนื้อหาที่อ่านเข้าใจได้ชัดเจนเท่านั้น</li>
+<li>คาบนี้ไม่มีสไลด์เฉพาะของตัวเอง แต่สไลด์ชุด <code>INT182_01_Intro-to-DS-Engineering-and-AI.pdf</code> ที่อยู่ในโฟลเดอร์เดียวกันเริ่มสอนตั้งแต่สัปดาห์นี้ และสรุปเนื้อหาไว้ในโน้ต Week 2</li>
+<li>ชื่ออาจารย์แก้ไขเรียบร้อยแล้วจาก Syllabus (20 ส.ค. 2569) — เดิม transcript ถอดผิดเป็น "ชาค ลิดา นุกูล กิจ"</li>
+</ul></article><nav class="pagination" aria-label="บทก่อนหน้าและถัดไป"><span></span><a href="w02-ds-ai-landscape-and-tools.html"><small>บทถัดไป →</small>ภาพรวม DS/AI (ต่อ) + เครื่องมือ Orange</a></nav></main><aside class="toc-sidebar"><nav class="toc" aria-label="สารบัญบทนี้"><strong>ในบทนี้</strong><a href="#ผู้สอน">ผู้สอน</a><a href="#ภาพรวมวิชา">ภาพรวมวิชา</a><a href="#การเช็คชื่อ">การเช็คชื่อ</a><a href="#โครงสร้างโปรเจกต์">โครงสร้างโปรเจกต์</a><a href="#ตารางสรุป">ตารางสรุป</a><a href="#️-ข้อจำกัดของสรุปนี้">⚠️ ข้อจำกัดของสรุปนี้</a></nav></aside></div>
+<footer class="site-footer"><span>INT182 · Data Science & AI<br>สรุปเพื่อทบทวนจากเอกสารประกอบการเรียน</span><a href="https://github.com/Phakinza007/int182-study-notes">GitHub ↗</a></footer>
+<dialog id="search-dialog" aria-labelledby="search-title"><div class="dialog-heading"><h2 id="search-title">ค้นหาในสรุป</h2><button data-close-dialog aria-label="ปิดการค้นหา">×</button></div><label for="search-input">คำค้น เช่น precision, PEAS, kNN</label><input id="search-input" type="search" autocomplete="off"><p id="search-status" role="status">พิมพ์คำเพื่อเริ่มค้นหา</p><ul id="search-results"></ul></dialog>
+<dialog id="image-dialog" aria-labelledby="image-title"><div class="dialog-heading"><h2 id="image-title">ภาพประกอบ</h2><button data-close-dialog aria-label="ปิดภาพ">×</button></div><div class="image-controls"><button data-zoom="out" aria-label="ย่อภาพ">−</button><button data-zoom="in" aria-label="ขยายภาพ">+</button><button data-zoom="reset">พอดีจอ</button><a id="image-original" target="_blank" rel="noopener">เปิดภาพต้นฉบับ ↗</a></div><div class="image-stage"><img id="zoom-image" alt=""></div><p id="image-caption"></p></dialog>
+</body></html>

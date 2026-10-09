@@ -1,0 +1,326 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="INT182 Data Science and AI notes for weeks 1–9, with diagrams and key formulas"><meta name="theme-color" content="#f7f6f3"><title>Introduction to AI, Rational Agents, and PEAS · INT182</title><link rel="icon" href="../favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="../style.css"><script src="../app.js" defer></script></head>
+<body data-base="../" data-page="note"><a class="skip" href="#main">Skip to content</a>
+<header class="topbar"><div class="topbar-inner"><a class="brand" href="../en.html"><span class="brand-mark">182</span><span>INT182 <small>Study notes</small></span></a><nav aria-label="Main menu"><button class="search-trigger" data-search-open aria-haspopup="dialog">Search notes <kbd>/</kbd></button><a class="lang" href="w08-introduction-to-ai-and-agents.html" lang="th">ภาษาไทย</a></nav></div></header>
+<div class="reader-layout"><aside class="reader-sidebar"><details class="week-menu" open><summary>All weeks</summary><nav aria-label="Choose a week"><a href="w01-course-intro.en.html" ><span class="week-no">01</span><span>Course Introduction and Project Structure</span></a><a href="w02-ds-ai-landscape-and-tools.en.html" ><span class="week-no">02</span><span>The DS/AI Landscape (continued) and the Orange Toolkit</span></a><a href="w03-eda-and-model-fitting.en.html" ><span class="week-no">03</span><span>EDA and Model Fitting — Box Plot, Correlation, Linear Regression</span></a><a href="w04-association-rules.en.html" ><span class="week-no">04</span><span>Association Rules — Market Basket Analysis, Apriori and Support/Confidence/Lift</span></a><a href="w05-decision-trees-and-k-means.en.html" ><span class="week-no">05</span><span>Decision Trees, K-means Clustering, and the Exam 1 scope review</span></a><a href="w06-classification-and-model-validation.en.html" ><span class="week-no">06</span><span>Classification and Model Validation</span></a><a href="w07-classification-performance-metrics.en.html" ><span class="week-no">07</span><span>Classification Performance Metrics and Evaluation Methods</span></a><a href="w08-introduction-to-ai-and-agents.en.html" aria-current="page"><span class="week-no">08</span><span>Introduction to AI, Rational Agents, and PEAS</span></a><a href="w09-introduction-to-ml-and-nearest-neighbors.en.html" ><span class="week-no">09</span><span>Introduction to Machine Learning, k-NN, and AI Search</span></a></nav></details></aside><main id="main" class="reader"><div class="note-meta">WEEK 08 <span>2026-10-02</span></div><h1>Introduction to AI, Rational Agents, and PEAS</h1><div class="reader-actions"><button data-read-week="8" aria-pressed="false">Mark as read</button><button data-print>Print this note</button></div><article class="prose"><blockquote>
+<p>Based on <code>INT182_Lecture8_Intro-AI.pdf</code> (51 pages), adapted from Berkeley CS188 and Duke COMPSCI 270, with the G2 online lecture transcript dated 2 October 2026. Diagrams summarize relationships in the slides. News and video examples reflect the lecture context, not a current-news verification.</p>
+</blockquote>
+<h2 id="01-what-does-ai-mean-in-this-course">01 What does AI mean in this course?</h2>
+<p>Slide 5 asks what AI is, how it developed, and how to design AI systems. Movies suggest robots capable of everything, while real systems often serve specific tasks: harvesting robots, inventory drones, speech recognition, and planning (slides 6–14, 36–37).</p>
+<p>This chapter emphasizes <mark>acting rationally</mark>: choosing actions appropriate to goals and available information. Human-like behavior and effective decision making are different evaluation dimensions. AI can excel at a task without resembling humans in every way.</p>
+<h2 id="02-history-and-foundations">02 History and foundations</h2>
+<p>Slides 16–18 connect AI with philosophy, mathematics, neuroscience, economics, control theory, psychology, and linguistics.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Period</th><th>Overview in the slides</th></tr></thead><tbody><tr><td>1940–1950</td><td>Circuit models of the brain and Turing's work</td></tr><tr><td>1956</td><td>Dartmouth adopts the term Artificial Intelligence</td></tr><tr><td>1950–1970</td><td>Game programs and theorem proving</td></tr><tr><td>1970–1990</td><td>Knowledge-based / Expert Systems and AI Winter</td></tr><tr><td>1990–2012</td><td>Statistical approaches, uncertainty, agents, and learning</td></tr><tr><td>2012 onward</td><td>Big data, compute, and deep learning</td></tr></tbody></table></div>
+<p><em>(From the transcript)</em> Data, algorithms, and computing power jointly enable present systems. The slide history is an overview, not an exhaustive chronology.</p>
+<h2 id="03-agents-and-rational-agents">03 Agents and rational agents</h2>
+<p>An <mark>agent</mark> perceives its environment through <strong>sensors</strong> and acts on it through <strong>actuators</strong> (slides 19–20).</p>
+<figure class="figure"><a href="../assets/w08-introduction-to-ai-and-agents/w8-agent-loop.svg" target="_blank" rel="noopener" class="diagram-link" aria-label="Enlarge image: Environment sends percepts through sensors; the agent chooses actions through actuators"><img src="../assets/w08-introduction-to-ai-and-agents/w8-agent-loop.svg" alt="Environment sends percepts through sensors; the agent chooses actions through actuators" loading="lazy" decoding="async"></a><figcaption>Environment sends percepts through sensors; the agent chooses actions through actuators<a href="../assets/w08-introduction-to-ai-and-agents/w8-agent-loop.svg" target="_blank" rel="noopener" class="diagram-link figure-open">Enlarge ↗</a></figcaption></figure>
+<p>The agent function maps <strong>percept sequences → actions</strong> and is implemented by an agent program running on a machine. A <mark>rational agent</mark> selects actions that maximize expected utility given available information. Rationality therefore depends on goals, uncertainty, and environmental constraints.</p>
+<h2 id="04-peas-define-the-task-before-designing">04 PEAS: define the task before designing</h2>
+<p><mark>PEAS</mark> stands for Performance measure, Environment, Actuators, and Sensors (slides 22–24).</p>
+<figure class="figure"><a href="../assets/w08-introduction-to-ai-and-agents/w8-peas.svg" target="_blank" rel="noopener" class="diagram-link" aria-label="Enlarge image: PEAS for an automated taxi: performance, environment, actuators, and sensors"><img src="../assets/w08-introduction-to-ai-and-agents/w8-peas.svg" alt="PEAS for an automated taxi: performance, environment, actuators, and sensors" loading="lazy" decoding="async"></a><figcaption>PEAS for an automated taxi: performance, environment, actuators, and sensors<a href="../assets/w08-introduction-to-ai-and-agents/w8-peas.svg" target="_blank" rel="noopener" class="diagram-link figure-open">Enlarge ↗</a></figcaption></figure>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Example</th><th>P</th><th>E</th><th>A</th><th>S</th></tr></thead><tbody><tr><td>Pacman</td><td>−1/step, +10 food, +500 win, −500 die, +200 scared ghost</td><td>Game dynamics and ghosts</td><td>Left, right, up, down</td><td>Almost the entire state, except remaining power-pellet duration</td></tr><tr><td>Diagnosis support</td><td>Patient health, cost, reputation</td><td>Patients, staff, insurers, courts</td><td>Display, email</td><td>Keyboard/mouse in the slide model</td></tr></tbody></table></div>
+<p>Sensors need not be physical cameras, and actuators need not be robot arms. Digital inputs and outputs can perform these roles.</p>
+<h2 id="05-environment-properties-shape-agent-design">05 Environment properties shape agent design</h2>
+<p>Slides 25–26 connect environment properties with appropriate techniques:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Property</th><th>Design consequence</th></tr></thead><tbody><tr><td>Fully / partially observable</td><td>Partial observation requires memory or internal state</td></tr><tr><td>Single / multi-agent</td><td>Account for other agents; random actions may help in some settings</td></tr><tr><td>Deterministic / stochastic</td><td>Uncertainty requires preparation for possible outcomes</td></tr><tr><td>Static / dynamic</td><td>Static worlds allow computation time; dynamic worlds can change while deciding</td></tr><tr><td>Discrete / continuous</td><td>Continuous time/control may require a continuously operating controller</td></tr><tr><td>Known / unknown physics</td><td>Unknown transition dynamics require exploration/learning</td></tr><tr><td>Known / unknown performance measure</td><td>An unclear goal requires observing or interacting with the principal</td></tr></tbody></table></div>
+<p><em>(From the transcript)</em> Autonomous driving involves other drivers, weather, and changing traffic, making it more complex than fixed commands in a fully specified world.</p>
+<h2 id="06-reflex-state-and-goal-based-agents">06 Reflex, state, and goal-based agents</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Agent</th><th>Action selection uses</th><th>Capability / limitation</th></tr></thead><tbody><tr><td>Simple reflex</td><td>Current percept + condition-action rules</td><td>Cannot retain currently hidden information</td></tr><tr><td>Reflex with state</td><td>Internal state + world dynamics + action effects</td><td>Uses past information when the world is partially observed</td></tr><tr><td>Goal-based</td><td>State/model + goals + predicted action outcomes</td><td>Considers which action moves toward a goal</td></tr></tbody></table></div>
+<p>Example from slide 28:</p>
+<pre><code class="language-python">class GoWestAgent(Agent):
+    def getAction(self, percept):
+        if Directions.WEST in percept.getLegalPacmanActions():
+            return Directions.WEST
+        else:
+            return Directions.STOP
+</code></pre>
+<p>This rule moves west whenever possible, without reasoning about food or ghosts. A lookup table covering all situations could be impractically large, and Pacman has hidden information such as power-pellet duration (slides 27–33).</p>
+<h2 id="07-four-perspectives-on-ai">07 Four perspectives on AI</h2>
+<p>Slide 38 uses two axes: thinking/acting and human-like/rational.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th></th><th>Human-like</th><th>Rational</th></tr></thead><tbody><tr><td>Thinking</td><td>Think like humans</td><td>Think rationally</td></tr><tr><td>Acting</td><td>Act like humans</td><td>Act rationally</td></tr></tbody></table></div>
+<p>The <strong>Turing Test</strong> focuses on behavior difficult for a judge to distinguish from a human. The <strong>Chinese room</strong> asks whether rule-based symbol manipulation that produces correct answers entails understanding. ELIZA illustrates how limited conversational imitation can feel human to a user (slides 39–42). The chapter prioritizes evaluating task actions over resolving consciousness.</p>
+<h2 id="08-traditional-ai-and-related-areas">08 Traditional AI and related areas</h2>
+<p>AI includes symbolic/rule-based methods and learning from data. Slides 45–47 list:</p>
+<ul>
+<li>Search: find a solution path, such as solving a Rubik's cube.</li>
+<li>Constraint satisfaction / optimization: schedule meetings under constraints.</li>
+<li>Game playing: chess or poker.</li>
+<li>Logic / knowledge representation: represent facts and infer conclusions.</li>
+<li>Planning: arrange actions toward a goal.</li>
+<li>Probability / decision theory: decide under uncertainty.</li>
+</ul>
+<p>These areas can overlap. <em>(From the transcript)</em> Knowledge-based rules are contrasted with fitting models from data; an AI system need not use machine learning.</p>
+<h2 id="09-capabilities-and-limitations">09 Capabilities and limitations</h2>
+<p>Slides 35 and 43–44 use games and well-defined tasks as examples of success. Messy, ambiguous real-world tasks and common sense remain challenging. Explaining reasoning, adapting strategies, and transferring knowledge across contexts are comparison points with human abilities.</p>
+<p><em>(From the transcript)</em> News, generated images, and deployment examples prompt consideration of capability and reliability. Distinguish apparent behavior from performance demonstrated by testing.</p>
+<h2 id="10-phase-2-project-progress">10 Phase 2 project progress</h2>
+<p><em>(From the transcript)</em> Progress should show improvement since Phase 1 and movement toward the objective, beyond adding slides:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Dimension</th><th>Evidence to show</th></tr></thead><tbody><tr><td>Algorithms</td><td>Clearer choices and reasons</td></tr><tr><td>Data</td><td>Sources, counts per class, tangible examples</td></tr><tr><td>Software</td><td>Started modules/code, with structural diagrams where available</td></tr><tr><td>References</td><td>Technical sources, domain knowledge, and related systems</td></tr><tr><td>Pipeline</td><td>Input-to-output steps and progress at each step</td></tr><tr><td>Evaluation</td><td>Train/test separation and evidence supporting reliable performance</td></tr></tbody></table></div>
+<p>Examples such as 80/75/80 rock-paper-scissors images or several hundred spam/non-spam messages illustrate readiness; they are not mandatory minimum counts for every team. This lecture gives the presentation block as 19–26 October; W09 records the later specific announcement.</p>
+<h2 id="11-final-exam-announcement">11 Final exam announcement</h2>
+<p><em>(From the opening and closing transcript)</em> The lecturer permits <strong>one A4 sheet with handwritten or printed notes on both sides</strong>, a calculator, and a printed English dictionary. <strong>Do not borrow or share notes in the exam room.</strong> The note sheet will be collected after the exam.</p>
+<p>This 2 October statement is clearer than the tentative discussion in W07. Use the course's official announcement for exam dates, times, and final rules.</p>
+<h2 id="glossary">Glossary</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Term</th><th>Meaning</th></tr></thead><tbody><tr><td>Agent</td><td>Entity that perceives and acts on its environment</td></tr><tr><td>Rational agent</td><td>Agent selecting actions to maximize expected utility</td></tr><tr><td>Percept</td><td>Information perceived through sensors</td></tr><tr><td>Actuator</td><td>Means through which an agent acts on the world</td></tr><tr><td>PEAS</td><td>Performance, Environment, Actuators, Sensors</td></tr><tr><td>Partially observable</td><td>Not all relevant world-state information is observable</td></tr><tr><td>Stochastic</td><td>Action outcomes involve uncertainty</td></tr><tr><td>Simple reflex agent</td><td>Uses the current percept and condition-action rules</td></tr><tr><td>Internal state</td><td>Internal information representing what is not currently observed</td></tr><tr><td>Goal-based agent</td><td>Chooses actions by considering goals</td></tr></tbody></table></div>
+<h2 id="chapter-summary">Chapter summary</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Topic</th><th>Key idea</th></tr></thead><tbody><tr><td>AI</td><td>Several approaches; this chapter emphasizes acting rationally</td></tr><tr><td>Agent loop</td><td>Sensors → choose an action → Actuators → Environment</td></tr><tr><td>PEAS</td><td>Define performance, world, actions, and observations</td></tr><tr><td>Environment</td><td>Uncertainty, observability, and time shape design</td></tr><tr><td>Agent design</td><td>Reflex → internal state → goals</td></tr><tr><td>Phase 2</td><td>Show data, algorithms, software, references, pipeline, and evaluation</td></tr></tbody></table></div></article><nav class="pagination" aria-label="Previous and next notes"><a href="w07-classification-performance-metrics.en.html"><small>← Previous</small>Classification Performance Metrics and Evaluation Methods</a><a href="w09-introduction-to-ml-and-nearest-neighbors.en.html"><small>Next →</small>Introduction to Machine Learning, k-NN, and AI Search</a></nav></main><aside class="toc-sidebar"><nav class="toc" aria-label="On this page"><strong>On this page</strong><a href="#01-what-does-ai-mean-in-this-course">01 What does AI mean in this course?</a><a href="#02-history-and-foundations">02 History and foundations</a><a href="#03-agents-and-rational-agents">03 Agents and rational agents</a><a href="#04-peas-define-the-task-before-designing">04 PEAS: define the task before designing</a><a href="#05-environment-properties-shape-agent-design">05 Environment properties shape agent design</a><a href="#06-reflex-state-and-goal-based-agents">06 Reflex, state, and goal-based agents</a><a href="#07-four-perspectives-on-ai">07 Four perspectives on AI</a><a href="#08-traditional-ai-and-related-areas">08 Traditional AI and related areas</a><a href="#09-capabilities-and-limitations">09 Capabilities and limitations</a><a href="#10-phase-2-project-progress">10 Phase 2 project progress</a><a href="#11-final-exam-announcement">11 Final exam announcement</a><a href="#glossary">Glossary</a><a href="#chapter-summary">Chapter summary</a></nav></aside></div>
+<footer class="site-footer"><span>INT182 · Data Science & AI<br>Study summaries based on course materials</span><a href="https://github.com/Phakinza007/int182-study-notes">GitHub ↗</a></footer>
+<dialog id="search-dialog" aria-labelledby="search-title"><div class="dialog-heading"><h2 id="search-title">Search the notes</h2><button data-close-dialog aria-label="Close search">×</button></div><label for="search-input">Keyword, e.g. precision, PEAS, kNN</label><input id="search-input" type="search" autocomplete="off"><p id="search-status" role="status">Type a keyword to start</p><ul id="search-results"></ul></dialog>
+<dialog id="image-dialog" aria-labelledby="image-title"><div class="dialog-heading"><h2 id="image-title">Diagram</h2><button data-close-dialog aria-label="Close image">×</button></div><div class="image-controls"><button data-zoom="out" aria-label="Zoom out">−</button><button data-zoom="in" aria-label="Zoom in">+</button><button data-zoom="reset">Fit</button><a id="image-original" target="_blank" rel="noopener">Open original ↗</a></div><div class="image-stage"><img id="zoom-image" alt=""></div><p id="image-caption"></p></dialog>
+</body></html>

@@ -1,0 +1,1337 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="สรุป INT182 Data Science และ AI สัปดาห์ 1–9 พร้อมไดอะแกรมและสูตรสำคัญ"><meta name="theme-color" content="#f7f6f3"><title>Decision Trees, K-means Clustering และการทวนขอบเขต Exam 1 · INT182</title><link rel="icon" href="../favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="../style.css"><script src="../app.js" defer></script></head>
+<body data-base="../" data-page="note"><a class="skip" href="#main">ข้ามไปเนื้อหา</a>
+<header class="topbar"><div class="topbar-inner"><a class="brand" href="../index.html"><span class="brand-mark">182</span><span>INT182 <small>Study notes</small></span></a><nav aria-label="เมนูหลัก"><button class="search-trigger" data-search-open aria-haspopup="dialog">ค้นหาเนื้อหา <kbd>/</kbd></button><a class="lang" href="w05-decision-trees-and-k-means.en.html" lang="en">English</a></nav></div></header>
+<div class="reader-layout"><aside class="reader-sidebar"><details class="week-menu" open><summary>ทุกสัปดาห์</summary><nav aria-label="เลือกสัปดาห์"><a href="w01-course-intro.html" ><span class="week-no">01</span><span>แนะนำวิชา + โครงสร้างโปรเจกต์</span></a><a href="w02-ds-ai-landscape-and-tools.html" ><span class="week-no">02</span><span>ภาพรวม DS/AI (ต่อ) + เครื่องมือ Orange</span></a><a href="w03-eda-and-model-fitting.html" ><span class="week-no">03</span><span>EDA และ Model Fitting — Box Plot, Correlation, Linear Regression</span></a><a href="w04-association-rules.html" ><span class="week-no">04</span><span>Association Rules — Market Basket Analysis, Apriori และ Support/Confidence/Lift</span></a><a href="w05-decision-trees-and-k-means.html" aria-current="page"><span class="week-no">05</span><span>Decision Trees, K-means Clustering และการทวนขอบเขต Exam 1</span></a><a href="w06-classification-and-model-validation.html" ><span class="week-no">06</span><span>Classification และการตรวจสอบโมเดล</span></a><a href="w07-classification-performance-metrics.html" ><span class="week-no">07</span><span>Classification Performance Metrics และการเลือกวิธีประเมิน</span></a><a href="w08-introduction-to-ai-and-agents.html" ><span class="week-no">08</span><span>พื้นฐาน AI, Rational Agents และ PEAS</span></a><a href="w09-introduction-to-ml-and-nearest-neighbors.html" ><span class="week-no">09</span><span>พื้นฐาน Machine Learning, k-NN และ AI Search</span></a></nav></details></aside><main id="main" class="reader"><div class="note-meta">WEEK 05 <span>2026-09-04</span></div><h1>Decision Trees, K-means Clustering และการทวนขอบเขต Exam 1</h1><div class="reader-actions"><button data-read-week="5" aria-pressed="false">ทำเครื่องหมายว่าอ่านแล้ว</button><button data-print>พิมพ์บทนี้</button></div><article class="prose"><blockquote>
+<p>สรุปจากคาบวันที่ 4 ก.ย. 2026 (บันทึก 3 ชม. 36 นาที, <code>INT182_20260904.docx</code>) โดยใช้สไลด์ <code>Decision Trees.pdf</code> (27 หน้า) และ <code>K-means clustering basics.pdf</code> (25 หน้า) ของ อ.พรชัย มงคลนาม เป็นโครงหลัก</p>
+<p>⚠️ transcript มาจาก automatic speech recognition และ<strong>เพี้ยนหนักมาก</strong>ในหลายช่วง (<code>เคมี</code> = K-means, <code>ดิสชั่นทรี</code> = decision tree, <code>เอ็นโทรพี่</code> = entropy, <code>อีฟเด่น</code> = if–then) สิ่งที่มาจาก transcript อย่างเดียวจะทำเครื่องหมาย <em>(จาก transcript)</em> ไว้</p>
+<p>คาบนี้เป็นคาบสุดท้ายก่อน Exam 1 อาจารย์แบ่งเวลาเป็น 4 ช่วง: <strong>(1)</strong> แจ้งรายละเอียดข้อสอบ <strong>(2)</strong> ทวน Association Rules ที่ค้างจากคาบ 4 (~30 นาที) <strong>(3)</strong> สอน Decision Trees <strong>(4)</strong> สอน K-means แล้วปิดท้ายด้วยการไล่สไลด์เก่าทีละหน้าเพื่อชี้ว่า<strong>จุดไหนจะออกข้อสอบบ้าง</strong></p>
+</blockquote>
+<h2 id="agenda">Agenda</h2>
+<ol>
+<li>Exam 1 — รายละเอียดทั้งหมดที่อาจารย์แจ้ง</li>
+<li>ขอบเขตข้อสอบ — 5 slide sets และเซตที่ถูกตัดออก</li>
+<li>สูตรไหนออก สูตรไหนไม่ออก</li>
+<li>ทวน Association Rules (ชี้ไปที่ W04)</li>
+<li>Decision Tree — คืออะไร อยู่ตรงไหนของภาพใหญ่</li>
+<li>กายวิภาคของต้นไม้ — root / decision node / leaf / branch</li>
+<li>ทำไมต้นไม้เตี้ยถึงดีกว่าต้นไม้สูง</li>
+<li>Entropy — ความวุ่นวายของกลุ่ม</li>
+<li>Information Gain — คำถามนี้ลดความวุ่นวายได้เท่าไหร่</li>
+<li>ขั้นตอนการสร้างต้นไม้ (ID3)</li>
+<li>ตัวอย่างเต็ม — PlayTennis</li>
+<li>Stopping condition และ overfitting</li>
+<li>แบบฝึกหัด — ไอศกรีม 12 คน</li>
+<li>Decision Tree ใน Orange</li>
+<li>Random Forest (พูดถึงผ่านๆ)</li>
+<li>K-means — clustering คืออะไร</li>
+<li>K เป็น hyperparameter</li>
+<li>Centroid</li>
+<li>Euclidean distance</li>
+<li>Normalization และเหตุผลว่าทำไมต้องทำ</li>
+<li>ขั้นตอนของ K-means</li>
+<li>WCSS และ Elbow method</li>
+<li>K-modes, K-prototypes</li>
+<li>Hard vs Soft clustering (Fuzzy C-means)</li>
+<li>ไล่สไลด์เก่า — จุดที่อาจารย์บอกว่าจะออกข้อสอบ</li>
+<li>Glossary</li>
+<li>สรุปท้ายบท</li>
+</ol>
+<hr>
+<h2 id="01-exam-1--รายละเอียดทั้งหมดที่อาจารย์แจ้ง">01 Exam 1 — รายละเอียดทั้งหมดที่อาจารย์แจ้ง</h2>
+<p><em>(ส่วนนี้มาจาก transcript ทั้งหมด — ให้ยืนยันกับประกาศทางการอีกครั้ง)</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>หัวข้อ</th><th>รายละเอียด</th></tr></thead><tbody><tr><td>วันสอบ</td><td><strong>วันศุกร์</strong> ของสัปดาห์ถัดไป · อาจารย์บอกว่า "ตอนเย็น" แต่ตัวเองก็ไม่มั่นใจเวลา ให้<strong>ไปเช็คประกาศและห้องสอบอีกครั้ง</strong></td></tr><tr><td>จำนวนข้อ</td><td><strong>50 ข้อ</strong></td></tr><tr><td>รูปแบบ</td><td><strong>multiple choice ทั้งหมด</strong> · <strong>single select</strong> (เลือกได้คำตอบเดียว) · ช้อยส์ a/b/c/d <strong>4 ช้อยส์</strong></td></tr><tr><td>การตอบ</td><td><strong>ฝนคำตอบด้วยดินสอ</strong> ลงกระดาษคำตอบ (เป็นแผ่น ไม่ใช่สมุด) · เตรียม<strong>ดินสอ 2B</strong> มาเอง (อาจารย์ก็จำไม่ได้ว่า 2B หรือ HB — เอา 2B ไว้ก่อน)</td></tr><tr><td>คะแนน</td><td>ข้อละเท่ากันหมด · น้ำหนักรวมอาจต้องเกลี่ยอีกที เพราะมีบางเนื้อหาที่ยังไม่ได้สอน</td></tr><tr><td>เวลา</td><td><strong>3 ชั่วโมง</strong> — เฉลี่ยเกือบ 4 นาทีต่อข้อ อาจารย์คาดว่าจริงๆ ใช้แค่ 1–2 นาที/ข้อ จึงเหลือเวลาเยอะมาก</td></tr><tr><td>ออกจากห้องได้</td><td>หลังผ่านไป 1 ชั่วโมง แต่อาจารย์แนะนำให้อยู่อย่างน้อย 2 ชั่วโมง ทำไปทวนไป</td></tr><tr><td>เครื่องคิดเลข</td><td><strong>ไม่ต้องใช้</strong> — ไม่ได้ห้ามพกเข้าไป แต่ต้องปิดและไม่ได้ใช้</td></tr><tr><td>หนังสือ/โน้ต</td><td><strong>ไม่ได้</strong> — closed book ทั้งหมด</td></tr><tr><td>จำนวนครั้งที่สอบทั้งเทอม</td><td><strong>2 ครั้งเท่านั้น</strong> — ครั้งที่ 1 (นี้) และครั้งสุดท้าย ทั้งคู่เป็นข้อสอบข้อเขียน</td></tr></tbody></table></div>
+<p><code>ระวัง</code> <em>(จาก transcript — ASR เพี้ยนหนักตรงนี้)</em>: มีช่วงที่อาจารย์พูดถึง "หนึ่งเล่ม" ที่เอาเข้าห้องสอบได้ "เผื่อไว้ดูคำศัพท์ในคำถาม" และบอกว่าผู้คุมสอบ<strong>จะเปิดตรวจว่ามีเขียนอะไรลงไปหรือเปล่า</strong> — ตีความได้ว่าน่าจะเป็น<strong>พจนานุกรม</strong> ที่ยอมให้เอาเข้าได้ถ้าไม่มีอะไรเขียนไว้ข้างใน แต่ประโยคเพี้ยนเกินกว่าจะฟันธง <strong>ให้ถามอาจารย์หรือดูประกาศก่อนเข้าห้องสอบ</strong></p>
+<h3 id="ความยากของข้อสอบ">ความยากของข้อสอบ</h3>
+<p>อาจารย์ให้ <strong>อ.ชา (กฤษฎา)</strong> ช่วยรีวิวข้อสอบให้ ผลคือ:</p>
+<ul>
+<li>มีทั้งข้อง่ายและข้อยากปนกัน อ.ชา บอกว่า "มีบางข้อยาก"</li>
+<li>ที่ยากเพราะ <strong>choices ใกล้เคียงกัน</strong> — ถ้าแค่ "เคยได้ยินผ่านๆ" จะเลือกไม่ถูกว่าอันไหนกันแน่</li>
+<li>มีข้อที่ต้อง<strong>ประยุกต์</strong> ไม่ใช่ท่องตรงๆ จากสไลด์</li>
+<li>แต่ถ้าเตรียมมา อาจารย์บอกว่า "รับรองน่าจะได้" และหวังว่าส่วนมากจะได้ <strong>40 ขึ้นไปจาก 50</strong></li>
+</ul>
+<h3 id="วิธีเตรียมสอบที่อาจารย์แนะนำเอง">วิธีเตรียมสอบที่อาจารย์แนะนำเอง</h3>
+<p>โยน PDF สไลด์เข้า Gen AI ให้มันสรุปให้ แล้ว<strong>ให้มันลองออกข้อสอบให้ทำ</strong> — อาจารย์บอกตรงๆ ว่า "ตามใจชอบเลย ... หวังว่าคงจะมีซ้ำบ้าง อาจจะไม่ทั้งหมด" เพราะข้อสอบเป็นชุดที่อาจารย์ออกเอง</p>
+<h3 id="หลังสอบ">หลังสอบ</h3>
+<ul>
+<li>หลังสอบอีก <strong>1 สัปดาห์</strong> อาจารย์กลับมาสอนต่ออีก <strong>1 ครั้ง</strong> ให้จบเซต <strong>Classification and Metrics</strong> (~10 สไลด์ที่เป็นทฤษฎี)</li>
+<li>จากนั้นส่งต่อให้ <strong>อ.ชาคริดา</strong> สอนส่วนที่ 2 ซึ่งเป็นเรื่อง <strong>AI</strong> ทั้งทฤษฎีและการประยุกต์ใช้</li>
+</ul>
+<hr>
+<h2 id="02-ขอบเขตข้อสอบ--5-slide-sets">02 ขอบเขตข้อสอบ — 5 slide sets</h2>
+<p>อาจารย์เปิดโฟลเดอร์ class material ให้ดูสดๆ แล้วนับให้ฟังว่ามี <strong>5 ชุด</strong> ที่อยู่ในขอบเขต:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>#</th><th>Slide set</th><th>ไฟล์</th><th>สอนสัปดาห์</th></tr></thead><tbody><tr><td>1</td><td><strong>Intro to Data Science, Engineering and AI</strong></td><td><code>INT182_01_Intro-to-DS-Engineering-and-AI.pdf</code></td><td>W1</td></tr><tr><td>2</td><td><strong>EDA – Model Fitting</strong></td><td><code>INT182_02_EDA-Model-Fitting.pdf</code></td><td>W3</td></tr><tr><td>3</td><td><strong>Association Rules</strong></td><td><code>Association rules.pdf</code> (19 หน้า)</td><td>W4 + ทวนต้นคาบนี้</td></tr><tr><td>4</td><td><strong>Decision Trees</strong></td><td><code>Decision Trees.pdf</code> (27 หน้า)</td><td>คาบนี้</td></tr><tr><td>5</td><td><strong>K-means clustering basics</strong></td><td><code>K-means clustering basics.pdf</code> (25 หน้า)</td><td>คาบนี้</td></tr></tbody></table></div>
+<blockquote>
+<p>➤ <strong><code>Classification and Metrics.pdf</code> (71 หน้า) ถูกอาจารย์เอาออกจาก class material แล้ว เพราะยังไม่ได้สอน — เซตนี้ไม่ออกสอบ 1</strong> อาจารย์พูดตรงๆ ว่า "นี้มันยังไม่ออก" และจะสอนหลังสอบ</p>
+</blockquote>
+<p><code>เกร็ดเสริม</code>: มี <strong>AI Index Report 2026</strong> (<code>ai_index_report_2026.pdf</code>) อยู่ในโฟลเดอร์ด้วย อาจารย์บอกว่า "อ่านเพื่อประดับความรู้" — ไม่ได้ระบุว่าออกสอบ</p>
+<hr>
+<h2 id="03-สูตรไหนออก-สูตรไหนไม่ออก">03 สูตรไหนออก สูตรไหนไม่ออก</h2>
+<p>อันนี้อาจารย์พูดชัดมาก และเป็นข้อมูลที่ประหยัดเวลาอ่านได้เยอะที่สุด:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>สูตร</th><th>ออกสอบ?</th><th>อาจารย์พูดว่า</th></tr></thead><tbody><tr><td><strong>Support</strong></td><td>✅ <strong>ออก</strong> (น่าจะ 1 ข้อ)</td><td>"ถ้าออกก็คือหนึ่งอัน" · support = ratio ของความถี่กับทั้งหมด</td></tr><tr><td><strong>Confidence</strong></td><td>✅ ต้องจำ</td><td>"ตัวนี้ซัพพอร์ตกับ confidence ที่จะต้องจำ"</td></tr><tr><td><strong>Lift</strong></td><td>⚠️ ตอนสอนบอกว่า "ยังไม่ต้องจำ ณ ตอนนี้" แต่ก็สอนเต็มในคาบ 4</td><td>ให้เข้าใจ concept ไว้ (lift > 1 / = 1 / &#x3C; 1)</td></tr><tr><td><strong>Entropy</strong> (−Σ pᵢ log₂ pᵢ)</td><td>❌ <strong>ไม่ออก</strong></td><td>"ไอ้ entropy ไม่ออก มันซับซ้อนเกินไป ... ไม่เอาที่เป็น log pᵢ พวกนี้ไม่เอา <strong>แค่ให้เอาแค่ concept พอ</strong>"</td></tr><tr><td><strong>Information Gain</strong></td><td>❌ ไม่ถามสูตร</td><td>ต้องรู้ว่ามันคืออะไรและใช้ทำอะไร</td></tr><tr><td><strong>Correlation</strong> (Pearson)</td><td>❌ ไม่ถามสูตร</td><td>"ไม่ต้องจำสูตร แค่รู้ว่ามันบวกมันลบความหมายคืออะไร แค่นั้นพอ"</td></tr><tr><td><strong>p-value</strong></td><td>❌ ไม่ถาม</td><td>"ต้องเข้าใจ stat ก่อนถึงจะอธิบายได้"</td></tr><tr><td><strong>R²</strong></td><td>❌ ไม่ถาม</td><td>—</td></tr><tr><td><strong>Polynomial regression</strong></td><td>❌ ไม่ออก</td><td>"แม้โพลิโนเมียลไม่ออก"</td></tr><tr><td><strong>ชื่อ algorithm (ID3)</strong></td><td>❌ ไม่ต้องจำ</td><td>"อันนี้เป็นชื่ออัลกอริทึม เขาไม่ต้องจำ"</td></tr></tbody></table></div>
+<hr>
+<h2 id="04-ทวน-association-rules">04 ทวน Association Rules</h2>
+<p>ต้นคาบอาจารย์ทวน Association Rules ประมาณ 30 นาที เพราะ "ครั้งก่อนไปเร็วไปหน่อย" — เนื้อหาไม่มีอะไรใหม่เกินจากคาบ 4 ให้ดู <strong><a href="w04-association-rules.html">W04-Association-Rules.md</a></strong> ซึ่งละเอียดกว่า</p>
+<p>สิ่งที่อาจารย์ย้ำซ้ำในการทวน:</p>
+<ul>
+<li><strong>rule ต้องมีอย่างน้อย 1 item ในแต่ละข้างของลูกศร</strong> — antecedent ว่างหรือ consequent ว่างไม่ได้ · รวมแล้วต้องมีอย่างน้อย <strong>2 items</strong> ถึงจะสร้าง rule ได้</li>
+<li><strong>จาก 3-itemset สร้างได้ 6 rules</strong> — ต้องสลับให้ครบทุกทิศทาง</li>
+<li>ลำดับการทำ: หา support ของแต่ละ itemset → ตัดตัวที่ต่ำกว่า threshold ทิ้ง → สร้าง rules จากที่เหลือ → คำนวณ confidence ของทุก rule → ตัดตัวที่ต่ำกว่า min confidence ทิ้ง</li>
+<li><strong>Association Rule Mining = Market Basket Analysis (MBA)</strong> — คำพ้องที่ต้องรู้</li>
+<li>ตัวอย่างในตำนาน: "เมื่อลูกค้าซื้อ diapers แล้ว 80% จะซื้อ beer ด้วย" — อาจารย์เองก็บอกว่าไม่รู้เป็นเรื่องจริงหรือโจ๊ก</li>
+<li><strong>Association Rules เป็น rule-based</strong> เหมือน Decision Tree — ทั้งคู่ทำงานด้วย if–then</li>
+</ul>
+<hr>
+<h2 id="05-decision-tree--คืออะไร-อยู่ตรงไหนของภาพใหญ่">05 Decision Tree — คืออะไร อยู่ตรงไหนของภาพใหญ่</h2>
+<p><strong>Decision Tree อยู่ในกลุ่ม supervised learning</strong> — การเรียนรู้แบบ<strong>มีผู้สอน</strong> คือมีการใส่ <strong>label</strong> บอกว่าอะไรเป็นอะไร</p>
+<p>ตัวอย่างของ label ที่อาจารย์ยก:</p>
+<ul>
+<li>รูปนี้เป็นแมว / วัตถุนี้เป็นแอปเปิ้ล</li>
+<li>บ้าน 2 ชั้น พื้นที่ใช้สอยเท่านี้ → ราคาเท่าไหร่</li>
+</ul>
+<h3 id="classifier-ตัวอื่นในสไลด์-slide-3">Classifier ตัวอื่นในสไลด์ (slide 3)</h3>
+<p>สไลด์ลิสต์ classification methods ไว้ 5 ตัว — <strong>น่าจะออกเป็นช้อยส์ได้</strong>:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>Method</th><th>หลักการ</th></tr></thead><tbody><tr><td><strong>K-nearest neighbors (KNN)</strong></td><td>ทำนายจาก data points ที่อยู่ใน neighborhood ของจุดที่จะทดสอบ</td></tr><tr><td><strong>Decision Trees (DT)</strong></td><td>split dataset ที่ทุก node ตามค่าของตัวแปรหนึ่ง แล้วจัดประเภทที่ leaf node จากค่ารวมของ class labels</td></tr><tr><td><strong>Naive Bayes (NB)</strong></td><td>ใช้ likelihood probability · <strong>สมมติว่า features เป็นอิสระต่อกัน</strong> เพื่อทำให้โมเดลง่ายลง</td></tr><tr><td><strong>Logistic regression (LR)</strong></td><td>fit ความน่าจะเป็นของ class ด้วย <strong>sigmoid function</strong> แล้วหา coefficient ด้วย <strong>gradient descent</strong></td></tr><tr><td><strong>Support vector machine (SVM)</strong></td><td>เรียนรู้ <strong>hyperplane</strong> ที่แยก 2 classes ด้วย <strong>margin สูงสุด</strong></td></tr></tbody></table></div>
+<p><code>ระวัง</code>: ประโยคเปิดของสไลด์หน้านี้เป็นคำนิยามที่ถามได้ตรงๆ — <strong>"ใน classification model ตัว target/class label เป็น categorical ส่วนใน regression ตัว target เป็น numeric"</strong></p>
+<h3 id="จุดเด่นของ-decision-tree">จุดเด่นของ Decision Tree</h3>
+<p><strong>ทำได้ทั้ง classification และ regression</strong> — สไลด์มีตัวอย่างทั้งสองแบบ:</p>
+<ul>
+<li><strong>Classification</strong>: "Play an outdoor sport?" → label เป็น Yes/No</li>
+<li><strong>Regression</strong>: "Predict a house price" → label เป็น<strong>ตัวเลข</strong> ใช้การเปรียบเทียบมากกว่า/น้อยกว่าที่แต่ละ node</li>
+</ul>
+<p>อาจารย์ย้ำว่านี่คือ<strong>ข้อดี</strong>ของมัน และมีโมเดลอื่นที่ทำได้สองอย่างเหมือนกัน</p>
+<hr>
+<h2 id="06-กายวิภาคของต้นไม้">06 กายวิภาคของต้นไม้</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>ส่วน</th><th>ชื่อ</th><th>ความหมาย</th></tr></thead><tbody><tr><td>จุดเริ่มต้น</td><td><strong>root node</strong></td><td>node ที่ใหญ่ที่สุด เป็นคำถามแรก · <strong>สำคัญที่สุด</strong></td></tr><tr><td>ตรงกลาง</td><td><strong>decision node</strong> / internal node</td><td>เป็น<strong>คำถาม</strong> — เขียนเป็นประโยคคำถามใส่ <code>?</code> ไว้</td></tr><tr><td>เส้นที่ออกจาก node</td><td><strong>branch</strong></td><td>คือ<strong>คำตอบ</strong>ของคำถามนั้น</td></tr><tr><td>ปลายสุด</td><td><strong>leaf node</strong></td><td>จุดสิ้นสุด · เป็น <strong>label</strong> (output) ไม่ใช่คำถาม</td></tr></tbody></table></div>
+<h3 id="กี่กิ่งต่อ-node">กี่กิ่งต่อ node?</h3>
+<ul>
+<li><strong>binary</strong> = 2 ทาง (ง่ายที่สุด, เป็น default) → <strong>binary classification</strong> yes/no</li>
+<li><strong>ternary</strong> = 3 ทาง, มากกว่านั้นก็ได้ → <strong>multiclass classification</strong></li>
+<li>อาจารย์บอกว่า "จะมี 2 ทีละ 2 ก็ไม่ผิดอะไร ... ขึ้นอยู่กับการประยุกต์ ทำได้หมด"</li>
+</ul>
+<p><code>ระวัง</code> <strong>กฎที่อาจารย์ย้ำ 2 ครั้ง: attribute ที่ใช้ไปแล้ว ห้ามใช้ซ้ำในเส้นทางเดียวกัน</strong> — "ถ้าคุณใช้ Outlook แล้ว คุณไม่ควรจะมี Outlook มาข้างล่างอีก"</p>
+<hr>
+<h2 id="07-ทำไมต้นไม้เตี้ยถึงดีกว่าต้นไม้สูง">07 ทำไมต้นไม้เตี้ยถึงดีกว่าต้นไม้สูง</h2>
+<p>คำถามที่อาจารย์โยนใส่ห้อง: ต้นไม้ที่<strong>ไม่สูง</strong>แต่ทำงานได้ดี กับต้นไม้ที่<strong>สูง</strong> อันไหนดีกว่า?</p>
+<p><strong>คำตอบ: เตี้ยดีกว่า</strong> เพราะ:</p>
+<ul>
+<li>จบเร็ว ใช้พลังงานและการคำนวณน้อยกว่า</li>
+<li><strong>คำถามยิ่งน้อยยิ่งดี</strong></li>
+</ul>
+<p>อุปมาที่อาจารย์ใช้: เหมือนไป<strong>เข้าคิวหรือไปหาหมอ</strong> — เขาจะมีการ <strong>screen</strong> และวิธี screen ที่ดีที่สุดคือวิธีที่<strong>แยกคนได้เร็วที่สุด</strong> · <strong>คำถามแรกคือคำถามที่สำคัญที่สุด</strong> เพราะมันแยกกลุ่มได้มากที่สุด</p>
+<p>➤ <strong>หัวใจของ Decision Tree จึงคือ: จะเลือก feature ไหนมาเป็นคำถามแรก?</strong> ซึ่งตอบด้วย <strong>Entropy + Information Gain</strong></p>
+<hr>
+<h2 id="08-entropy--ความวุ่นวายของกลุ่ม">08 Entropy — ความวุ่นวายของกลุ่ม</h2>
+<p><strong>Entropy วัดว่ากลุ่มหนึ่ง "รก" หรือ "ไม่บริสุทธิ์" แค่ไหน</strong> (สไลด์: <em>"Entropy measures how messy or impure a group is"</em>)</p>
+<p>คำที่ใช้แทนกันได้ — อาจารย์ไล่มาให้หมด เพราะ<strong>ช้อยส์อาจใช้คำใดคำหนึ่ง</strong>:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>คำ</th><th>ความหมาย</th></tr></thead><tbody><tr><td><strong>disorder</strong></td><td>ไม่เป็นระเบียบ</td></tr><tr><td><strong>messy / mess</strong></td><td>รกเลอะเทอะ</td></tr><tr><td><strong>impure</strong></td><td>ไม่บริสุทธิ์ มีอะไรผสมกันมากมาย</td></tr><tr><td><strong>randomness</strong></td><td>สุ่ม ไม่ชัดเจน</td></tr><tr><td><strong>uncertainty</strong></td><td>ไม่แน่นอน ไม่ตรงไปตรงมา</td></tr></tbody></table></div>
+<h3 id="ค่าของ-entropy">ค่าของ Entropy</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>ค่า</th><th>สภาพ</th><th>ตัวอย่างในสไลด์</th></tr></thead><tbody><tr><td><strong>Entropy = 0</strong></td><td><strong>Perfectly Pure</strong> — ทุกตัวในกลุ่มอยู่ category เดียวกันหมด</td><td>ล้วงถุงที่มีแอปเปิ้ล Red Delicious 10 ลูก → uncertainty = 0</td></tr><tr><td><strong>Entropy = 1</strong></td><td><strong>Maximum Mess</strong> — แบ่ง 50/50 พอดี</td><td>ล้วงถุงที่มีผลไม้ 10 ลูก เป็นแอปเปิ้ล 5 ส้ม 5 → ไม่มีทางรู้เลยว่าจะได้อะไร</td></tr></tbody></table></div>
+<h3 id="อุปมาห้องเรียนของอาจารย์">อุปมาห้องเรียนของอาจารย์</h3>
+<ul>
+<li>ถ้านั่งกัน<strong>มั่วๆ</strong> ชายหญิงปนกันทั่วห้อง → <strong>entropy สูง</strong> เพราะกระจัดกระจาย impure</li>
+<li>ถ้า screen ให้<strong>ผู้ชายนั่งซ้าย ผู้หญิงนั่งขวา</strong> → <strong>entropy ต่ำ</strong> เพราะแยกชัดเจน pure</li>
+<li>ถ้านั่ง<strong>สลับกันเป๊ะ</strong> ชายหญิงชายหญิง → <strong>maximum mess</strong></li>
+<li>ถ้าห้องนี้มีแต่ผู้หญิงล้วน → <strong>entropy = 0 ทันที</strong></li>
+</ul>
+<p>➤ <strong>เป้าหมายของทุกคำถามใน tree คือ: กรองให้ pure ที่สุด เร็วที่สุด</strong></p>
+<p><code>เกร็ดเสริม</code> สูตรมี <code>C</code> = <strong>จำนวน class</strong> — เช่น เล่น/ไม่เล่น = 2 class · แมว/หมา/หนู = 3 class · <strong>แต่ไม่ออกสอบ</strong></p>
+<hr>
+<h2 id="09-information-gain--คำถามนี้ลดความวุ่นวายได้เท่าไหร่">09 Information Gain — คำถามนี้ลดความวุ่นวายได้เท่าไหร่</h2>
+<p>สไลด์: <em>"Information Gain measures how much a question reduces that messiness"</em></p>
+<pre><code>Information Gain = Entropy(Parent Node) − Weighted Average Entropy(Child Nodes)
+</code></pre>
+<ul>
+<li><strong>Entropy ของพ่อแม่ ลบด้วย entropy ของลูกๆ ที่ถ่วงน้ำหนักแล้ว</strong></li>
+<li>ต้อง <strong>weighted</strong> เพราะลูกแต่ละคนมีจำนวน data point ไม่เท่ากัน — "บางทีลูกคนนี้ให้มากหน่อย ลูกคนนั้นให้น้อยหน่อย"</li>
+<li><strong>IG เป็นค่าเชิงบวก — ยิ่งมากยิ่งดี</strong> เพราะแปลว่า "เราได้ข้อมูลมาก"</li>
+<li>สไลด์นิยามว่ามันคือ <em>"the reduction in Entropy after you split your data based on a specific question (or feature)"</em></li>
+</ul>
+<p>➤ <strong>เลือก feature ที่ให้ IG สูงสุดมาเป็นคำถาม</strong></p>
+<hr>
+<h2 id="10-ขั้นตอนการสร้างต้นไม้-id3">10 ขั้นตอนการสร้างต้นไม้ (ID3)</h2>
+<p>สไลด์ระบุ <strong>ID3 Algorithm by R. Quinlan, 1986</strong></p>
+<p><code>ระวัง</code> transcript ASR อ่านปีเป็น "2026" ซึ่งผิด — อาจารย์พูดต่อว่า "<strong>40 ปีที่แล้ว</strong>" ซึ่งตรงกับ <strong>1986</strong> ในสไลด์พอดี · และ<strong>ชื่อ algorithm ไม่ต้องจำ</strong> อาจารย์บอกเอง</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>Step</th><th>ทำอะไร</th></tr></thead><tbody><tr><td><strong>1</strong></td><td>คำนวณ <strong>Entropy ของ dataset ทั้งหมด</strong> (root/parent)</td></tr><tr><td><strong>2</strong></td><td><strong>ลองทุก feature เป็น root</strong> — split ตามแต่ละค่าของ feature นั้น หา entropy ของแต่ละ branch แล้ว weighted average</td></tr><tr><td><strong>3</strong></td><td>คำนวณ <strong>IG = Entropy(parent) − Weighted Entropy(branches)</strong> ของทุก feature แล้ว<strong>เลือกตัวที่ IG สูงสุด</strong></td></tr><tr><td><strong>4</strong></td><td>วาด split แรก — root node กับ child nodes</td></tr><tr><td><strong>5</strong></td><td><strong>recurse</strong> — ทำซ้ำกระบวนการเดิมกับทุก subset (child node) เลือก feature ที่ดีที่สุดของ subset นั้น แล้ว recurse ต่อไปเรื่อยๆ <strong>จนกว่าจะเข้า stopping condition</strong> (pure node, max depth, minimum samples)</td></tr></tbody></table></div>
+<hr>
+<h2 id="11-ตัวอย่างเต็ม--playtennis">11 ตัวอย่างเต็ม — PlayTennis</h2>
+<p>สไลด์เรียกมันว่า <em>"one of the most famous decision tree examples (Quinlan, 1986)"</em></p>
+<p><strong>โจทย์: To play tennis or not?</strong> — 14 แถว, <strong>9 "Yes"</strong> + <strong>5 "No"</strong></p>
+<p>Features 4 ตัว: <strong>Outlook, Temperature, Humidity, Windy</strong> (อาจเรียกว่า x₁ x₂ x₃ x₄ ส่วน label คือ y)</p>
+<h3 id="step-1--entropy-ของทั้งชุด">Step 1 — Entropy ของทั้งชุด</h3>
+<p>จาก 9 Yes / 5 No จาก 14 → <strong>Entropy(full set) ≈ 0.94</strong></p>
+<p>อาจารย์อธิบายความหมาย: <strong>0.94 เข้าใกล้ 1 แปลว่าข้อมูลชุดนี้ยังไม่เป็นระเบียบเลย</strong> มีทั้ง Yes ทั้ง No ปนกัน — เริ่มต้นจากความวุ่นวายสูง แล้วเราจะไล่ให้ลดลงเรื่อยๆ</p>
+<h3 id="step-2--คำนวณ-ig-ทีละ-feature">Step 2 — คำนวณ IG ทีละ feature</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>Feature</th><th>Information Gain</th></tr></thead><tbody><tr><td><strong>Outlook</strong></td><td><strong>≈ 0.247</strong> ← สูงสุด</td></tr><tr><td>Humidity</td><td>≈ 0.15</td></tr><tr><td>Temperature</td><td>ต่ำกว่า</td></tr><tr><td>Windy</td><td>ต่ำกว่า</td></tr></tbody></table></div>
+<p>➤ สไลด์สรุปตรงๆ: <em>"Finally, the best split is Outlook (IG = 0.247) → Highest! So Outlook becomes the root node."</em></p>
+<h3 id="step-3--recurse-ลงแต่ละกิ่ง">Step 3 — recurse ลงแต่ละกิ่ง</h3>
+<p>Outlook มี 3 ค่า: <strong>Sunny / Overcast / Rain</strong></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>Branch</th><th>จำนวน</th><th>ผล</th></tr></thead><tbody><tr><td><strong>Overcast</strong></td><td>4 samples</td><td><strong>4 Yes, 0 No → pure node → เป็น leaf: Yes ทันที</strong></td></tr><tr><td><strong>Sunny</strong></td><td>5 samples (2 Yes + 3 No)</td><td>คำนวณ IG ใหม่จาก 5 แถวนี้ ด้วย Humidity/Temperature/Windy → <strong>มีแต่ Humidity ที่แยกได้ดี</strong> · High = 0 Yes/3 No · Normal = 2 Yes/0 No</td></tr><tr><td><strong>Rain</strong></td><td>5 samples (3 Yes + 2 No)</td><td>คำนวณใหม่ด้วย Temperature/Humidity/Windy → <strong>Windy แยกได้ดีที่สุด</strong></td></tr></tbody></table></div>
+<h3 id="ต้นไม้ที่ได้">ต้นไม้ที่ได้</h3>
+<pre><code>                    Outlook
+        ┌──────────────┼──────────────┐
+     Sunny         Overcast          Rain
+        │              │               │
+    Humidity          Yes            Windy
+    ┌───┴───┐                      ┌───┴───┐
+  High   Normal                  True    False
+    │       │                      │       │
+   No      Yes                    No      Yes
+</code></pre>
+<p><code>ระวัง</code> <strong>สังเกตว่าเมื่อ branch ไหน pure แล้ว (Overcast) มันจบเป็น leaf ทันที ไม่ต้องถามต่อ</strong> — นี่คือ stopping condition ข้อแรก</p>
+<hr>
+<h2 id="12-stopping-condition-และ-overfitting">12 Stopping condition และ overfitting</h2>
+<p>คำถามที่อาจารย์บอกว่า "คนชอบถาม": <strong>ต้นไม้ควรลึกแค่ไหน?</strong></p>
+<p>ปัญหา: ถ้าปล่อยไว้เฉยๆ โปรแกรม<strong>ไม่หยุด</strong> มันจะ split ไปเรื่อยๆ จนเหลือ data point แค่ 1 หรือ 0 ตัวในแต่ละ leaf — เสียเวลาและได้ต้นไม้ที่ซับซ้อนเกินจำเป็น</p>
+<h3 id="stopping-conditions-ที่ใช้กัน">Stopping conditions ที่ใช้กัน</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>วิธี</th><th>อธิบาย</th></tr></thead><tbody><tr><td><strong>max depth</strong></td><td>กำหนดล่วงหน้าว่าเอากี่ชั้น</td></tr><tr><td><strong>minimum samples</strong></td><td>ถ้าเหลือ data point ในกิ่งนั้นน้อยกว่าที่กำหนด (เช่น &#x3C; 50) ก็หยุด</td></tr><tr><td><strong>pure node</strong></td><td>ถ้า node นั้น pure แล้ว (entropy = 0) ก็จบเป็น leaf ทันที</td></tr></tbody></table></div>
+<h3 id="overfitting">Overfitting</h3>
+<p><strong>"ทำอะไรที่มันละเอียดเกินไป ลึกเกินไป จนเหลือ data point น้อยๆ ตอนล่างๆ มันก็ไม่ใช่ว่าจะดี เพราะมันเรียนรู้มากเกินไปกับข้อมูลที่เรามา train"</strong></p>
+<p>อุปมา <strong>"ตัดเสื้อ"</strong> ที่อาจารย์ใช้ <em>(จาก transcript — และบอกว่าจะออกสอบ)</em>:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th></th><th>อุปมา</th><th>ความหมาย</th></tr></thead><tbody><tr><td><strong>Overfitting</strong></td><td>ตัดเสื้อ<strong>เจาะจงกับคนคนเดียว</strong>มากเลย ฟิตเป๊ะ</td><td>ใช้กับคนอื่นไม่ได้เพราะไซซ์ต่างกัน · เหมาะกับกลุ่มเดียว <strong>ไม่ general</strong></td></tr><tr><td><strong>Underfitting</strong></td><td>เสื้อ<strong>หลวมเกินไป</strong></td><td>ทำน้อยเกินไป ก็ไม่ดี</td></tr></tbody></table></div>
+<p>➤ <strong>อาจารย์บอกตรงๆ ว่าจะถาม "overfitting คืออะไร"</strong></p>
+<hr>
+<h2 id="13-แบบฝึกหัด--ไอศกรีม-12-คน">13 แบบฝึกหัด — ไอศกรีม 12 คน</h2>
+<p>สไลด์หน้า 18–27 เป็นแบบฝึกหัดเต็มพร้อมเฉลย</p>
+<p><strong>โจทย์</strong>: สำรวจคน <strong>12 คน</strong> ว่าอะไรมีผลต่อการที่เขาจะ<strong>ซื้อไอศกรีม</strong></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>Feature</th><th>ค่าที่เป็นได้</th></tr></thead><tbody><tr><td><strong>Weather</strong></td><td>Sunny / Cloudy / Rainy</td></tr><tr><td><strong>DayOfWeek</strong></td><td>Weekend / Weekday</td></tr><tr><td><strong>HasMoney</strong></td><td>Yes / No (มีเงินในกระเป๋าไหม)</td></tr><tr><td><strong>CravingLevel</strong></td><td>ระดับความอยากกิน</td></tr><tr><td><strong>Target: BuysIceCream</strong></td><td><strong>Yes / No</strong></td></tr></tbody></table></div>
+<h3 id="tasks-ที่สไลด์สั่ง">Tasks ที่สไลด์สั่ง</h3>
+<ol>
+<li>คำนวณ Entropy ของ full dataset (ก่อน split)</li>
+<li>สำหรับแต่ละ feature: split ตามค่า → หา entropy ของแต่ละ branch → weighted average → <strong>IG = Root Entropy − Weighted Entropy</strong></li>
+<li>เลือกตัวที่ IG สูงสุด</li>
+<li>วาด split แรก</li>
+<li>recurse จนเข้า stopping condition</li>
+</ol>
+<h3 id="เฉลย">เฉลย</h3>
+<p>➤ <strong>Weather มี IG สูงสุด → เป็น root</strong> · สไลด์วาดให้เห็นว่า <strong>Rainy → No</strong> จบเลย ส่วน Sunny กับ Cloudy ยังเป็น <code>?</code> ต้องถามต่อ</p>
+<p><code>เกร็ดเสริม</code> อาจารย์เล่าตัวอย่างข้อมูลแถวหนึ่งให้ฟัง: ฝนตก + วันเสาร์อาทิตย์ + มีเงิน + อยากกินมาก → แต่คนนี้<strong>ตอบว่าไม่กิน</strong> · "ก็เป็นข้อมูลชุดหนึ่งที่เขาเก็บมา" — คือชี้ว่าข้อมูลจริงมันไม่ได้สวยเสมอไป</p>
+<hr>
+<h2 id="14-decision-tree-ใน-orange">14 Decision Tree ใน Orange</h2>
+<p>อาจารย์เปิด <strong>Orange</strong> สาธิตสดด้วย dataset ไอศกรีมชุดเดียวกัน (มีไฟล์ตัวอย่างให้ในโฟลเดอร์ <code>code/</code>)</p>
+<p>สิ่งที่ต้องทำใน Orange:</p>
+<ol>
+<li>โหลด data — <strong>12 data points</strong>, 4 columns เป็น feature, 1 column เป็น <strong>target</strong></li>
+<li><strong>ระบุ target ให้ชัดเจน</strong> — Orange จะทำเครื่องหมายสีเขียว, ชนิดเป็น <strong>categorical</strong></li>
+<li>ต่อเข้า Tree widget</li>
+</ol>
+<h3 id="parameter-ที่ปรับได้ใน-tree-widget">Parameter ที่ปรับได้ใน Tree widget</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>Parameter</th><th>ผล</th></tr></thead><tbody><tr><td><strong>Induce binary tree</strong> (ติ๊ก/ไม่ติ๊ก)</td><td>ติ๊ก = บังคับให้เป็น binary · ไม่ติ๊ก = แตกได้ตามจำนวนค่าจริงของ feature</td></tr><tr><td><strong>Max tree depth</strong></td><td>ระบุความลึกสูงสุด</td></tr><tr><td><strong>Split subsets smaller than…</strong></td><td><strong>stopping condition</strong> — ถ้า data เหลือน้อยกว่านี้ก็ไม่ split ต่อ</td></tr></tbody></table></div>
+<p><strong>สิ่งที่อาจารย์ให้สังเกต</strong>: พอติ๊ก binary ตัว Weather ที่มี 3 ค่า จะถูกจับ <strong>Cloudy กับ Sunny ไว้ด้วยกัน</strong> เป็นกลุ่มขวา และ <strong>Rainy</strong> เป็นกลุ่มซ้าย แล้วค่อยแยกทีหลัง · พอเอาติ๊กออก มันจะแตกเป็น <strong>3 กิ่งพร้อมกัน</strong>ทันที</p>
+<p>➤ <strong>ต้นไม้ที่ได้จึงหน้าตาไม่เหมือนกัน ขึ้นอยู่กับว่าบังคับ binary หรือไม่</strong> — แต่ทั้งคู่ไม่ผิด</p>
+<p>Orange แสดงตัวเลขที่แต่ละ node ให้ด้วย: เริ่มต้น 12 ตัว (6 Yes / 6 No) → แตกเป็น ซ้าย 4, กลาง 4, ขวา 4 · กิ่ง Sunny สุดท้ายเหลือ 3 Yes / 1 No</p>
+<p>จากนั้นต่อ <strong>Test data → Prediction</strong> ได้เลย (ตัวอย่างมี 6 test cases) และมี <strong>Test Score</strong> ให้ดู</p>
+<hr>
+<h2 id="15-random-forest-พูดถึงผ่านๆ">15 Random Forest (พูดถึงผ่านๆ)</h2>
+<p><em>(จาก transcript — อาจารย์บอกว่า "เราไม่ได้พูดถึงกัน เราพูดแค่ตัวนี้ก็พอเป็น basic ก่อน")</em></p>
+<ul>
+<li>Decision Tree ปกติให้<strong>ต้นไม้ 1 ต้น</strong></li>
+<li>มีคนคิดว่าต้นเดียวอาจทำงานไม่ดี — เหมือนตัดสินใจคนเดียว → <strong>ขอใช้หลายต้นได้ไหม?</strong></li>
+<li><strong>Random Forest</strong> = ใช้ต้นไม้เป็น <strong>100 / 200 / 300 / 500 ต้น</strong> แล้ว<strong>เอาเสียงส่วนมาก</strong> (voting)</li>
+<li>แต่ละต้นต้อง<strong>แตกต่างกัน</strong> — ใช้เกณฑ์/กฎต่างกันในการเลือก feature อาจใช้การ random, ทำต้นสูงต้นเตี้ยผสมกัน</li>
+<li><strong>ความหลากหลายคือหัวใจ</strong> ถ้าทุกต้นเหมือนกันหมดก็ไม่มีประโยชน์</li>
+</ul>
+<hr>
+<h2 id="16-k-means--clustering-คืออะไร">16 K-means — Clustering คืออะไร</h2>
+<p><strong>Clustering ใน data science = การจัดกลุ่ม data points ที่มีความคล้ายกันไว้ด้วยกัน และแยกตัวที่ต่างออกไปอีกกลุ่ม</strong> — เรียกอีกอย่างว่า <strong>cluster analysis</strong></p>
+<p>สไลด์: <em>"K-means clustering is one of the most popular and widely used <strong>unsupervised</strong> machine learning algorithms. It is used to group similar data points together into clusters, <strong>without prior knowledge of the group labels</strong>."</em></p>
+<h3 id="ระวัง--ข้อสอบถามแน่"><code>ระวัง</code> — ข้อสอบถามแน่</h3>
+<p>อาจารย์พูดตรงๆ ว่า <strong>"เดี๋ยวขอ อันนี้เป็นโจทย์ในข้อสอบ อาจจะถามว่าไอ้ K-means มันอยู่ในกลุ่มประเภทอะไร"</strong></p>
+<p>➤ <strong>K-means = unsupervised learning</strong> · <strong>เหตุผล: ไม่มีการใช้ label</strong></p>
+<h3 id="clustering--classification">Clustering ≠ Classification</h3>
+<p>อาจารย์ย้ำว่า <strong>"clustering กับ classification มันแยกกัน"</strong>:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th></th><th>Classification</th><th>Clustering</th></tr></thead><tbody><tr><td>ประเภท</td><td>supervised</td><td><strong>unsupervised</strong></td></tr><tr><td>ใช้ label?</td><td><strong>ใช้</strong></td><td><strong>ไม่ใช้</strong></td></tr><tr><td>วัดถูก/ผิดได้?</td><td>ได้</td><td><strong>ไม่ได้</strong> — "ไม่รู้ว่าถูก ไม่รู้ว่าผิด เอาแค่จัดกลุ่ม"</td></tr><tr><td>วัดอะไรแทน</td><td>accuracy ฯลฯ</td><td><strong>ดีไม่ดี</strong> — "ต้องมาดูว่าตอนเอาไปใช้มันได้ผลไหม"</td></tr><tr><td>ตัวอย่าง</td><td>Decision Tree (เล่น/ไม่เล่น)</td><td>จัดกลุ่มลูกค้า</td></tr></tbody></table></div>
+<p><strong>ตัวอย่างการใช้จริงที่อาจารย์ยก</strong>: เราเป็นเจ้าของ product อยากรู้ว่าคนที่ซื้อของเราเป็นกลุ่มอะไรบ้าง → เอา attribute ของแต่ละคนมา (อยู่ในเมือง/นอกเมือง, single, single mom, พ่อเลี้ยงเดี่ยว …) แล้วให้มันจัดกลุ่มให้ <strong>โดยที่เราไม่รู้คำตอบว่าถูกหรือผิด</strong></p>
+<hr>
+<h2 id="17-k-เป็น-hyperparameter">17 K เป็น hyperparameter</h2>
+<p><strong>K = จำนวน cluster ที่ต้องการ</strong> และ <strong>user เป็นคนเลือกเอง ล่วงหน้า</strong></p>
+<p>สไลด์: <em>"The 'K' in K-means is the number of clusters you want to find (<strong>you choose K in advance</strong>)"</em></p>
+<h3 id="ระวัง--ข้อสอบถามแน่-1"><code>ระวัง</code> — ข้อสอบถามแน่</h3>
+<p>อาจารย์พูดตรงๆ: <strong>"ข้อสอบผมจะถามนะว่ามันมี parameter กับ hyperparameter มันต่างกันอย่างไรด้วย จะมีช้อยส์ให้เลือก"</strong></p>
+<p>➤ <strong>K เป็น hyperparameter</strong> — คนที่ระบุคือ <strong>user / data scientist</strong> ไม่ใช่โมเดลเรียนรู้เอง</p>
+<p>อาจารย์ย้ำอีกทีตอนไล่สไลด์ EDA: <strong>"model parameter คืออะไร hyperparameter คืออะไร ไปอ่านอีกที"</strong></p>
+<p><code>เกร็ดเสริม</code>: <strong>"มันไม่มีอะไรถูกไม่มีอะไรผิด"</strong> — Iris จะจัด 3 กลุ่ม 4 กลุ่ม 5 กลุ่มก็ได้ ขึ้นอยู่กับว่าเอาไปใช้แล้วดีไหม</p>
+<hr>
+<h2 id="18-centroid">18 Centroid</h2>
+<p><strong>Centroid = จุดศูนย์กลางของแต่ละ cluster</strong></p>
+<p>คำที่เกี่ยวข้องที่อาจารย์ไล่ให้ฟัง (เพราะห้องบอกว่าไม่เคยได้ยินคำว่า centroid):</p>
+<ul>
+<li><strong>center</strong> — จุดศูนย์กลาง</li>
+<li><strong>CG = center of gravity</strong> (จุดศูนย์ถ่วง, ในวิชาฟิสิกส์)</li>
+<li><strong>COM = center of mass</strong></li>
+</ul>
+<p><strong>ตัวอย่างสามเหลี่ยม</strong> (สไลด์มีรูปนี้): centroid ของสามเหลี่ยมคือ <strong>จุดตัดของเส้นมัธยฐาน (median)</strong> — ลากจากมุมไปยังจุดกึ่งกลางของด้านตรงข้าม ทั้ง 3 เส้นตัดกันที่จุดเดียว โดยสมมติว่าวัตถุเป็นเนื้อเดียวกัน หนาเท่ากันสม่ำเสมอ</p>
+<p>➤ <strong>3 จุดง่าย แต่ถ้ามีเป็นหมื่นจุดล่ะ?</strong> — นั่นคือที่มาของ algorithm</p>
+<hr>
+<h2 id="19-euclidean-distance">19 Euclidean distance</h2>
+<p><strong>วิธีวัดความคล้าย/ไม่คล้าย = ระยะห่าง (distance)</strong> — <strong>ยิ่งใกล้ยิ่งเหมือน ยิ่งไกลยิ่งต่าง</strong></p>
+<p><strong>Euclidean distance</strong> คือสิ่งที่เรียนมาตั้งแต่มัธยม แค่ไม่ได้ตั้งชื่อให้ — มาจาก <strong>ทฤษฎีบทพีทาโกรัส</strong> (a² + b² = c²):</p>
+<pre><code>d = √[ (x₁ − x₂)² + (y₁ − y₂)² ]
+</code></pre>
+<h3 id="wcss">WCSS</h3>
+<p><strong>WCSS = Within-Cluster Sum of Squares</strong> — "within cluster" = ภายใน cluster นั้นๆ, "SS" = sum of squares</p>
+<p>สไลด์: <em>"K-means divides the data into k clusters by <strong>minimizing the sum of the squared distances</strong> of each record/data point to the mean of its assigned cluster. This is referred to as the within-cluster sum of squares or <strong>within-cluster SS (WCSS)</strong>"</em></p>
+<p><strong>ทำไมต้อง square?</strong> — อาจารย์อธิบายว่า:</p>
+<ul>
+<li>ถ้าไม่ square ก็ต้องหา square root ซึ่ง<strong>วุ่นวายและช้า</strong></li>
+<li>เราไม่ต้องการตัวเลขที่ <strong>precise</strong> — ต้องการแค่เปรียบเทียบได้ว่า<strong>ใกล้หรือไกล</strong></li>
+<li>"ต้องการว่าคนนี้สูงกว่าคนนั้น แต่ไม่ต้องการรู้ว่าสูงกว่าเท่าไหร่"</li>
+<li>➤ <strong>ทำให้คำนวณเร็วมาก</strong></li>
+</ul>
+<p><code>เกร็ดเสริม</code> สไลด์ระบุว่า R ใช้ algorithm ของ <strong>Hartigan and Wong (1979)</strong> ซึ่ง partition ให้ WCSS น้อยที่สุด</p>
+<hr>
+<h2 id="20-normalization-และเหตุผลว่าทำไมต้องทำ">20 Normalization และเหตุผลว่าทำไมต้องทำ</h2>
+<p><strong>ปัญหา: scale ต่างกัน</strong></p>
+<p>ตัวอย่างที่อาจารย์ยก:</p>
+<ul>
+<li><strong>อายุ</strong> ห่างกันมากสุดก็ประมาณ 100</li>
+<li><strong>รายได้</strong> ต่างกันได้เกือบล้าน</li>
+</ul>
+<p>หรือจาก dataset <code>imports-85</code> ที่เคยใช้ตอน linear regression:</p>
+<ul>
+<li><strong>horsepower</strong> อยู่ระหว่าง <strong>48 – 288</strong></li>
+<li><strong>price</strong> อยู่ระหว่าง <strong>5,000 – 40,005</strong></li>
+</ul>
+<p><strong>ทำไมถึงเป็นปัญหา</strong>: machine learning ต้องหา <strong>error</strong> (ผลต่าง) แล้ว<strong>ยกกำลังสอง</strong> — ถ้าตัวหนึ่งอยู่หลักหมื่น ยกกำลังสองก็ไปหลักล้าน ส่วนอีกตัวหลักร้อยยกกำลังสองได้แค่หลักหมื่น</p>
+<p>➤ <strong>มันไม่แฟร์ — โมเดลจะให้น้ำหนักกับ feature ที่มีค่าเยอะเกินไป กลายเป็นเรียนรู้แบบลำเอียง</strong></p>
+<h3 id="ระวัง--อาจารย์เชื่อมเข้ากับข้อสอบทันที"><code>ระวัง</code> — อาจารย์เชื่อมเข้ากับข้อสอบทันที</h3>
+<p><strong>"เป็น bias ในข้อสอบผมก็ถามนะ bias มีอะไรบ้าง พวก data bias, human bias ก็ไปเปิดดูอีกทีนะ"</strong></p>
+<p>➤ <strong>scale ที่ไม่เท่ากันนับเป็น data bias</strong></p>
+<h3 id="วิธีแก้">วิธีแก้</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>วิธี</th><th>ทำอะไร</th></tr></thead><tbody><tr><td><strong>Normalization</strong></td><td>บีบให้อยู่ระหว่าง <strong>0 กับ 1</strong> — ต่ำสุดเป็น 0 สูงสุดเป็น 1 ตรงกลาง interpolate</td></tr><tr><td><strong>Standardization (Z-score)</strong></td><td>ใช้ standard deviation — ต้องเข้าใจ stat ก่อน</td></tr></tbody></table></div>
+<p><strong>ใน Orange</strong>: มี widget <strong>Preprocess</strong> → เลือก <strong>Normalize</strong> → เลือกว่าจะเอาแบบ 0–1 หรือ standard deviation</p>
+<p><code>เกร็ดเสริม</code> Orange จะ normalize <strong>เฉพาะ feature (input) ไม่แตะ target (y)</strong> เพราะ target เป็น output · แต่เลือกเองรายคอลัมน์ก็ได้</p>
+<p><code>เกร็ดเสริม</code> <strong>preprocessing</strong> = กระบวนการที่ทำ<strong>ก่อน</strong>จะไปทำอย่างอื่น · ตัวอย่างอื่น: ถ้ามีรูปภาพขนาดพันคูณพัน แต่โมเดลต้องการ 500×500 ก็ต้อง preprocess ก่อน</p>
+<hr>
+<h2 id="21-ขั้นตอนของ-k-means">21 ขั้นตอนของ K-means</h2>
+<p>สไลด์ให้มา 5 ขั้น:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>Step</th><th>ทำอะไร</th></tr></thead><tbody><tr><td><strong>1</strong></td><td><strong>เลือก k centroids</strong> — สุ่มเลือก k แถวจาก dataset</td></tr><tr><td><strong>2</strong></td><td><strong>assign แต่ละ data point ไปยัง centroid ที่ใกล้ที่สุด</strong></td></tr><tr><td><strong>3</strong></td><td><strong>คำนวณ centroid ใหม่</strong> เป็นค่าเฉลี่ยของทุก data point ใน cluster นั้น</td></tr><tr><td><strong>4</strong></td><td><strong>assign data points ใหม่อีกรอบ</strong> ไปยัง centroid ที่ใกล้ที่สุด</td></tr><tr><td><strong>5</strong></td><td><strong>ทำซ้ำ step 3 และ 4</strong> จนกว่า data points <strong>ไม่ถูกย้ายอีกแล้ว</strong> หรือครบ <strong>maximum number of iterations</strong></td></tr></tbody></table></div>
+<p>อาจารย์อธิบายเพิ่ม <em>(จาก transcript)</em>:</p>
+<ul>
+<li><strong>centroid เริ่มต้นสุ่มได้เลย</strong> — สมมติมีหมื่นจุด ต้องการ k=3 ก็สุ่มมา 3 จุดจากหมื่นจุด</li>
+<li>รอบแรก centroid <strong>"มันอาจจะเพี้ยน"</strong> เพราะพอมีสมาชิกจริงแล้ว บางจุดเอียงซ้ายบางจุดเอียงขวา → ต้องคำนวณจุดกลางจริงๆ ใหม่</li>
+<li>พอ centroid ย้าย <strong>จุดที่เคยเป็นสีฟ้าอาจกลายเป็นสีแดง</strong> ในรอบถัดไปได้</li>
+<li><strong>"มันย้ายไปย้ายมาจนกระทั่งมันนิ่ง ก็จบแค่นั้นเอง"</strong></li>
+<li><strong>"ไม่ใช่แค่ทำแค่รอบเดียวแล้วจบ"</strong></li>
+</ul>
+<h3 id="ระวัง--k-means-เป็น-non-deterministic"><code>ระวัง</code> — K-means เป็น non-deterministic</h3>
+<p>สไลด์ระบุชัด: <em>"The basic k-means clustering is based on a <strong>non-deterministic</strong> algorithm. This means that <strong>running the algorithm several times on the same data could give different results</strong>. The non-deterministic nature of k-means is due to its <strong>random selection of data points as initial centroids</strong>."</em></p>
+<p>และ <em>"<strong>Sensitive to initial centroid placement</strong> (can converge to poor solutions)"</em></p>
+<p>➤ <strong>นี่คือช้อยส์ที่ออกสอบได้ง่ายมาก — รันซ้ำกับข้อมูลเดิมได้ผลไม่เหมือนเดิม เพราะสุ่ม centroid เริ่มต้น</strong></p>
+<p><code>เกร็ดเสริม</code> สไลด์ยังบอกว่า <em>"K-means does not ensure the clusters will have the same size, but finds the clusters that are the <strong>best separated</strong>"</em> — <strong>ไม่การันตีว่าแต่ละกลุ่มจะขนาดเท่ากัน</strong></p>
+<hr>
+<h2 id="22-wcss-และ-elbow-method">22 WCSS และ Elbow method</h2>
+<p><strong>คำถามที่ทุกคนถาม: จะใช้กี่ cluster ดี?</strong></p>
+<h3 id="วิธีที่ไม่ค่อยดี">วิธีที่ไม่ค่อยดี</h3>
+<p>ใช้ความรู้เชิงสถิติ/domain เบื้องต้น — ทำ visualization, ทำ EDA ก่อน แล้วเดาว่าน่าจะมีสัก 5 กลุ่ม แล้วเริ่มจาก 5 · <strong>อาจารย์บอกเองว่า "อันนี้ไม่ใช่คำตอบที่ดี มันเป็นการลองผิดลองถูก"</strong></p>
+<h3 id="elbow-method">Elbow method</h3>
+<p><strong>วิธีที่มั่นใจที่สุด</strong>:</p>
+<ol>
+<li><strong>ลอง k ตั้งแต่ 1, 2, 3, … ไปเรื่อยๆ</strong> (เช่นถึง 10)</li>
+<li>แต่ละ k คำนวณ <strong>WCSS</strong> (error รวมของทุก cluster บวกกัน)</li>
+<li><strong>plot</strong> ค่า WCSS เทียบกับ k</li>
+<li><strong>ดูจุดที่ error เริ่มนิ่ง — ความชันเริ่มราบ</strong> นั่นคือ "ข้อศอก"</li>
+</ol>
+<p>สไลด์: <em>"By considering the Within Cluster Sum of Squares (WCSS), we can select the number of clusters where <strong>the change in WCSS begins to level off</strong> (called the elbow method)"</em></p>
+<p>ในตัวอย่างของสไลด์: <em>"a good number of clusters is <strong>3 at best or 4 if needed</strong>"</em></p>
+<p><code>เกร็ดเสริม</code> <strong>elbow แปลว่าข้อศอก</strong> — อาจารย์ให้จำจากรูปกราฟที่หักงอเหมือนข้อศอก</p>
+<p><code>เกร็ดเสริม</code> สไลด์บอกว่ามีวิธีอื่นด้วยคือ <strong>Silhouette Score</strong> แต่อาจารย์บอก "ยังไม่ต้องเรียนตอนนี้"</p>
+<h3 id="ตัวอย่าง-iris">ตัวอย่าง Iris</h3>
+<ul>
+<li><strong>Iris dataset</strong> — ดอกไม้ 3 สายพันธุ์ วัด <strong>petal (กลีบดอก)</strong> และ <strong>sepal (กลีบเลี้ยง)</strong> ทั้งความกว้างและความยาว</li>
+<li>ตอนแสดงผลเป็น 2 มิติ เลือกใช้แค่ 2 ตัวแปร (ความกว้าง/ความยาวของกลีบดอก) ก็<strong>เกือบแยกได้ครบแล้ว</strong></li>
+<li>Elbow plot ของ Iris ชี้ไปที่ <strong>k = 3</strong> ซึ่ง<strong>ตรงกับความจริง</strong> (3 สายพันธุ์) · k = 4 ก็ไม่ผิด</li>
+</ul>
+<hr>
+<h2 id="23-k-modes-และ-k-prototypes">23 K-modes และ K-prototypes</h2>
+<h3 id="ปัญหา-k-means-ใช้กับข้อมูล-categorical-ไม่ได้">ปัญหา: K-means ใช้กับข้อมูล categorical ไม่ได้</h3>
+<p>สไลด์: <em>"<strong>Not suitable for non-numerical (categorical) data.</strong> Even if you encode categories numerically (like one-hot encoding), the <strong>Euclidean distance may become misleading</strong>."</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>Algorithm</th><th>ใช้กับ</th><th>วัดความต่างด้วย</th></tr></thead><tbody><tr><td><strong>K-means</strong></td><td><strong>numerical</strong></td><td><strong>Euclidean distance</strong> — ใช้ <strong>mean</strong></td></tr><tr><td><strong>K-modes</strong></td><td><strong>categorical / nominal</strong></td><td><strong>จำนวน mismatch</strong> (คล้าย <strong>Hamming distance</strong>) — ใช้ <strong>mode</strong></td></tr><tr><td><strong>K-prototypes</strong></td><td><strong>ผสมทั้งสองแบบ</strong></td><td>รวม K-means + K-modes</td></tr></tbody></table></div>
+<h3 id="k-modes-ทำงานยังไง">K-modes ทำงานยังไง</h3>
+<p><strong>นับว่ามันต่างหรือไม่ต่าง แค่นั้น</strong>:</p>
+<ul>
+<li>ถ้าเหมือนกัน → <strong>mismatch = 0</strong></li>
+<li>ถ้าต่างกัน → <strong>mismatch = 1</strong></li>
+</ul>
+<p>ตัวอย่างที่อาจารย์ยก: จัดกลุ่มด้วย <code>city</code> และ <code>gender</code></p>
+<ul>
+<li>New York vs New York → mismatch = 0</li>
+<li>New York vs Chicago → mismatch = 1</li>
+<li>ถ้าทั้ง Female เหมือนกัน <strong>และ</strong> New York เหมือนกัน → mismatch รวม = 0 → <strong>ใกล้กันที่สุด</strong></li>
+</ul>
+<p>➤ <strong>mismatch ยิ่งน้อยยิ่งใกล้กัน · mismatch ยิ่งมากยิ่งห่างกัน</strong></p>
+<p><code>เกร็ดเสริม</code> เพศ (male/female) เป็น <strong>nominal data</strong> และใช้จัดกลุ่มได้ — ความต่างเป็น 0 หรือ 1 · อาจารย์บอกว่า <strong>"อันนี้ออกสอบนะ ที่เราเรียนกันไป ออกข้อสอบก็จะมีพวก ratio data, interval data"</strong></p>
+<h3 id="k-prototypes">K-prototypes</h3>
+<p>สไลด์: <em>"Each cluster center is called a <strong>prototype</strong> because it represents the '<strong>typical</strong>' or most representative point of that cluster"</em></p>
+<p><strong>cost function</strong> ที่สไลด์ให้:</p>
+<pre><code>cost = (age₁ − age₂)² + (income₁ − income₂)² + (number of mismatches)
+</code></pre>
+<p>คือ <strong>เอาส่วน numerical (squared distance) บวกกับส่วน categorical (mismatch count)</strong></p>
+<hr>
+<h2 id="24-hard-vs-soft-clustering">24 Hard vs Soft clustering</h2>
+<p>สไลด์แบ่งวิธี assign จุดเข้า cluster เป็น 2 แบบ:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>แบบ</th><th>ชื่อ</th><th>อธิบาย</th><th>ตัวอย่าง</th></tr></thead><tbody><tr><td><strong>1</strong></td><td><strong>Hard clustering</strong></td><td>หนึ่งจุด <strong>อยู่ได้แค่ cluster เดียว</strong> ต้องเลือก</td><td><strong>K-means</strong></td></tr><tr><td><strong>2</strong></td><td><strong>Fuzzy / Soft clustering</strong></td><td>หนึ่งจุด <strong>กระจายอยู่ได้หลาย cluster</strong> ตาม weight ที่กำหนด</td><td><strong>Fuzzy C-means (FCM)</strong></td></tr></tbody></table></div>
+<p><strong>ตัวอย่างแอปเปิ้ลของสไลด์</strong>: แอปเปิ้ลลูกหนึ่งจะแดง<strong>หรือ</strong>เขียว (hard) — แต่จริงๆ มันแดง<strong>และ</strong>เขียวได้ (fuzzy) คือแดงระดับหนึ่ง เขียวระดับหนึ่ง</p>
+<p>อาจารย์อธิบายเพิ่ม <em>(จาก transcript)</em>: จุดหนึ่งอาจอยู่กลุ่มนี้ <strong>80%</strong> กลุ่มนั้น <strong>20%</strong> — คลุมเครือ ไม่ชัดเจน</p>
+<p><code>เกร็ดเสริม</code> <strong>ทำไมใช้ C ไม่ใช้ K?</strong> อาจารย์บอกว่าตอนแรกก็งงเหมือนกัน — <strong>C มาจาก class / category</strong> ก็คือจำนวน center นั่นแหละ ความหมายเดียวกับ K</p>
+<p><code>เกร็ดเสริม</code> อาจารย์เทียบ <strong>fuzzy logic</strong> กับ <strong>quantum</strong>: binary คือ 0 กับ 1 ส่วน quantum มีอะไรอยู่ระหว่างกลางได้ · fuzzy logic ก็ไปในทิศทางเดียวกัน คือมีค่าระหว่าง 0 กับ 1</p>
+<hr>
+<h2 id="25-ไล่สไลด์เก่า--จุดที่อาจารย์บอกว่าจะออกข้อสอบ">25 ไล่สไลด์เก่า — จุดที่อาจารย์บอกว่าจะออกข้อสอบ</h2>
+<p>20 นาทีสุดท้ายอาจารย์เปิดสไลด์เซต Intro และ EDA ไล่ทีละหน้าแล้วบอกว่าจะถามตรงไหน <strong>นี่คือส่วนที่มีค่าที่สุดของทั้งคาบ</strong></p>
+<blockquote>
+<p>วิธีออกข้อสอบของอาจารย์: <strong>"เวลาออกข้อสอบผมก็ไปเปิดดูแล้วก็มาดูทีละหน้า ทีอันออกถามเป็นช้อยส์ 4 ช้อยส์"</strong> — คือไล่จากสไลด์ทีละหน้าจริงๆ</p>
+</blockquote>
+<h3 id="จากเซต-intro-to-ds-engineering-and-ai">จากเซต Intro to DS, Engineering and AI</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>หัวข้อ</th><th>อาจารย์พูดว่า</th></tr></thead><tbody><tr><td><strong>Skills ของ data scientist</strong></td><td>สไลด์มีวลี <strong>"Jack of all trades, master of ..."</strong> — เหมือนเป็ด ทำได้หลายอย่างแต่ไม่เก่งสักอย่าง · <strong>"โจทย์ก็จะถามว่า data scientist ต้องมี skill อะไรบ้าง ต้องมีความรู้อะไรบ้าง"</strong> (stat, computer, domain knowledge)</td></tr><tr><td><strong>Data Scientist vs Data Engineer</strong></td><td><strong>"ต่างกันอย่างไร ต้องให้ได้"</strong> · DE ทำต้นน้ำ — โครงสร้างพื้นฐาน จัดเก็บข้อมูล</td></tr><tr><td><strong>Data Science Pipeline</strong></td><td>ต้นน้ำ กลางน้ำ ปลายน้ำ มีอะไรบ้าง</td></tr><tr><td><strong>Data Lifecycle</strong></td><td>คล้าย SDLC · <strong>"ผมถามตัวนี้ด้วย"</strong></td></tr><tr><td><strong>จำนวนคนในทีม</strong></td><td><strong>"data science, data engineering ใครมีมากกว่าใคร จำนวนประมาณเท่าไหร่คร่าวๆ"</strong> — ไปดูอีกที</td></tr><tr><td><strong>Data bias / Human bias / Algorithmic bias</strong></td><td><strong>"ต้องจำ ไปดูอีกที"</strong> · bias คือ error ที่อาจไม่ตั้งใจ เกิดจากความเคยชิน · <strong>"data bias คืออะไร มีประเภทอะไร"</strong> · algorithmic bias เกิดจากการ train · <strong>"แล้วก็จะมีวิธีการลด เราไปดูนะ ทำยังไงถ้าต้องการลดปัญหาเรื่อง bias"</strong></td></tr><tr><td><strong>Overfitting / Underfitting</strong></td><td><strong>"มีถามก็คือ overfitting คืออะไร"</strong></td></tr><tr><td><strong>PDPA</strong> และ <strong>AI Winter</strong></td><td>"พวกเราก็น่าจะรู้ละ"</td></tr><tr><td><strong>"Data is the new oil"</strong></td><td><strong>"ความหมายมันคืออะไร ไปดูอีกที"</strong></td></tr><tr><td><strong>"AI is the new electricity"</strong></td><td><strong>"อันนี้ก็ออก มันคืออะไร ไปดูอีกที"</strong></td></tr><tr><td><strong>Democratize AI</strong></td><td>เจ้าของ NVIDIA (Jensen Huang) พูดถึง — ทุกคนต้องเข้าถึง AI ได้ ไม่จำกัดแค่ชนชั้นสูง</td></tr><tr><td><strong>Big Data — the V's</strong></td><td><strong>"เอา big data ที่จะถามด้วย ... มี 5 V มี 7 V"</strong></td></tr><tr><td><strong>Insight / Actionable insight</strong></td><td><strong>"ผมก็ถามไอ้ตัว insight เนี่ย ต้องไปดูกันคืออะไร actionable insight คืออะไร"</strong></td></tr><tr><td><strong>Data mining</strong></td><td><strong>"ผมถาม data mining ต้องดูอีกที"</strong> — เทคนิคหา pattern ใน big data / data warehouse</td></tr><tr><td><strong>KDD</strong></td><td><strong>"ถามตัวนี้เลย KDD ไปดูมันคืออะไรด้วย"</strong> (Knowledge Discovery in Databases)</td></tr><tr><td><strong>Orange</strong></td><td><strong>"มีข้อหนึ่งถามออเรนจ์ น่าจะง่ายเลย คุณได้สักทีนึง หนึ่งแต้มเลย"</strong></td></tr></tbody></table></div>
+<h3 id="จากเซต-eda--model-fitting">จากเซต EDA – Model Fitting</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>หัวข้อ</th><th>อาจารย์พูดว่า</th></tr></thead><tbody><tr><td><strong>Box plot</strong></td><td><strong>"ผมถาม box plot เลยนะ"</strong> · <strong>"box plot มีไว้เพื่ออะไร scatter plot เพื่ออะไร ต้องไปดูเอาเองนะ"</strong></td></tr><tr><td><strong>Scatter plot</strong></td><td><strong>"ผมก็ถาม scatter plot ด้วย"</strong> · <strong>"ทำไมเราต้องพล็อตด้วย ... ทำไมไม่ใช้ตัวอื่น ลองไปหาคำตอบเอาเอง"</strong></td></tr><tr><td><strong>EDA คำนิยาม</strong></td><td><strong>"แน่นอน ถาม EDA นะ ต้องให้คำนิยามได้"</strong> — การสำรวจ data เบื้องต้น ดูว่า data ดีไม่ดี พอไม่พอ ต้องหา feature เพิ่มไหม มี bias เยอะไหม โดยใช้ visualization + stat มาช่วย</td></tr><tr><td><strong>Predictive vs Descriptive</strong></td><td><strong>"บางทีก็อาจจะถามพวกความแตกต่างระหว่าง predictive กับ descriptive นะครับ มันอย่างไร ต้องอธิบายได้"</strong></td></tr><tr><td><strong>Model fitting / Data fitting / Data modeling</strong></td><td><strong>"เรามีโมเดลฟิตติ้ง แต่ถ้าฟิตติ้งจำได้มั้ย แล้วก็ data modeling มันต่างกันยังไงด้วย"</strong> · <strong>"อาจต้องให้รู้ความต่างกัน"</strong></td></tr><tr><td><strong>Model parameter vs Hyperparameter</strong></td><td><strong>"model parameter คืออะไร hyperparameter คืออะไร ไปอ่านอีกทีนะ"</strong></td></tr><tr><td><strong>OLTP vs OLAP</strong></td><td><strong>"ถ้าจำไม่ผิดก็จะถามพวกนี้ OLTP, OLAP ลองไปดู"</strong></td></tr><tr><td><strong>Data types</strong></td><td><strong>"อันนี้สำคัญ เพราะเราพูดกันบ่อย"</strong> — <strong>qualitative (categorical)</strong> vs <strong>quantitative</strong> · <strong>nominal</strong> (มาจาก "แค่มองเห็นแต่ไม่มีลำดับ" เช่น gender) · <strong>ordinal</strong> (มาจาก order = ลำดับ) · <strong>interval</strong> · <strong>ratio</strong> · <strong>"ต้องดูว่ามัน ratio คืออะไร interval คืออะไร ผมก็จะถามนะ"</strong></td></tr><tr><td><strong>ศูนย์จริง (true zero)</strong></td><td><strong>Celsius ไม่ใช่ศูนย์จริง</strong> (ยังมีพลังงานความร้อนอยู่) · <strong>Kelvin เป็นศูนย์จริง</strong> (ไม่มีพลังงานความร้อนเลย) · 0 K ≈ −273 °C · อาจารย์เล่าว่า quantum computer ต้องทำให้เย็นถึงประมาณ 2 K</td></tr><tr><td><strong>Distribution เบ้ซ้าย/เบ้ขวา</strong></td><td>ดูว่า mean ไปทางไหน · ถ้า perfect ทุกตัวจะตกที่เดียวกัน</td></tr><tr><td><strong>Mean / Median / Mode</strong></td><td>น่าจะรู้แล้ว · <strong>median = ค่าที่ผ่ากลาง</strong> ซึ่ง K-means/K-modes ยืมคำมาใช้</td></tr><tr><td><strong>Box plot รายละเอียด</strong></td><td><strong>"อันนี้ต้องเข้าใจ"</strong> — <strong>Q1, Q2, Q3, IQR</strong> · <strong>fence</strong> ซ้าย/ขวา = <strong>1.5 × IQR</strong> (บางคนใช้ 3 แต่ 1.5 นิยมกว่า) เอาไปบวก/ลบจากขอบกล่อง · จุดที่อยู่<strong>นอกรั้ว = outlier</strong> · <strong>min/max นับเฉพาะจุดที่อยู่ในรั้ว ไม่นับ outlier</strong> · <strong>five-number summary</strong> = 5 ตัวเลขในภาพนี้</td></tr><tr><td><strong>Outlier</strong></td><td>ตอนวิเคราะห์<strong>ตัดทิ้ง</strong> แต่<strong>ต้องไปหาสาเหตุว่าเกิดอะไรขึ้น</strong> และเอาไปวิเคราะห์แยกกลุ่ม — "อาจจะทำให้เราเห็นอะไรบางอย่างได้"</td></tr><tr><td><strong>Correlation</strong></td><td><strong>ไม่ต้องจำสูตร</strong> · รู้ว่าอยู่ระหว่าง <strong>−1 ถึง 1</strong> · <strong>0 = ไม่มี correlation</strong> · บวก = ไปทางเดียวกัน · ลบ = สวนทาง · มี <strong>Pearson</strong> กับ <strong>Spearman</strong> เราใช้ Pearson</td></tr><tr><td><strong>Linear regression</strong></td><td>ทำนาย<strong>ค่าที่เป็นตัวเลข</strong> (ราคารถ ราคาบ้าน) = งาน <strong>regression</strong> ซึ่งเป็นส่วนหนึ่งของ <strong>predictive</strong> · <strong>regression แปลไทยว่า "ถดถอย"</strong> — ถดถอยของ error ให้ลดลงเรื่อยๆ จนน้อยที่สุด · จากเส้นเป็นร้อยเป็นพันเส้นที่ลากผ่าน data ได้ <strong>มีเส้นเดียวที่ error น้อยสุด</strong></td></tr><tr><td><strong>ทำไมใช้ linear</strong></td><td>เพราะง่ายสุด (กำลัง 1) และงานส่วนมากก็พอแล้ว · งานซับซ้อนขึ้นใช้ <strong>polynomial</strong> (กำลัง 2 โค้ง 1 ที่, กำลัง 3 โค้งไปโค้งมา) — <strong>แต่ polynomial ไม่ออกสอบ</strong></td></tr><tr><td><strong>Coefficient และดาว</strong></td><td>อาจถาม <strong>"อ่านค่าออกมาอย่างไร เอาสัมประสิทธิ์มาใช้อย่างไร"</strong> · <strong>ดาว (significance)</strong>: 1 ดาว = ใช้ได้ · 2 ดาว = ดีกว่า · 3 ดาว = ดีมาก · <strong>ไม่มีดาวเลย = ไม่สำคัญพอที่จะเอามาใช้ทำนาย</strong></td></tr><tr><td><strong>p-value, R²</strong></td><td><strong>ไม่ถาม</strong></td></tr><tr><td><strong>Reinforcement learning</strong></td><td>มี <strong>reward</strong> — ทำดีได้รางวัล ทำผิดหักแต้ม · ใน Gen AI คือปุ่ม 👍👎 ที่เก็บเป็นข้อมูลไปปรับโมเดล</td></tr><tr><td><strong>ตำแหน่งของ K-means ในแผนภาพ AI</strong></td><td>K-means <strong>แยกอยู่ต่างหาก</strong> (unsupervised) จาก classification/regression</td></tr></tbody></table></div>
+<hr>
+<h2 id="glossary">Glossary</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>คำ</th><th>ความหมาย</th></tr></thead><tbody><tr><td><strong>Supervised learning</strong></td><td>เรียนรู้แบบมีผู้สอน — <strong>ใช้ label</strong> · Decision Tree อยู่กลุ่มนี้</td></tr><tr><td><strong>Unsupervised learning</strong></td><td>เรียนรู้แบบไม่มีผู้สอน — <strong>ไม่ใช้ label</strong> · K-means อยู่กลุ่มนี้</td></tr><tr><td><strong>Label / Target / Class label</strong></td><td>คำตอบที่ติดมากับข้อมูลตอน train · ใน classification เป็น <strong>categorical</strong> ใน regression เป็น <strong>numeric</strong></td></tr><tr><td><strong>Feature</strong></td><td>ตัวแปร/คอลัมน์ที่เอามาใช้ทำนาย (x₁, x₂, …)</td></tr><tr><td><strong>Data point</strong></td><td>หนึ่งแถวของข้อมูล</td></tr><tr><td><strong>Root node</strong></td><td>node แรกของต้นไม้ — คำถามที่สำคัญที่สุด</td></tr><tr><td><strong>Leaf node</strong></td><td>node ปลายสุด เป็น label ไม่ใช่คำถาม</td></tr><tr><td><strong>Entropy</strong></td><td>ความวุ่นวาย/ไม่บริสุทธิ์ของกลุ่ม · <strong>0 = pure, 1 = 50/50 mess</strong></td></tr><tr><td><strong>Information Gain (IG)</strong></td><td>Entropy(parent) − Weighted Entropy(children) · <strong>ยิ่งมากยิ่งดี</strong></td></tr><tr><td><strong>ID3</strong></td><td>algorithm สร้าง decision tree ด้วย IG โดย <strong>R. Quinlan, 1986</strong> (ไม่ต้องจำชื่อ)</td></tr><tr><td><strong>Stopping condition</strong></td><td>เงื่อนไขให้หยุด split — pure node, max depth, minimum samples</td></tr><tr><td><strong>Overfitting</strong></td><td>เรียนรู้ training data มากเกินไป · <strong>เสื้อที่ตัดฟิตเป๊ะกับคนเดียว ใส่คนอื่นไม่ได้</strong></td></tr><tr><td><strong>Underfitting</strong></td><td>เรียนรู้น้อยเกินไป · <strong>เสื้อหลวมเกินไป</strong></td></tr><tr><td><strong>Random Forest</strong></td><td>ใช้ต้นไม้หลายร้อยต้นแล้ว vote เอาเสียงส่วนมาก</td></tr><tr><td><strong>Rule-based</strong></td><td>ทำงานด้วย if–then · ทั้ง <strong>Decision Tree</strong> และ <strong>Association Rules</strong> เป็น rule-based</td></tr><tr><td><strong>Cluster</strong></td><td>กลุ่มของ data points ที่คล้ายกัน</td></tr><tr><td><strong>Clustering / Cluster analysis</strong></td><td>การจัดกลุ่มโดยไม่รู้ label ล่วงหน้า</td></tr><tr><td><strong>K (ใน K-means)</strong></td><td><strong>จำนวน cluster</strong> — เป็น <strong>hyperparameter</strong> ที่ user เลือกเอง</td></tr><tr><td><strong>Hyperparameter</strong></td><td>ค่าที่ <strong>user/data scientist กำหนดเอง</strong> ไม่ใช่โมเดลเรียนรู้เอง</td></tr><tr><td><strong>Centroid</strong></td><td>จุดศูนย์กลางของ cluster · เทียบได้กับ center of gravity / center of mass</td></tr><tr><td><strong>Euclidean distance</strong></td><td>ระยะห่างแบบพีทาโกรัส √[(x₁−x₂)² + (y₁−y₂)²]</td></tr><tr><td><strong>WCSS</strong></td><td>Within-Cluster Sum of Squares — ผลรวมกำลังสองของระยะจากทุกจุดถึง centroid ของมัน</td></tr><tr><td><strong>Elbow method</strong></td><td>plot WCSS เทียบกับ k แล้วเลือกจุดที่กราฟเริ่มราบ</td></tr><tr><td><strong>Silhouette Score</strong></td><td>อีกวิธีเลือก k (ยังไม่เรียน)</td></tr><tr><td><strong>Non-deterministic</strong></td><td>รันซ้ำกับข้อมูลเดิมได้ผลต่างกัน — เพราะ K-means สุ่ม centroid เริ่มต้น</td></tr><tr><td><strong>K-modes</strong></td><td>K-means เวอร์ชัน categorical — วัดด้วย <strong>จำนวน mismatch</strong> (Hamming distance) ใช้ <strong>mode</strong></td></tr><tr><td><strong>K-prototypes</strong></td><td>ผสม K-means + K-modes สำหรับข้อมูลผสม · center เรียกว่า <strong>prototype</strong></td></tr><tr><td><strong>Hard clustering</strong></td><td>หนึ่งจุดอยู่ได้ cluster เดียว (K-means)</td></tr><tr><td><strong>Fuzzy / Soft clustering</strong></td><td>หนึ่งจุดอยู่ได้หลาย cluster ตาม weight (<strong>Fuzzy C-means</strong>)</td></tr><tr><td><strong>Normalization</strong></td><td>บีบค่าให้อยู่ใน 0–1</td></tr><tr><td><strong>Standardization (Z-score)</strong></td><td>ปรับด้วย standard deviation</td></tr><tr><td><strong>Preprocessing</strong></td><td>สิ่งที่ทำกับข้อมูล<strong>ก่อน</strong>เอาไปเข้าโมเดล</td></tr></tbody></table></div>
+<hr>
+<h2 id="สรุปท้ายบท">สรุปท้ายบท</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>หัวข้อ</th><th>ประเด็นสำคัญ</th></tr></thead><tbody><tr><td><strong>Exam 1</strong></td><td><strong>วันศุกร์</strong> · <strong>50 ข้อ multiple choice</strong> single-select 4 ช้อยส์ · <strong>ฝนดินสอ 2B</strong> · <strong>3 ชั่วโมง</strong> · closed book · ไม่ต้องใช้เครื่องคิดเลข</td></tr><tr><td><strong>ขอบเขต</strong></td><td><strong>5 sets</strong>: Intro · EDA-Model Fitting · Association Rules · Decision Trees · K-means · <strong>Classification and Metrics ไม่ออก</strong></td></tr><tr><td><strong>สูตร</strong></td><td>ออก: <strong>Support</strong> (และ confidence ต้องจำ) · <strong>ไม่ออก</strong>: entropy, IG, correlation, p-value, R², polynomial</td></tr><tr><td><strong>Decision Tree</strong></td><td><strong>supervised</strong> · ทำได้ทั้ง <strong>classification และ regression</strong> · <strong>rule-based</strong></td></tr><tr><td><strong>หัวใจของ DT</strong></td><td>เลือก feature ที่ให้ <strong>IG สูงสุด</strong> มาเป็น root · <strong>ต้นไม้เตี้ยดีกว่าสูง</strong> · ห้ามใช้ attribute ซ้ำในเส้นทางเดียวกัน</td></tr><tr><td><strong>Entropy</strong></td><td><strong>0 = pure</strong> · <strong>1 = maximum mess (50/50)</strong> · คำพ้อง: disorder, messy, impure, randomness, uncertainty</td></tr><tr><td><strong>Information Gain</strong></td><td><strong>Entropy(parent) − Weighted Entropy(children)</strong></td></tr><tr><td><strong>PlayTennis</strong></td><td>9 Yes / 5 No จาก 14 · <strong>Entropy ≈ 0.94</strong> · <strong>IG(Outlook) = 0.247 สูงสุด → root</strong> · Overcast pure → leaf ทันที</td></tr><tr><td><strong>ไอศกรีม</strong></td><td>12 คน · features: Weather / DayOfWeek / HasMoney / CravingLevel · <strong>Weather มี IG สูงสุด → root</strong></td></tr><tr><td><strong>Overfitting</strong></td><td>เสื้อที่ตัดฟิตเป๊ะกับคนเดียว — <strong>ไม่ general</strong></td></tr><tr><td><strong>K-means</strong></td><td><strong>unsupervised</strong> เพราะ<strong>ไม่ใช้ label</strong> · <strong>K เป็น hyperparameter</strong> ที่ user เลือกเอง</td></tr><tr><td><strong>K-means algorithm</strong></td><td>สุ่ม k centroids → assign จุดไปตัวที่ใกล้สุด → คำนวณ centroid ใหม่ → assign ใหม่ → <strong>ทำซ้ำจนไม่มีการย้าย</strong></td></tr><tr><td><strong>Non-deterministic</strong></td><td>รันซ้ำได้ผลต่างกัน เพราะสุ่ม centroid เริ่มต้น · sensitive to initial placement</td></tr><tr><td><strong>ระยะทาง</strong></td><td><strong>Euclidean distance</strong> (พีทาโกรัส) · square เพื่อเลี่ยง square root ให้คำนวณเร็ว</td></tr><tr><td><strong>เลือก k</strong></td><td><strong>Elbow method</strong> — plot WCSS แล้วดูจุดที่เริ่มราบ</td></tr><tr><td><strong>ข้อมูล categorical</strong></td><td>K-means ใช้ไม่ได้ → <strong>K-modes</strong> (นับ mismatch) · ผสมกัน → <strong>K-prototypes</strong></td></tr><tr><td><strong>Hard vs Soft</strong></td><td>K-means = hard (1 จุด 1 กลุ่ม) · <strong>Fuzzy C-means</strong> = soft (1 จุดหลายกลุ่มตาม %)</td></tr><tr><td><strong>Normalization</strong></td><td>ต้องทำเพราะ scale ต่างกันทำให้โมเดล<strong>ลำเอียง</strong> — นับเป็น <strong>data bias</strong></td></tr><tr><td><strong>ที่อาจารย์บอกว่าจะถามตรงๆ</strong></td><td>box plot ใช้ทำอะไร · scatter plot ใช้ทำอะไร · predictive vs descriptive · parameter vs hyperparameter · K-means อยู่กลุ่มไหน · overfitting คืออะไร · bias มีอะไรบ้าง · Orange 1 ข้อ</td></tr></tbody></table></div></article><nav class="pagination" aria-label="บทก่อนหน้าและถัดไป"><a href="w04-association-rules.html"><small>← บทก่อนหน้า</small>Association Rules — Market Basket Analysis, Apriori และ Support/Confidence/Lift</a><a href="w06-classification-and-model-validation.html"><small>บทถัดไป →</small>Classification และการตรวจสอบโมเดล</a></nav></main><aside class="toc-sidebar"><nav class="toc" aria-label="สารบัญบทนี้"><strong>ในบทนี้</strong><a href="#agenda">Agenda</a><a href="#01-exam-1--รายละเอียดทั้งหมดที่อาจารย์แจ้ง">01 Exam 1 — รายละเอียดทั้งหมดที่อาจารย์แจ้ง</a><a href="#02-ขอบเขตข้อสอบ--5-slide-sets">02 ขอบเขตข้อสอบ — 5 slide sets</a><a href="#03-สูตรไหนออก-สูตรไหนไม่ออก">03 สูตรไหนออก สูตรไหนไม่ออก</a><a href="#04-ทวน-association-rules">04 ทวน Association Rules</a><a href="#05-decision-tree--คืออะไร-อยู่ตรงไหนของภาพใหญ่">05 Decision Tree — คืออะไร อยู่ตรงไหนของภาพใหญ่</a><a href="#06-กายวิภาคของต้นไม้">06 กายวิภาคของต้นไม้</a><a href="#07-ทำไมต้นไม้เตี้ยถึงดีกว่าต้นไม้สูง">07 ทำไมต้นไม้เตี้ยถึงดีกว่าต้นไม้สูง</a><a href="#08-entropy--ความวุ่นวายของกลุ่ม">08 Entropy — ความวุ่นวายของกลุ่ม</a><a href="#09-information-gain--คำถามนี้ลดความวุ่นวายได้เท่าไหร่">09 Information Gain — คำถามนี้ลดความวุ่นวายได้เท่าไหร่</a><a href="#10-ขั้นตอนการสร้างต้นไม้-id3">10 ขั้นตอนการสร้างต้นไม้ (ID3)</a><a href="#11-ตัวอย่างเต็ม--playtennis">11 ตัวอย่างเต็ม — PlayTennis</a><a href="#12-stopping-condition-และ-overfitting">12 Stopping condition และ overfitting</a><a href="#13-แบบฝึกหัด--ไอศกรีม-12-คน">13 แบบฝึกหัด — ไอศกรีม 12 คน</a><a href="#14-decision-tree-ใน-orange">14 Decision Tree ใน Orange</a><a href="#15-random-forest-พูดถึงผ่านๆ">15 Random Forest (พูดถึงผ่านๆ)</a><a href="#16-k-means--clustering-คืออะไร">16 K-means — Clustering คืออะไร</a><a href="#17-k-เป็น-hyperparameter">17 K เป็น hyperparameter</a><a href="#18-centroid">18 Centroid</a><a href="#19-euclidean-distance">19 Euclidean distance</a><a href="#20-normalization-และเหตุผลว่าทำไมต้องทำ">20 Normalization และเหตุผลว่าทำไมต้องทำ</a><a href="#21-ขั้นตอนของ-k-means">21 ขั้นตอนของ K-means</a><a href="#22-wcss-และ-elbow-method">22 WCSS และ Elbow method</a><a href="#23-k-modes-และ-k-prototypes">23 K-modes และ K-prototypes</a><a href="#24-hard-vs-soft-clustering">24 Hard vs Soft clustering</a><a href="#25-ไล่สไลด์เก่า--จุดที่อาจารย์บอกว่าจะออกข้อสอบ">25 ไล่สไลด์เก่า — จุดที่อาจารย์บอกว่าจะออกข้อสอบ</a><a href="#glossary">Glossary</a><a href="#สรุปท้ายบท">สรุปท้ายบท</a></nav></aside></div>
+<footer class="site-footer"><span>INT182 · Data Science & AI<br>สรุปเพื่อทบทวนจากเอกสารประกอบการเรียน</span><a href="https://github.com/Phakinza007/int182-study-notes">GitHub ↗</a></footer>
+<dialog id="search-dialog" aria-labelledby="search-title"><div class="dialog-heading"><h2 id="search-title">ค้นหาในสรุป</h2><button data-close-dialog aria-label="ปิดการค้นหา">×</button></div><label for="search-input">คำค้น เช่น precision, PEAS, kNN</label><input id="search-input" type="search" autocomplete="off"><p id="search-status" role="status">พิมพ์คำเพื่อเริ่มค้นหา</p><ul id="search-results"></ul></dialog>
+<dialog id="image-dialog" aria-labelledby="image-title"><div class="dialog-heading"><h2 id="image-title">ภาพประกอบ</h2><button data-close-dialog aria-label="ปิดภาพ">×</button></div><div class="image-controls"><button data-zoom="out" aria-label="ย่อภาพ">−</button><button data-zoom="in" aria-label="ขยายภาพ">+</button><button data-zoom="reset">พอดีจอ</button><a id="image-original" target="_blank" rel="noopener">เปิดภาพต้นฉบับ ↗</a></div><div class="image-stage"><img id="zoom-image" alt=""></div><p id="image-caption"></p></dialog>
+</body></html>

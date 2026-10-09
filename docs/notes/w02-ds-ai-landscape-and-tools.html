@@ -1,0 +1,759 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="สรุป INT182 Data Science และ AI สัปดาห์ 1–9 พร้อมไดอะแกรมและสูตรสำคัญ"><meta name="theme-color" content="#f7f6f3"><title>ภาพรวม DS/AI (ต่อ) + เครื่องมือ Orange · INT182</title><link rel="icon" href="../favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="../style.css"><script src="../app.js" defer></script></head>
+<body data-base="../" data-page="note"><a class="skip" href="#main">ข้ามไปเนื้อหา</a>
+<header class="topbar"><div class="topbar-inner"><a class="brand" href="../index.html"><span class="brand-mark">182</span><span>INT182 <small>Study notes</small></span></a><nav aria-label="เมนูหลัก"><button class="search-trigger" data-search-open aria-haspopup="dialog">ค้นหาเนื้อหา <kbd>/</kbd></button><a class="lang" href="w02-ds-ai-landscape-and-tools.en.html" lang="en">English</a></nav></div></header>
+<div class="reader-layout"><aside class="reader-sidebar"><details class="week-menu" open><summary>ทุกสัปดาห์</summary><nav aria-label="เลือกสัปดาห์"><a href="w01-course-intro.html" ><span class="week-no">01</span><span>แนะนำวิชา + โครงสร้างโปรเจกต์</span></a><a href="w02-ds-ai-landscape-and-tools.html" aria-current="page"><span class="week-no">02</span><span>ภาพรวม DS/AI (ต่อ) + เครื่องมือ Orange</span></a><a href="w03-eda-and-model-fitting.html" ><span class="week-no">03</span><span>EDA และ Model Fitting — Box Plot, Correlation, Linear Regression</span></a><a href="w04-association-rules.html" ><span class="week-no">04</span><span>Association Rules — Market Basket Analysis, Apriori และ Support/Confidence/Lift</span></a><a href="w05-decision-trees-and-k-means.html" ><span class="week-no">05</span><span>Decision Trees, K-means Clustering และการทวนขอบเขต Exam 1</span></a><a href="w06-classification-and-model-validation.html" ><span class="week-no">06</span><span>Classification และการตรวจสอบโมเดล</span></a><a href="w07-classification-performance-metrics.html" ><span class="week-no">07</span><span>Classification Performance Metrics และการเลือกวิธีประเมิน</span></a><a href="w08-introduction-to-ai-and-agents.html" ><span class="week-no">08</span><span>พื้นฐาน AI, Rational Agents และ PEAS</span></a><a href="w09-introduction-to-ml-and-nearest-neighbors.html" ><span class="week-no">09</span><span>พื้นฐาน Machine Learning, k-NN และ AI Search</span></a></nav></details></aside><main id="main" class="reader"><div class="note-meta">WEEK 02 <span>2026-08-14</span></div><h1>ภาพรวม DS/AI (ต่อ) + เครื่องมือ Orange</h1><div class="reader-actions"><button data-read-week="2" aria-pressed="false">ทำเครื่องหมายว่าอ่านแล้ว</button><button data-print>พิมพ์บทนี้</button></div><article class="prose"><blockquote>
+<p>Group 2 (ศุกร์ 13.00-16.00 @ LX 12/1) — สรุปจากสไลด์ <code>INT182_01_Intro-to-DS-Engineering-and-AI.pdf</code> (51 หน้า, อ.พรชัย มงคลนาม) เป็นโครงหลัก ตั้งแต่หน้า 19 ถึงหน้า 51 ซึ่งเป็นช่วงที่สอนต่อจากสัปดาห์ที่แล้ว แล้วเสริมสิ่งที่อาจารย์พูดเพิ่มจาก transcript ของคาบ (<code>INT182_G2_20260814.docx</code>)</p>
+<p>⚠️ transcript เป็นคำถอดเสียงอัตโนมัติ คุณภาพต่ำหลายช่วง (คำผิด/ประโยคขาด) — ส่วนที่มาจาก transcript อย่างเดียวจะระบุไว้ว่า <em>(จาก transcript)</em> และคงไว้เฉพาะที่อ่านเข้าใจได้ชัดเจน</p>
+<p>ช่วงท้ายคาบอาจารย์เปิดสไลด์ชุดถัดไป (EDA &#x26; Model Fitting) ไปได้ประมาณ 16 หน้าแรก เนื้อหาส่วนนั้นอยู่ในโน้ต Week 3 ทั้งก้อน เพื่อไม่ให้หัวข้อเดียวกันแตกเป็นสองไฟล์</p>
+</blockquote>
+<h2 id="agenda">Agenda</h2>
+<ol>
+<li>ทบทวน AI winter → ดัชนีชี้วัดทิศทาง AI</li>
+<li>ปริมาณข้อมูลที่โลกผลิต และคำคมสองประโยคที่ต้องจำ</li>
+<li>ที่มาของคำว่า Data Science / Data Scientist</li>
+<li>Big Data — 5V + 2V และ structured vs unstructured</li>
+<li>Data Science ทำอะไรบ้าง — pipeline, life cycle, 4 A's</li>
+<li>ทีมงานและงาน Data Engineering</li>
+<li>AI / ML / DL / DS ต่างกันอย่างไร</li>
+<li>KDD กับ Data Mining</li>
+<li>แหล่ง dataset และเครื่องมือ</li>
+<li>ลงมือ: Orange Data Mining</li>
+</ol>
+<h2 id="01-ทบทวน--ai-มีขึ้นมีลง-hype-กับ-winter">01 ทบทวน — AI มีขึ้นมีลง (hype กับ winter)</h2>
+<p>คาบที่แล้วหยุดที่กราฟวิวัฒนาการของ AI ที่เป็นขึ้น ๆ ลง ๆ ช่วงที่ยุบตัวเรียกว่า <strong>AI winter</strong></p>
+<p><em>(จาก transcript)</em> อาจารย์อธิบายที่มาของคำว่า winter ว่าเทียบกับหน้าหนาวที่กิจกรรมน้อย สัตว์จำศีล (<mark>hibernate</mark>) — ช่วง AI winter คือช่วงที่กิจกรรมด้าน AI ซบเซา <strong>เงินลงทุนน้อย</strong> ไม่ค่อยมี investment จากภาครัฐหรือเอกชนเข้ามา แล้วมันจะกลับขึ้นมาใหม่เป็น<strong>วัฏจักร</strong> ส่วนตอนนี้อยู่ในช่วงขาขึ้น ดัชนีตลาดฝั่งไอทีมี valuation / market value สูงมากจนหลายฝ่ายเฝ้าระวังกันอยู่</p>
+<figure class="figure"><a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ai_hype_winter.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="ขยายภาพ: เส้นทางความนิยมของ AI — ช่วงบูม ช่วง AI winter และไทม์ไลน์เหตุการณ์สำคัญ (สไลด์หน้า 19)"><img src="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ai_hype_winter.webp" alt="เส้นทางความนิยมของ AI — ช่วงบูม ช่วง AI winter และไทม์ไลน์เหตุการณ์สำคัญ (สไลด์หน้า 19)" loading="lazy" decoding="async"></a><figcaption>เส้นทางความนิยมของ AI — ช่วงบูม ช่วง AI winter และไทม์ไลน์เหตุการณ์สำคัญ (สไลด์หน้า 19)<a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ai_hype_winter.webp" target="_blank" rel="noopener" class="diagram-link figure-open">ขยายภาพ ↗</a></figcaption></figure>
+<h2 id="02-ดัชนีชี้วัดทิศทางของ-ai">02 ดัชนีชี้วัดทิศทางของ AI</h2>
+<p>สไลด์ยกข้อมูลจาก <strong>“The AI Index 2026 Annual Report,” AI Index Steering Committee, Institute for Human-Centered AI, Stanford University (เมษายน 2026)</strong> มาสองหน้า</p>
+<ul>
+<li><strong>AI Publications</strong> — จำนวนผลงานตีพิมพ์ใช้เป็นดัชนีชี้ว่าองค์กร/หน่วยงานไหนมีการค้นคว้าวิจัยมากน้อยแค่ไหน <em>(จาก transcript)</em> ทั้งหน่วยงานภาครัฐ บริษัทเอกชน และมหาวิทยาลัย ต่างก็ตีพิมพ์เผยแพร่ผลงานกัน ซึ่งส่วนใหญ่มาจากงาน <mark>R&#x26;D</mark></li>
+<li><strong>AI Publications by Fields</strong> — ดูได้ว่าใต้ร่ม AI มี field ย่อยอะไรที่คนศึกษาวิจัยกันบ้าง <em>(จาก transcript)</em> ที่อาจารย์ไล่ชื่อ: machine learning, computer vision, machine vision, pattern recognition, NLP, Generative AI, robotics</li>
+<li><strong>AI Rankings</strong> — <a href="https://airankings.org/">https://airankings.org/</a> ดูได้ว่าแต่ละ field มีที่ไหนทำวิจัย มีผู้เชี่ยวชาญ/อาจารย์/นักศึกษาปริญญาโท-เอกทำกันอยู่ที่ไหน <em>(จาก transcript)</em> อาจารย์เทียบว่ามี <mark>CS Rankings</mark> ที่กว้างกว่า ส่วน AI Rankings เจาะจงกว่า และข้อมูลอัปเดตเป็นระยะ</li>
+</ul>
+<p><em>(จาก transcript)</em> คำนิยามที่ย้ำในคาบ:</p>
+<ul>
+<li><strong>Machine learning</strong> — ทำให้เครื่องเรียนรู้/ฉลาดขึ้นเองจากข้อมูล <strong>โดยที่โปรแกรมเมอร์ไม่ต้องเขียนโปรแกรมระบุขั้นตอนให้ชัดเจน (explicitly)</strong> เราแค่ป้อนข้อมูลไป train</li>
+<li><strong>Computer vision (CV)</strong> — เกี่ยวข้องกับ <mark>image processing</mark> เอาไปใช้ตรวจจับ/จดจำใบหน้า หรือระบุแยกแยะวัตถุที่อยู่ในภาพ</li>
+<li><strong>Machine vision</strong> — การเอา computer vision ไปประยุกต์กับฮาร์ดแวร์/อุปกรณ์ในโรงงาน เช่นระบบอัตโนมัติที่ต้องจดจำหรือนับของ ตัวอย่างที่อาจารย์เคยไปดูมาคือโรงงานไก่ย่างของ CP แถวมีนบุรี ที่ใช้กล้องจับภาพชิ้นไก่ที่ปิ้งออกมา แล้ววิเคราะห์ว่าไหม้เกินไปหรือเปล่า คุณภาพเป็นอย่างไร จำนวนชิ้นครบไหม โดยไม่ต้องใช้คน</li>
+</ul>
+<figure class="figure"><a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ai_publications.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="ขยายภาพ: จำนวนบทความวิจัย AI แยกตามหัวข้อ ปี 2013–24 — machine learning นำห่าง (สไลด์หน้า 21)"><img src="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ai_publications.webp" alt="จำนวนบทความวิจัย AI แยกตามหัวข้อ ปี 2013–24 — machine learning นำห่าง (สไลด์หน้า 21)" loading="lazy" decoding="async"></a><figcaption>จำนวนบทความวิจัย AI แยกตามหัวข้อ ปี 2013–24 — machine learning นำห่าง (สไลด์หน้า 21)<a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ai_publications.webp" target="_blank" rel="noopener" class="diagram-link figure-open">ขยายภาพ ↗</a></figcaption></figure>
+<h2 id="03-โลกผลิตข้อมูลวันละเท่าไหร่">03 โลกผลิตข้อมูลวันละเท่าไหร่</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>ค่า</th><th>ความหมาย</th></tr></thead><tbody><tr><td>Quintillion</td><td>10<sup>18</sup> = ล้าน × ล้าน × ล้าน</td></tr><tr><td>Exabyte</td><td>1 quintillion bytes</td></tr><tr><td>ปี 2025</td><td>ข้อมูลใหม่ทั่วโลกราว <strong>400 quintillion bytes ต่อวัน</strong> และยังเพิ่มขึ้นเรื่อย ๆ ตามการใช้ AI</td></tr><tr><td>เทียบเป็นแผ่น DVD</td><td>ต้องใช้ DVD มาตรฐาน (4.7 GB) ประมาณ <strong>95,000–120,000 ล้านแผ่นต่อวัน</strong></td></tr></tbody></table></div>
+<p>(ตัวเลขในสไลด์อ้างอิงคำตอบจาก <mark>DeepSeek</mark>, กรกฎาคม 2026)</p>
+<p><em>(จาก transcript)</em> ข้อมูลพวกนี้มาจากหลายรูปแบบและหลายแหล่ง — วิดีโอ streaming, เพลง, ภาพ, ตัวหนังสือ ฯลฯ ประเด็นที่อาจารย์ทิ้งท้ายคือ <strong>ข้อมูลเยอะไม่ได้แปลว่าดีเสมอไป</strong> ถ้ามีเยอะแต่ประมวลผลอะไรไม่ได้ก็ไม่เกิดประโยชน์</p>
+<h2 id="04-คำคมสองประโยคที่ต้องจำ">04 คำคมสองประโยคที่ต้องจำ</h2>
+<h3 id="data-is-the-new-oil--clive-humby-2006">“Data is the new oil” — Clive Humby (2006)</h3>
+<blockquote>
+<p>“Data is the new oil. It’s valuable, but if unrefined it cannot really be used. It has to be changed into gas, plastic, chemicals, etc to create a valuable entity that drives profitable activity; so must data be broken down, analyzed for it to have value.”</p>
+</blockquote>
+<p>Clive Humby เป็นผู้ประกอบการด้าน data commercialization ชาวอังกฤษ วลีนี้ถูก <mark>World Economic Forum</mark> หยิบไปใช้ในรายงานปี 2011</p>
+<h3 id="ai-is-the-new-electricity--andrew-ng-2016">“AI is the new electricity” — Andrew Ng (2016)</h3>
+<p>Andrew Ng อดีต Chief Scientist ของ <mark>Baidu</mark>, ผู้ร่วมก่อตั้ง Coursera และอาจารย์พิเศษที่ Stanford</p>
+<blockquote>
+<p>“Anything that a typical human can do with at most 1 sec of thought, can probably now or soon be automated with AI.” — เป็นกฎที่ไม่สมบูรณ์แบบ แต่ใช้ได้ดีพอสมควร</p>
+</blockquote>
+<p>เหตุผลของการเปรียบเทียบ: เมื่อราวศตวรรษก่อนโลกเปลี่ยนผ่านสู่ยุคไฟฟ้า แทนที่เครื่องจักรไอน้ำ แล้วพลิกโฉมการขนส่ง การผลิต เกษตรกรรม สาธารณสุข — ตอนนี้ AI กำลังจะสร้างการเปลี่ยนแปลงขนาดใกล้เคียงกันกับหลายอุตสาหกรรม (หมายเหตุในสไลด์: latency ของ 5G ดีที่สุดอยู่ระดับ <mark>single-digit milliseconds</mark>)</p>
+<p><em>(จาก transcript)</em> อาจารย์โยงเข้ากับคำว่า <strong>democratize</strong> — AI เป็นสิ่งที่ทุกคนเข้าถึงได้เหมือนไฟฟ้า ไม่ได้จำกัดอยู่แค่คนกลุ่มเดียว อาจไม่ฟรี แต่ก็จับต้องได้ในราคาที่พอเหมาะ คล้ายกับที่เราจ่ายค่าไฟ ค่าโทรศัพท์ ค่าเน็ตเป็นรายเดือน</p>
+<h2 id="05-ที่มาของคำว่า-data-science-และ-data-scientist">05 ที่มาของคำว่า Data Science และ Data Scientist</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>คำ</th><th>ปี</th><th>ใคร</th></tr></thead><tbody><tr><td><strong>Data science</strong></td><td>1974</td><td><strong>Peter Naur</strong> เสนอให้ใช้แทนคำว่า computer science</td></tr><tr><td><strong>Data scientist</strong></td><td>2008</td><td><strong>DJ Patil</strong> และ <strong>Jeff Hammerbacher</strong> เป็นผู้บัญญัติ</td></tr></tbody></table></div>
+<p><em>(จาก transcript)</em> Peter Naur เป็นคนดังในวงการภาษาโปรแกรม เป็นผู้วางกฎเกณฑ์/แกรมมาร์ให้ภาษาคอมพิวเตอร์ยุค 1960–1970 (ยุค <mark>Fortran, ALGOL</mark>) ก่อนจะมีภาษาอย่าง Java, C++, Python — ไอเดียเรื่อง data science เกิดขึ้นนานแล้ว แต่ไม่ได้แพร่หลาย จนคำว่า computer science ก็ยังใช้กันอยู่ ส่วน <strong>data scientist เกิดทีหลัง data science</strong> และเป็นการนิยาม <em>บทบาท (role)</em> ไม่ใช่สาขาวิชา</p>
+<p>คำนิยามที่สไลด์ยกมา:</p>
+<ul>
+<li><strong>Jeffrey Stanton (Syracuse University)</strong>: “Data Science refers to an emerging area of work concerned with the collection, preparation, analysis, visualization, management and preservation of large collections of information.”</li>
+<li><strong>Hilary Mason (chief scientist ที่ bit.ly)</strong>: “A data scientist is someone who can obtain, scrub, explore, model and interpret data, blending hacking, statistics and machine learning.” — คือคนที่ได้ข้อมูลมา, ทำความสะอาด (scrub), สำรวจ, สร้างโมเดล และแปลความหมายจากโมเดลนั้น</li>
+</ul>
+<figure class="figure"><a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ds_multidisciplinary.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="ขยายภาพ: Data Science อยู่ตรงกลางของหลายศาสตร์ — domain expertise, math, statistics, visualization ฯลฯ (สไลด์หน้า 27)"><img src="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ds_multidisciplinary.webp" alt="Data Science อยู่ตรงกลางของหลายศาสตร์ — domain expertise, math, statistics, visualization ฯลฯ (สไลด์หน้า 27)" loading="lazy" decoding="async"></a><figcaption>Data Science อยู่ตรงกลางของหลายศาสตร์ — domain expertise, math, statistics, visualization ฯลฯ (สไลด์หน้า 27)<a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ds_multidisciplinary.webp" target="_blank" rel="noopener" class="diagram-link figure-open">ขยายภาพ ↗</a></figcaption></figure>
+<h3 id="ds--a-jack-of-all-trades-and-a-master-of-some">DS = “A jack of all trades and a master of some”</h3>
+<p>(<mark>Brendan Tierney</mark>, 2012) — คนที่ทำได้หลายอย่าง แต่เชี่ยวชาญจริง ๆ แค่บางอย่าง <em>(จาก transcript)</em> อาจารย์เทียบกับ <strong>เป็ด</strong> ที่บินได้ ว่ายน้ำได้ แต่อาจไม่เก่งสักอย่าง</p>
+<p>สไลด์หน้า “DS in some perspective” ยังชี้จุดที่เรียกว่า <strong>danger zone</strong> — บริเวณที่ทำ data อย่างเดียวโดยขาดทฤษฎีมา support</p>
+<figure class="figure"><a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_jack_of_all_trades.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="ขยายภาพ: แผนภาพ Data Science Is Multidisciplinary ของ Brendan Tierney (สไลด์หน้า 31)"><img src="../assets/w02-ds-ai-landscape-and-tools/w2_fig_jack_of_all_trades.webp" alt="แผนภาพ Data Science Is Multidisciplinary ของ Brendan Tierney (สไลด์หน้า 31)" loading="lazy" decoding="async"></a><figcaption>แผนภาพ Data Science Is Multidisciplinary ของ Brendan Tierney (สไลด์หน้า 31)<a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_jack_of_all_trades.webp" target="_blank" rel="noopener" class="diagram-link figure-open">ขยายภาพ ↗</a></figcaption></figure>
+<h2 id="06-big-data--5-vs--2-vs">06 Big Data — 5 V's + 2 V's</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>V</th><th>ความหมาย</th></tr></thead><tbody><tr><td><strong>Volume</strong></td><td>ปริมาณมหาศาล คุณลักษณะที่รู้จักกันดีที่สุดของ big data</td></tr><tr><td><strong>Velocity</strong></td><td>ความเร็วของข้อมูลที่ไหลเข้ามาและความเร็วในการประมวลผล</td></tr><tr><td><strong>Variety</strong></td><td>ความหลากหลายของชนิดข้อมูล มาจากหลายแหล่ง</td></tr><tr><td><strong>Veracity</strong></td><td>คุณภาพของข้อมูล ความสะอาด ความถูกต้อง = ความเชื่อมั่น/ไว้ใจได้ในตัวข้อมูล</td></tr><tr><td><strong>Value</strong></td><td>ข้อมูลมีคุณค่าต่อการตัดสินใจ — สไลด์บอกว่านี่คือตัวที่สำคัญที่สุด</td></tr><tr><td>+ <strong>Variability</strong></td><td>ความหมายที่ดิ้นได้ตามบริบท หรือความไม่สม่ำเสมอในข้อมูล/ความเร็วในการโหลดเข้าฐานข้อมูล</td></tr><tr><td>+ <strong>Visualization</strong></td><td>ทำให้ข้อมูลที่เก็บและวิเคราะห์แล้วเข้าใจง่ายและอ่านง่าย</td></tr></tbody></table></div>
+<h3 id="structured-vs-unstructured">Structured vs Unstructured</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>ประเภท</th><th>ลักษณะ</th><th>ตัวอย่าง</th></tr></thead><tbody><tr><td><strong>Structured</strong></td><td>มีโครงสร้างชัดเจน เข้าถึงและวิเคราะห์ได้ง่าย</td><td>ตาราง, ฐานข้อมูลเชิงสัมพันธ์ (มี primary key ชัดเจน)</td></tr><tr><td><strong>Unstructured</strong></td><td>ไม่มีรูปแบบโครงสร้างชัดเจน</td><td>text/comment, วิดีโอ, เพลง, ภาพ, สื่อมัลติมีเดีย</td></tr><tr><td><strong>ก้ำกึ่ง</strong> <em>(จาก transcript)</em></td><td>มี tag/โครงสร้างบางส่วน บางคนจัดเป็นกึ่งกลาง</td><td>XML, JSON</td></tr></tbody></table></div>
+<p><em>(จาก transcript)</em> ตัวอย่างการใช้ unstructured data: คอมเมนต์ใต้คลิป ต้องเอามาสกัดหา keyword ดูความถี่ของคำ แล้วตัดสินว่าเป็นคอมเมนต์เชิงบวกหรือลบ ซึ่งเป็นสิ่งที่ <mark>LLM/Gen AI</mark> ทำอยู่ทุกวันนี้</p>
+<h2 id="07-data-science-ทำอะไรบ้าง">07 Data Science ทำอะไรบ้าง</h2>
+<figure class="figure"><a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ds_perspective.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="ขยายภาพ: DS ในอีกมุม — จุดตัดของ domain knowledge, computer science และ math/statistics พร้อม danger zone (สไลด์หน้า 33)"><img src="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ds_perspective.webp" alt="DS ในอีกมุม — จุดตัดของ domain knowledge, computer science และ math/statistics พร้อม danger zone (สไลด์หน้า 33)" loading="lazy" decoding="async"></a><figcaption>DS ในอีกมุม — จุดตัดของ domain knowledge, computer science และ math/statistics พร้อม danger zone (สไลด์หน้า 33)<a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ds_perspective.webp" target="_blank" rel="noopener" class="diagram-link figure-open">ขยายภาพ ↗</a></figcaption></figure>
+<h3 id="องค์ประกอบหลัก">องค์ประกอบหลัก</h3>
+<p>Data Collection → Data Cleaning and Preparation → Exploratory Data Analysis (EDA) → Data Modeling → Evaluation → Data Communication and Visualization</p>
+<h3 id="นิยามเชิงปฏิบัติ--ds-คือทั้ง-pipeline">นิยามเชิงปฏิบัติ — DS คือทั้ง pipeline</h3>
+<p>Data Scientist สนใจและเข้าใจ <strong>ทั้ง pipeline</strong> ของการสกัดสารสนเทศออกจากข้อมูล ซึ่งมี 3 ขั้น (<mark>Tim Kraska</mark>)</p>
+<ol>
+<li><strong>เตรียมก่อนรันโมเดล</strong> — gathering, cleaning, integrating, restructuring, transforming, loading, filtering, deleting, combining, merging, verifying, extracting, shaping</li>
+<li><strong>รันโมเดล</strong></li>
+<li><strong>สื่อสารผลลัพธ์</strong></li>
+</ol>
+<p><em>(จาก transcript)</em> อาจารย์อธิบายคำว่า pipeline ว่าเหมือน <mark>upstream / midstream / downstream</mark> หรือต้นน้ำ-กลางน้ำ-ปลายน้ำ เป็น workflow ที่ส่งต่อกันเป็น step คล้ายกับที่ทำกันใน software engineering</p>
+<h3 id="ds-life-cycle">DS life cycle</h3>
+<ol>
+<li>Requirement engineering</li>
+<li><strong>Feature engineering</strong> — ใช้ <mark>domain knowledge</mark> สกัด feature (คุณลักษณะ/attribute/ตัวแปร) ออกจาก raw data</li>
+<li><strong>Feature selection</strong> — เลือก subset ของ feature ที่เกี่ยวข้องจริง</li>
+<li>Modelling</li>
+<li>Deployment and maintenance</li>
+</ol>
+<figure class="figure"><a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ds_process.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="ขยายภาพ: Data Science Process — จากข้อมูลดิบ ผ่าน EDA และโมเดล ไปจนถึง data product และการตัดสินใจ (สไลด์หน้า 39)"><img src="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ds_process.webp" alt="Data Science Process — จากข้อมูลดิบ ผ่าน EDA และโมเดล ไปจนถึง data product และการตัดสินใจ (สไลด์หน้า 39)" loading="lazy" decoding="async"></a><figcaption>Data Science Process — จากข้อมูลดิบ ผ่าน EDA และโมเดล ไปจนถึง data product และการตัดสินใจ (สไลด์หน้า 39)<a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ds_process.webp" target="_blank" rel="noopener" class="diagram-link figure-open">ขยายภาพ ↗</a></figcaption></figure>
+<h3 id="7-ขั้นตอนหลักของงาน-ds">7 ขั้นตอนหลักของงาน DS</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>ขั้น</th><th>หมายเหตุจากสไลด์</th></tr></thead><tbody><tr><td>1. Business problem</td><td>ตั้งคำถาม “ทำไม” — สไลด์เขียนว่า “ทำตัวเป็นแบบเณรน้อยเจ้าปัญญา”</td></tr><tr><td>2. Data acquisition</td><td></td></tr><tr><td>3. Data preparation</td><td>cleaning + transformation — <strong>กินเวลามากที่สุด</strong></td></tr><tr><td>4. Exploratory data analysis</td><td>ดู feature และ parameter — <strong>เป็นขั้นที่สำคัญที่สุด</strong></td></tr><tr><td>5. Data modeling</td><td>data mining, machine learning, deep learning — <strong>เป็นส่วนที่เทคนิคจัดที่สุด</strong></td></tr><tr><td>6. Visualization and communication</td><td></td></tr><tr><td>7. Deployment and maintenance</td><td></td></tr></tbody></table></div>
+<p><em>(จาก transcript)</em> ทั้งหมดนี้เป็น <strong>cycle</strong> ไม่ใช่เส้นตรง — พอ deploy จริงแล้วมี user เข้ามาใช้ ก็เก็บ <mark>feedback</mark> วนกลับไปปรับปรุงใหม่</p>
+<h3 id="4-as-ของ-data-science">4 A's ของ Data Science</h3>
+<p>บทบาทที่ data scientist ทำหรือช่วยคนอื่นทำ (<mark>Saltz &#x26; Stanton</mark>, 2018)</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>A</th><th>ความหมาย</th></tr></thead><tbody><tr><td>Data <strong>Architecture</strong></td><td>วางสถาปัตยกรรมของระบบข้อมูล</td></tr><tr><td>Data <strong>Acquisition</strong></td><td>การได้มาซึ่งข้อมูล / data collection</td></tr><tr><td>Data <strong>Analysis</strong></td><td>วิเคราะห์ข้อมูล</td></tr><tr><td>Data <strong>Archiving</strong></td><td>จัดเก็บเป็นบันทึกไว้สืบค้นย้อนหลังได้ <em>(จาก transcript: เทียบกับหอจดหมายเหตุ หรือ version control ที่บอกได้ว่าใครเปลี่ยนอะไรเมื่อไหร่)</em></td></tr></tbody></table></div>
+<h2 id="08-ทีม-data-science-และงานฝั่ง-data-engineering">08 ทีม Data Science และงานฝั่ง Data Engineering</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>ตำแหน่ง</th><th>หน้าที่</th></tr></thead><tbody><tr><td><strong>Data scientist (DS)</strong></td><td>เตรียมข้อมูล ทำ feature engineering — สกิลที่มีค่าที่สุดคือการเทรนโมเดล</td></tr><tr><td><strong>Data engineer (DE)</strong></td><td>เน้นการได้มาซึ่งข้อมูล สร้าง data pipeline — อัตราส่วน DE:DS = 5:1 ไม่ใช่เรื่องแปลก</td></tr><tr><td><strong>Data analyst (DA)</strong></td><td>ช่วย DS เตรียมข้อมูล</td></tr><tr><td><strong>Application architect (AA)</strong></td><td>ออกแบบ solution ทั้งระบบ deploy และดูแลโมเดลใน production</td></tr></tbody></table></div>
+<h3 id="data-engineering-ครอบคลุมอะไร">Data engineering ครอบคลุมอะไร</h3>
+<ul>
+<li><strong>Data pipelines</strong> — ระบบย้ายข้อมูลจากหลายแหล่ง (ฐานข้อมูล, API, ไฟล์) ไปยังที่เก็บและที่ประมวลผล</li>
+<li><strong>Data storage</strong> — เลือกและดูแลที่เก็บให้เหมาะกับลักษณะข้อมูลและรูปแบบการ query (relational DB, data warehouse, <mark>data lake</mark>, NoSQL)</li>
+<li><strong>Data transformation</strong> — ทำความสะอาดและแปลง raw data ให้พร้อมวิเคราะห์</li>
+<li><strong>Data quality</strong> — ความถูกต้อง ครบถ้วน สม่ำเสมอ และทันเวลา</li>
+<li><strong>ETL (Extract, Transform, Load)</strong> — <em>(จาก transcript: บางที่เรียก <mark>ELT</mark> ก็แล้วแต่)</em> ดึงข้อมูลออกมา → แปลง/ทำความสะอาด/แปลงฟอร์แมต → โหลดเข้าฐานเพื่อเอาไปวิเคราะห์ต่อ</li>
+</ul>
+<p>เครื่องมือที่สไลด์ยกตัวอย่าง: SQL, NoSQL, Hadoop, Snowflake, Apache Spark, Airflow, Kafka และภาษา Python, Java, <mark>Scala</mark> บนคลาวด์ AWS / Azure / GCP</p>
+<h2 id="09-data-product--insight--actionable">09 Data product → insight → actionable</h2>
+<p><strong>Data product คือผลลัพธ์ของกิจกรรม data science ใด ๆ</strong> เช่นระบบแนะนำสินค้า (<mark>recommender system</mark>) — เราสร้าง actionable insight ออกมาจาก big data ด้วย data science</p>
+<p><em>(จาก transcript)</em> เทียบกับ <strong>work product</strong> ในวิศวกรรมซอฟต์แวร์ (requirement spec, test plan, test case, project plan, risk plan, prototype) — ฝั่ง data science ก็มี data product ของตัวเอง ไม่ว่าจะเป็นตัวโมเดล, weight, dataset ที่ใช้ train/test</p>
+<p>คำที่ต้องแยกให้ออก:</p>
+<ul>
+<li><strong>Insight</strong> = ความเข้าใจอย่างถ่องแท้/ลึกซึ้งที่ได้จากการวิเคราะห์ข้อมูล</li>
+<li><strong>Actionable</strong> = ถ้าทำ X แล้ว Y จะดีขึ้นอย่างไร — พอรู้ insight แล้วต้อง <strong>take action</strong> ต่อได้ เช่นวิเคราะห์แล้วพบว่าจุดไหนทำให้สินค้าสู้คู่แข่งไม่ได้ ก็ไปเพิ่มทรัพยากรตรงจุดนั้น</li>
+</ul>
+<figure class="figure"><a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_data_product.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="ขยายภาพ: Data → Insight → Action และนิยาม data product ของ DJ Patil (สไลด์หน้า 42)"><img src="../assets/w02-ds-ai-landscape-and-tools/w2_fig_data_product.webp" alt="Data → Insight → Action และนิยาม data product ของ DJ Patil (สไลด์หน้า 42)" loading="lazy" decoding="async"></a><figcaption>Data → Insight → Action และนิยาม data product ของ DJ Patil (สไลด์หน้า 42)<a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_data_product.webp" target="_blank" rel="noopener" class="diagram-link figure-open">ขยายภาพ ↗</a></figcaption></figure>
+<h2 id="10-ai--ml--dl--ds-ต่างกันอย่างไร">10 AI / ML / DL / DS ต่างกันอย่างไร</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>ตัวย่อ</th><th>นิยามตามสไลด์</th></tr></thead><tbody><tr><td><strong>AI</strong></td><td>ทำให้เครื่องคิดได้ — สร้างเครื่องที่เลียนแบบความฉลาดของมนุษย์</td></tr><tr><td><strong>ML</strong></td><td>ให้เครื่องมือเชิงสถิติเพื่อสำรวจและวิเคราะห์ข้อมูล (supervised, unsupervised, reinforcement learning) ทำให้คอมพิวเตอร์เรียนรู้จากข้อมูลได้โดยไม่ต้องเขียนโปรแกรมระบุอย่างชัดเจน</td></tr><tr><td><strong>DL</strong></td><td>เลียนแบบการทำงานของสมองมนุษย์ (ANN, CNN, RNN, transfer learning)</td></tr><tr><td><strong>DS</strong></td><td>เอาเครื่องมือทางคณิตศาสตร์/สถิติ และเทคนิคจาก DL, ML, AI มาใช้กับข้อมูล (ที่ใหญ่พอ)</td></tr></tbody></table></div>
+<p><em>(จาก transcript)</em> คำอธิบายเสริม:</p>
+<ul>
+<li><strong>AI กว้างที่สุด</strong> — เลียนแบบ <em>ความฉลาด</em> ของมนุษย์ จะทำด้วยวิธีไหนก็ได้ เช่นหุ่นยนต์สองขาที่ตีลังกาหรือเล่นปิงปองได้ก็นับเป็น AI</li>
+<li><strong>DL เลียนแบบ <em>สมอง</em> ของมนุษย์</strong> — ระบบประสาทเทียม (artificial neural network) มีหลายประเภท เช่น CNN ใช้กับ <mark>image classification</mark>, RNN ที่ป้อน feedback ย้อนกลับได้</li>
+<li><strong>ML เป็นส่วนหนึ่งของ AI แต่ไม่ใช่ทั้งหมดของ AI</strong> — ดูจากสีของวงรีในสไลด์หน้า 43</li>
+<li><strong>DS ยืมเทคนิคของคนอื่นมาใช้</strong> ไม่ต้องสร้างใหม่เอง แล้วเน้นที่การใช้เลข/สถิติกับข้อมูลจริง</li>
+<li>timeline คร่าว ๆ ที่พูดในคาบ: AI ~1950 → machine learning <mark>~1980</mark> → deep learning ~2010 → LLM / ChatGPT ราวปี 2022–2023 (ช่วงหลังโควิด)</li>
+</ul>
+<figure class="figure"><a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ai_ml_dl_ds.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="ขยายภาพ: AI ⊃ ML ⊃ DL และตำแหน่งของ DS ที่คร่อมอยู่บนทั้งสาม (สไลด์หน้า 43)"><img src="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ai_ml_dl_ds.webp" alt="AI ⊃ ML ⊃ DL และตำแหน่งของ DS ที่คร่อมอยู่บนทั้งสาม (สไลด์หน้า 43)" loading="lazy" decoding="async"></a><figcaption>AI ⊃ ML ⊃ DL และตำแหน่งของ DS ที่คร่อมอยู่บนทั้งสาม (สไลด์หน้า 43)<a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ai_ml_dl_ds.webp" target="_blank" rel="noopener" class="diagram-link figure-open">ขยายภาพ ↗</a></figcaption></figure>
+<h3 id="ds-vs-ml">DS vs ML</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>Machine Learning</th><th>Data Science</th></tr></thead><tbody><tr><td>พัฒนาโมเดลใหม่ทีละตัว</td><td>สำรวจหลายโมเดล สร้างและจูน hybrid</td></tr><tr><td>พิสูจน์คุณสมบัติเชิงคณิตศาสตร์ของโมเดล</td><td>เข้าใจคุณสมบัติเชิงประจักษ์ (empirical) ของโมเดล</td></tr><tr><td>ปรับปรุง/ตรวจสอบบน dataset เล็ก สะอาด ไม่กี่ชุด</td><td>พัฒนา/ใช้เครื่องมือที่รับมือ dataset ขนาดมหึมาได้</td></tr><tr><td><strong>ตีพิมพ์ paper</strong></td><td><strong>Take action!</strong></td></tr></tbody></table></div>
+<p>(<mark>Daisy Zhe Wang</mark>, University of Florida, 2015)</p>
+<figure class="figure"><a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ds_vs_ml.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="ขยายภาพ: DS กับ ML ต่างกันตรงไหน — เทียบกันคนละคอลัมน์ (สไลด์หน้า 45)"><img src="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ds_vs_ml.webp" alt="DS กับ ML ต่างกันตรงไหน — เทียบกันคนละคอลัมน์ (สไลด์หน้า 45)" loading="lazy" decoding="async"></a><figcaption>DS กับ ML ต่างกันตรงไหน — เทียบกันคนละคอลัมน์ (สไลด์หน้า 45)<a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ds_vs_ml.webp" target="_blank" rel="noopener" class="diagram-link figure-open">ขยายภาพ ↗</a></figcaption></figure>
+<h2 id="11-kdd-กับ-data-mining">11 KDD กับ Data Mining</h2>
+<p><strong>KDD = Knowledge Discovery in Databases</strong> — เป็นคำที่กว้าง ครอบคลุมทั้ง data science, data mining, ฐานข้อมูล, visualization และสถิติ (ดูแผนภาพหน้า 47) กระบวนการคือโยนข้อมูลเข้ามาเก็บใน database/data warehouse → selection → preprocessing → <mark>transformation</mark> → <strong>data mining</strong> เพื่อหา pattern → แปลความหมาย → ได้ knowledge</p>
+<p><strong>Data mining (DM)</strong> คือกระบวนการดึงสารสนเทศออกมาจากฐานข้อมูลขนาดใหญ่ที่ก่อนหน้านี้เข้าใจไม่ได้และไม่รู้จัก แล้วเอาสารสนเทศนั้นไปใช้ตัดสินใจทางธุรกิจ — เป็นชุดวิธีการที่ใช้ในกระบวนการ knowledge discovery เพื่อหาความสัมพันธ์และ pattern ที่ยังไม่เคยรู้ เป็นจุดบรรจบของ AI, การจัดการข้อมูล, <mark>pattern recognition</mark>, visualization, machine learning และสถิติ</p>
+<p><em>(จาก transcript)</em> <strong>Data warehouse</strong> = คลังข้อมูล มองเป็นฐานข้อมูลขนาดใหญ่ที่หลากหลาย จุดสำคัญคือ <strong>ต้องมี time stamp / แบ่งตามช่วงเวลา</strong> (เรียกว่า <mark>temporal database</mark>) เพราะถ้าโยนข้อมูลเข้ามาโดยไม่รู้ว่าเกิดขึ้นเมื่อไหร่ ก็เปรียบเทียบเดือนต่อเดือนหรือปีต่อปีไม่ได้ และเลือก target date ด้วย selection ไม่ได้</p>
+<figure class="figure"><a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_kdd_dm.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="ขยายภาพ: ขั้นตอน KDD — selection, preprocessing, transformation, data mining, interpretation (สไลด์หน้า 47)"><img src="../assets/w02-ds-ai-landscape-and-tools/w2_fig_kdd_dm.webp" alt="ขั้นตอน KDD — selection, preprocessing, transformation, data mining, interpretation (สไลด์หน้า 47)" loading="lazy" decoding="async"></a><figcaption>ขั้นตอน KDD — selection, preprocessing, transformation, data mining, interpretation (สไลด์หน้า 47)<a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_kdd_dm.webp" target="_blank" rel="noopener" class="diagram-link figure-open">ขยายภาพ ↗</a></figcaption></figure>
+<h2 id="12-แหล่ง-dataset-และเครื่องมือที่ใช้ในวิชานี้">12 แหล่ง dataset และเครื่องมือที่ใช้ในวิชานี้</h2>
+<h3 id="dataset-repository">Dataset repository</h3>
+<ul>
+<li><a href="https://archive.ics.uci.edu/">https://archive.ics.uci.edu/</a> (UCI Machine Learning Repository)</li>
+<li><a href="https://www.kaggle.com/">https://www.kaggle.com/</a></li>
+</ul>
+<h3 id="software-tools">Software tools</h3>
+<ul>
+<li><strong>RStudio</strong> — <a href="https://posit.co/downloads">https://posit.co/downloads</a></li>
+<li><strong>Orange Data Mining</strong> — <a href="https://orangedatamining.com/">https://orangedatamining.com/</a></li>
+</ul>
+<p><em>(จาก transcript)</em> <strong>ให้ลงโปรแกรมทั้งสองตัวลงเครื่องตัวเองให้เรียบร้อย</strong> เพราะไม่ได้ใช้ห้องคอมพิวเตอร์</p>
+<h2 id="13-ลงมือ-orange-data-mining">13 ลงมือ: Orange Data Mining</h2>
+<p>Orange เป็น <strong>visual programming</strong> — ลากวาง widget แล้วต่อสายเชื่อมกัน คล้าย <mark>Scratch</mark> ไม่ต้องเขียนโค้ด (แต่ต่อ Python Script เข้าไปผสมได้)</p>
+<h3 id="หลักการต่อ-widget">หลักการต่อ widget</h3>
+<ul>
+<li>เริ่มจาก widget ฝั่ง input: <strong>File</strong> (CSV / Excel / เชื่อม SQL table) หรือ <strong>Datasets</strong> (ชุดข้อมูล built-in ที่มากับตัวโปรแกรม เช่น <mark>Iris, Titanic</mark>)</li>
+<li>แต่ละ widget มี input 1 ทาง แต่ <strong>แตก output ออกไปได้หลายทาง</strong> จะทำกี่เส้นทางขนานกันก็ได้</li>
+<li>ไฟล์ workspace ของ Orange นามสกุล <strong><code>.ows</code></strong> (Orange Workspace) — ตัวอย่างที่แจกมาอยู่ในโฟลเดอร์ <code>code/</code></li>
+<li>คลิกขวาที่ widget เพื่อ rename ให้อ่านง่าย และอย่าลืม save เป็นระยะ</li>
+</ul>
+<h3 id="กลุ่ม-widget-ที่แตะในคาบ">กลุ่ม widget ที่แตะในคาบ</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>กลุ่ม</th><th>Widget</th><th>ใช้ทำอะไร</th></tr></thead><tbody><tr><td>Data</td><td><strong>File / Datasets</strong></td><td>นำเข้าข้อมูล</td></tr><tr><td>Data</td><td><strong>Data Table</strong></td><td>ดูตารางข้อมูลดิบ ดูจำนวน instance / feature / missing</td></tr><tr><td>Data</td><td><strong>Edit Domain</strong></td><td>เปลี่ยนชื่อคอลัมน์ (ตอน raw data ไม่มี header)</td></tr><tr><td>Data</td><td><strong>Select Columns</strong></td><td>เลือกว่าคอลัมน์ไหนเป็น feature (x) คอลัมน์ไหนเป็น target (y)</td></tr><tr><td>Transform</td><td>rename / select column / row, split, merge</td><td>จัดรูปตาราง</td></tr><tr><td>Transform</td><td><strong>Preprocess</strong></td><td>Impute, Remove rows with missing values, Normalize ฯลฯ</td></tr><tr><td>Visualize</td><td><strong>Scatter Plot</strong></td><td>พล็อตจุดทีละคู่ตัวแปร มีตัวเลือก show regression line</td></tr><tr><td>Model</td><td><strong>Linear Regression</strong></td><td>ได้ intercept และ coefficient</td></tr><tr><td>Evaluate</td><td><strong>Test and Score</strong>, <strong>Predictions</strong></td><td>ทดสอบและทำนาย</td></tr></tbody></table></div>
+<h3 id="dataset-ที่ใช้">Dataset ที่ใช้</h3>
+<p><strong>Automobile / imports-85 จาก UCI</strong> — เก็บข้อมูลรถยนต์ตั้งแต่ปี 1985 เอาไปประยุกต์กับงานประกันรถยนต์/ประกันอุบัติเหตุได้ <em>(จาก transcript)</em></p>
+<ul>
+<li><strong>205 instances (row), 26 features, missing data 1.1%</strong></li>
+<li>ราคา (attribute ที่ 26) เป็นชนิด <strong>continuous</strong> ช่วงประมาณ <mark>5,000–45,000 USD</mark></li>
+<li>คอลัมน์ที่ไม่ใช่ตัวเลข เช่น body-style (hardtop, wagon, sedan…), aspiration (standard/turbo), make (ยี่ห้อ) — ใน Orange จะขึ้นสัญลักษณ์ <strong>N = numerical (สีแดง)</strong> และ <strong>C = categorical</strong></li>
+<li>raw data <strong>ไม่มี header</strong> ต้องใช้ <mark>Edit Domain</mark> ตั้งชื่อคอลัมน์เองก่อน</li>
+<li><strong>missing data ในไฟล์นี้แทนด้วย <code>?</code></strong> — คลิกหัวคอลัมน์ price เพื่อ sort แล้วจะเห็น <code>?</code> 4 แถว (ที่อื่นอาจใช้ <code>NA</code> = not available หรือ <code>NaN</code>)</li>
+</ul>
+<p><strong>Iris dataset (built-in)</strong> — ดอกไม้ 3 สายพันธุ์ (<mark>setosa, versicolor, virginica</mark>) <strong>150 data point</strong> อย่างละ 50 มี 4 attribute คือความกว้าง/ความยาวของกลีบดอก (petal) และกลีบเลี้ยง (sepal) หน่วยเป็นเซนติเมตร บวก 1 คอลัมน์ที่เป็น target</p>
+<p><em>(จาก transcript)</em> คำเรียก 1 แถวข้อมูล มีหลายชื่อ: <strong>data point / row / record / instance / observation</strong></p>
+<p>โจทย์ของ Iris คือ ถ้ามี data point ชุดใหม่เข้ามา แล้วถามว่าน่าจะเป็นสายพันธุ์ไหน — นี่คืองาน <strong>classification</strong> (แยกประเภท) ต่างจาก <strong>clustering</strong> (จัดกลุ่ม)</p>
+<h3 id="สิ่งที่ทำใน-scatter-plot">สิ่งที่ทำใน Scatter Plot</h3>
+<ul>
+<li>เลือกแกน x และ y ได้เอง (default อาจเป็น sepal length กับ sepal width)</li>
+<li>มี checkbox <strong>Show regression line</strong> พร้อมค่า <strong>r</strong> ขึ้นมาให้ — ตัวอย่างที่ได้ในคาบคือ <strong>r = 0.81</strong> สำหรับ horsepower กับ price</li>
+<li>ปรับสี (color) ให้ไล่ตาม horsepower หรือ price ได้ และปรับ shape ได้เมื่อมีตัวแปรเชิงประเภทหลายค่า เช่น 3 สายพันธุ์ของ Iris</li>
+<li><em>(จาก transcript)</em> เส้น regression line คือเส้นที่พาดผ่าน data point ได้ดีที่สุดเชิงเส้น ใช้คาดคะเนได้ เช่นที่ 200 แรงม้า ราคารถน่าจะประมาณ <mark>30,000 USD</mark> — ค่า r <strong>คล้าย</strong> slope ของเส้นตรงตรงที่แปรผันตามกัน <strong>แต่ไม่ใช่ตัวเดียวกัน</strong></li>
+</ul>
+<h3 id="สิ่งที่ทำใน-preprocess">สิ่งที่ทำใน Preprocess</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>ตัวเลือก</th><th>ความหมาย</th></tr></thead><tbody><tr><td><strong>Impute</strong></td><td>ใส่ค่าแทนข้อมูลที่หายไป (data imputation) — ใช้ค่าเฉลี่ย, ค่าที่เกิดบ่อย, ค่าสุ่ม แล้วแต่เลือก</td></tr><tr><td><strong>Remove rows with missing values</strong></td><td>ตัดแถวที่มี missing ทิ้งไปเลย</td></tr><tr><td><strong>Normalize</strong></td><td>ปรับให้ตัวเลขอยู่ในสเกลมาตรฐานเดียวกัน — <strong>standardize to μ=0, σ²=1 (z-score)</strong> หรือ <strong>normalize to interval [0,1]</strong> (หา min-max แล้วหา ratio) หรือ [-1, 1]</td></tr></tbody></table></div>
+<p><strong>ทำไมต้อง normalize</strong> <em>(จาก transcript)</em> — คอลัมน์ตัวเลขแต่ละคอลัมน์มีช่วงค่ากว้างไม่เท่ากัน เช่น horsepower อยู่ราว 50–300 แต่ขนาดเครื่องยนต์อยู่ <mark>800–3000 cc</mark> เวลาคำนวณ error แล้วยกกำลังสอง ผลต่างของตัวที่ช่วงกว้างจะใหญ่กว่ามาก (500² เทียบกับ 30²) การเปรียบเทียบจึงไม่แฟร์ และอาจทำให้เลือก feature ผิด — “เปรียบส้มก็ต้องเปรียบกับส้ม ไม่ใช่เปรียบส้มกับแอปเปิล”</p>
+<p><strong>ข้อสังเกตจากการทดลองในคาบ</strong></p>
+<ul>
+<li>Preprocess ทำเฉพาะกับคอลัมน์ที่เป็น <strong>feature</strong> ไม่ทำกับ <strong>target</strong> (ราคายังคงเป็นค่าดิบ เพราะเราต้องทำนายราคา)</li>
+<li>หลัง normalize แล้ว <strong>intercept และ coefficient เปลี่ยนไป</strong> แต่ค่าที่ predict ออกมาสุดท้ายยังได้ราคาเดียวกัน</li>
+</ul>
+<h2 id="14-ประกาศงานที่สั่งในคาบ">14 ประกาศ/งานที่สั่งในคาบ</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>เรื่อง</th><th>รายละเอียด</th></tr></thead><tbody><tr><td>การเช็คชื่อ</td><td>เซ็นชื่อในใบที่ส่งเวียนรอบห้อง (ไม่ต้องเซ็นเต็มก็ได้ ขอให้รู้ว่ามา) ถ้าติดธุระให้ส่งหลักฐานมาทาง Teams</td></tr><tr><td>สอนชดเชย</td><td>กลุ่มพุธที่ไม่ได้เรียน มีสอนชดเชยวันจันทร์ตอนเช้า (เวลาเดิมของกลุ่มเช้า) ใครมาไม่ได้วันศุกร์ไปเรียนวันจันทร์แทนได้</td></tr><tr><td>ทีมโปรเจกต์</td><td><strong>4–5 คน</strong> แนะนำ 4 คน ให้รีบจับกลุ่ม</td></tr><tr><td><strong>นำเสนอไอเดียโปรเจกต์ (สัปดาห์ที่ 4)</strong></td><td>ทีมละ <strong>3–5 นาที</strong> ส่งตัวแทนมาพรีเซนต์หน้าห้อง ใช้ PowerPoint หรือ PDF ประมาณ <strong>2–3 หน้า</strong> บอกว่า: หัวข้อทำอะไร, data มาจากไหน, ข้อมูลมีลักษณะอย่างไร, จะวิเคราะห์อะไรด้วยอะไร — ถ้าเป็นสาย AI ให้บอกว่าจะสร้าง application/ระบบอะไร มีตัวอย่างให้ดูได้ยิ่งดี</td></tr><tr><td>การบ้าน Orange</td><td>อาจารย์บอกว่า <strong>จะสั่งการบ้านให้ใช้ Orange แบบง่าย ๆ แล้วโพสต์รายละเอียดตามหลัง</strong> — ให้คอยดูข้อความ <em>(ยังไม่ยืนยันรูปแบบและกำหนดส่ง)</em></td></tr><tr><td>สอบกลางภาค</td><td>สัปดาห์ที่ 6</td></tr></tbody></table></div>
+<h3 id="เครื่องมือที่แนะนำให้ไปลองสำหรับโปรเจกต์-จาก-transcript">เครื่องมือที่แนะนำให้ไปลองสำหรับโปรเจกต์ <em>(จาก transcript)</em></h3>
+<ul>
+<li><strong>Teachable Machine</strong> — เทรนโมเดลจากภาพ/เสียง/ท่าทางได้โดยไม่ต้องเขียนโค้ด อาจารย์อยากให้มีสัก 2–3 ทีมลองใช้</li>
+<li><strong>Roboflow Universe</strong> — มี dataset และโปรเจกต์ให้เลือกเป็นพัน ๆ ใช้ <mark>YOLO</mark> ทำ <strong>transfer learning</strong> ได้ (เอาโมเดลที่เขาเทรนมาแล้วพร้อม weight มาต่อยอด แล้ว train เพิ่มด้วยข้อมูลของเราเอง เช่นถ่ายรูปปลาในตลาดไทยมาเพิ่ม เพราะ dataset เดิมอาจไม่มี)</li>
+<li><strong>MediaPipe</strong> (ของ <mark>Google</mark>) — งาน object detection / detection point</li>
+<li><strong>Kaggle</strong> — สำหรับสายที่อยากเขียนโปรแกรมเอง</li>
+</ul>
+<h2 id="อภิธานศัพท์-glossary">อภิธานศัพท์ (Glossary)</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>คำศัพท์</th><th>ความหมายโดยย่อ</th></tr></thead><tbody><tr><td>AI winter</td><td>ช่วงที่กิจกรรมและเงินลงทุนด้าน AI ซบเซาลง เป็นส่วนขาลงของวัฏจักรความคาดหวังต่อ AI</td></tr><tr><td>AI Index Report</td><td>รายงานประจำปีของ Stanford HAI ที่รวบรวมดัชนีชี้วัดความเคลื่อนไหวของวงการ AI ฉบับที่ใช้ในสไลด์คือปี 2026</td></tr><tr><td>Quintillion</td><td>10 ยกกำลัง 18 หรือล้าน × ล้าน × ล้าน — 1 quintillion bytes = 1 exabyte</td></tr><tr><td>Data is the new oil</td><td>วลีของ Clive Humby ปี 2006 ที่ว่าข้อมูลมีค่าแต่ถ้ายังไม่ถูกกลั่นก็ใช้ประโยชน์ไม่ได้ ต้องแยกย่อยและวิเคราะห์ก่อน</td></tr><tr><td>AI is the new electricity</td><td>วลีของ Andrew Ng ปี 2016 ที่ว่า AI จะพลิกโฉมอุตสาหกรรมแบบเดียวกับที่ไฟฟ้าเคยทำ และทุกคนเข้าถึงได้</td></tr><tr><td>Peter Naur</td><td>ผู้เสนอคำว่า data science ในปี 1974 เพื่อใช้แทนคำว่า computer science</td></tr><tr><td>Data scientist</td><td>บทบาทของผู้ที่หา ทำความสะอาด สำรวจ สร้างโมเดล และแปลความหมายข้อมูล คำนี้บัญญัติโดย DJ Patil และ Jeff Hammerbacher ปี 2008</td></tr><tr><td>Volume</td><td>ปริมาณข้อมูลมหาศาล หนึ่งใน 5 V ของ big data</td></tr><tr><td>Velocity</td><td>ความเร็วของข้อมูลที่ไหลเข้ามาและความเร็วในการประมวลผล</td></tr><tr><td>Variety</td><td>ความหลากหลายของชนิดข้อมูลและแหล่งที่มา</td></tr><tr><td>Veracity</td><td>คุณภาพและความน่าเชื่อถือของข้อมูล</td></tr><tr><td>Value</td><td>คุณค่าของข้อมูลต่อการตัดสินใจ สไลด์ระบุว่าสำคัญที่สุดใน 5 V</td></tr><tr><td>Variability</td><td>ความหมายของข้อมูลที่ดิ้นได้ตามบริบท หรือความไม่สม่ำเสมอในข้อมูล</td></tr><tr><td>Structured data</td><td>ข้อมูลที่มีโครงสร้างชัดเจน เช่นตารางในฐานข้อมูลเชิงสัมพันธ์</td></tr><tr><td>Unstructured data</td><td>ข้อมูลที่ไม่มีโครงสร้างชัดเจน เช่นข้อความ ภาพ เสียง วิดีโอ</td></tr><tr><td>Feature engineering</td><td>การใช้ความรู้เชิงโดเมนสกัดคุณลักษณะหรือตัวแปรออกมาจากข้อมูลดิบ</td></tr><tr><td>Feature selection</td><td>การเลือกเฉพาะกลุ่มย่อยของ feature ที่เกี่ยวข้องจริงมาใช้</td></tr><tr><td>4 A's</td><td>บทบาทของ data scientist สี่ด้าน ได้แก่ Architecture, Acquisition, Analysis และ Archiving</td></tr><tr><td>ETL</td><td>Extract, Transform, Load กระบวนการดึงข้อมูล แปลง แล้วโหลดเข้าระบบปลายทาง</td></tr><tr><td>Data product</td><td>ผลลัพธ์ของกิจกรรม data science เช่นระบบแนะนำสินค้า โมเดล หรือชุดข้อมูลที่ใช้เทรน</td></tr><tr><td>Insight</td><td>ความเข้าใจอย่างลึกซึ้งที่ได้จากการวิเคราะห์ข้อมูล</td></tr><tr><td>Actionable</td><td>คุณสมบัติของ insight ที่นำไปลงมือทำต่อได้ว่าถ้าทำ X แล้ว Y จะดีขึ้น</td></tr><tr><td>Deep learning</td><td>การเรียนรู้เชิงลึกที่เลียนแบบการทำงานของสมองมนุษย์ด้วยโครงข่ายประสาทเทียม</td></tr><tr><td>KDD</td><td>Knowledge Discovery in Databases กระบวนการค้นพบองค์ความรู้จากฐานข้อมูล ครอบคลุม data mining ไว้ข้างใน</td></tr><tr><td>Data mining</td><td>การดึงสารสนเทศและ pattern ที่ยังไม่เคยรู้ออกมาจากฐานข้อมูลขนาดใหญ่</td></tr><tr><td>Data warehouse</td><td>คลังข้อมูลขนาดใหญ่ที่จัดเก็บข้อมูลแยกตามช่วงเวลา จึงเปรียบเทียบย้อนหลังได้</td></tr><tr><td>Orange Data Mining</td><td>โปรแกรม visual programming สำหรับงาน data mining ที่ทำงานด้วยการลากวาง widget ต่อกัน</td></tr><tr><td>Widget</td><td>บล็อกการทำงานหนึ่งชิ้นใน Orange ที่รับ input และส่ง output ต่อให้บล็อกอื่น</td></tr><tr><td>.ows</td><td>นามสกุลไฟล์ workspace ของ Orange ที่เก็บผังการต่อ widget ทั้งหมดไว้</td></tr><tr><td>Instance</td><td>ข้อมูลหนึ่งแถว บางทีเรียก data point, row, record หรือ observation</td></tr><tr><td>Data imputation</td><td>การใส่ค่าแทนข้อมูลที่หายไป เช่นแทนด้วยค่าเฉลี่ยหรือค่าที่พบบ่อย</td></tr><tr><td>Normalization</td><td>การปรับตัวเลขให้อยู่ในสเกลมาตรฐานเดียวกัน เพื่อให้เปรียบเทียบกันได้อย่างเป็นธรรม</td></tr><tr><td>Transfer learning</td><td>การเอาโมเดลที่ถูกเทรนมาแล้วพร้อม weight มาต่อยอด แล้วเทรนเพิ่มด้วยข้อมูลของเรา</td></tr></tbody></table></div>
+<h2 id="สรุปท้ายบท">สรุปท้ายบท</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>ประเด็น</th><th>สิ่งที่ต้องจำ</th></tr></thead><tbody><tr><td>วัฏจักรของ AI</td><td>มีทั้งช่วง hype และ AI winter ตอนนี้อยู่ช่วงขาขึ้นที่ valuation สูงจนต้องเฝ้าระวัง</td></tr><tr><td>ตัวเลขที่ใช้อ้างอิงได้</td><td>ปี 2025 โลกผลิตข้อมูลใหม่ราว 400 quintillion bytes ต่อวัน</td></tr><tr><td>สองวลีที่ต้องจำ</td><td>Data is the new oil (Humby, 2006) และ AI is the new electricity (Ng, 2016)</td></tr><tr><td>ที่มาของชื่อสาขา</td><td>data science = Peter Naur ปี 1974, data scientist = DJ Patil + Jeff Hammerbacher ปี 2008</td></tr><tr><td>Big data</td><td>จำ 5 V (Volume, Velocity, Variety, Veracity, Value) + 2 V (Variability, Visualization) โดย Value สำคัญที่สุด</td></tr><tr><td>ขั้นตอนที่กินเวลาและสำคัญที่สุด</td><td>Data preparation กินเวลามากที่สุด ส่วน EDA เป็นขั้นที่สำคัญที่สุด</td></tr><tr><td>ลำดับชั้นของศัพท์</td><td>AI กว้างสุด → ML เป็นส่วนหนึ่งของ AI → DL เลียนแบบสมอง ส่วน DS ยืมเทคนิคทั้งหมดมาใช้กับข้อมูลจริงเพื่อ take action</td></tr><tr><td>KDD กับ DM</td><td>KDD คือกระบวนการค้นพบความรู้ทั้งหมด โดยมี data mining เป็นขั้นตอนหนึ่งข้างใน และ data warehouse ต้องมี time stamp</td></tr><tr><td>เครื่องมือของวิชานี้</td><td>RStudio (posit.co) และ Orange (orangedatamining.com) ต้องลงเครื่องตัวเอง ส่วน dataset ใช้ UCI และ Kaggle</td></tr><tr><td>Orange</td><td>ต่อ widget แบบลากวาง จำลำดับ File → Data Table → Edit Domain → Select Columns → Preprocess → Scatter Plot → Linear Regression</td></tr><tr><td>ข้อควรระวังตอน preprocess</td><td>normalize ทำเฉพาะ feature ไม่ทำกับ target และ missing data ใน imports-85 แทนด้วย <code>?</code></td></tr><tr><td>งานที่ต้องเตรียม</td><td>จับกลุ่ม 4–5 คน แล้วเตรียมพรีเซนต์ไอเดียโปรเจกต์ 3–5 นาที 2–3 สไลด์ ในสัปดาห์ที่ 4</td></tr></tbody></table></div></article><nav class="pagination" aria-label="บทก่อนหน้าและถัดไป"><a href="w01-course-intro.html"><small>← บทก่อนหน้า</small>แนะนำวิชา + โครงสร้างโปรเจกต์</a><a href="w03-eda-and-model-fitting.html"><small>บทถัดไป →</small>EDA และ Model Fitting — Box Plot, Correlation, Linear Regression</a></nav></main><aside class="toc-sidebar"><nav class="toc" aria-label="สารบัญบทนี้"><strong>ในบทนี้</strong><a href="#agenda">Agenda</a><a href="#01-ทบทวน--ai-มีขึ้นมีลง-hype-กับ-winter">01 ทบทวน — AI มีขึ้นมีลง (hype กับ winter)</a><a href="#02-ดัชนีชี้วัดทิศทางของ-ai">02 ดัชนีชี้วัดทิศทางของ AI</a><a href="#03-โลกผลิตข้อมูลวันละเท่าไหร่">03 โลกผลิตข้อมูลวันละเท่าไหร่</a><a href="#04-คำคมสองประโยคที่ต้องจำ">04 คำคมสองประโยคที่ต้องจำ</a><a href="#05-ที่มาของคำว่า-data-science-และ-data-scientist">05 ที่มาของคำว่า Data Science และ Data Scientist</a><a href="#06-big-data--5-vs--2-vs">06 Big Data — 5 V&#39;s + 2 V&#39;s</a><a href="#07-data-science-ทำอะไรบ้าง">07 Data Science ทำอะไรบ้าง</a><a href="#08-ทีม-data-science-และงานฝั่ง-data-engineering">08 ทีม Data Science และงานฝั่ง Data Engineering</a><a href="#09-data-product--insight--actionable">09 Data product → insight → actionable</a><a href="#10-ai--ml--dl--ds-ต่างกันอย่างไร">10 AI / ML / DL / DS ต่างกันอย่างไร</a><a href="#11-kdd-กับ-data-mining">11 KDD กับ Data Mining</a><a href="#12-แหล่ง-dataset-และเครื่องมือที่ใช้ในวิชานี้">12 แหล่ง dataset และเครื่องมือที่ใช้ในวิชานี้</a><a href="#13-ลงมือ-orange-data-mining">13 ลงมือ: Orange Data Mining</a><a href="#14-ประกาศงานที่สั่งในคาบ">14 ประกาศ/งานที่สั่งในคาบ</a><a href="#อภิธานศัพท์-glossary">อภิธานศัพท์ (Glossary)</a><a href="#สรุปท้ายบท">สรุปท้ายบท</a></nav></aside></div>
+<footer class="site-footer"><span>INT182 · Data Science & AI<br>สรุปเพื่อทบทวนจากเอกสารประกอบการเรียน</span><a href="https://github.com/Phakinza007/int182-study-notes">GitHub ↗</a></footer>
+<dialog id="search-dialog" aria-labelledby="search-title"><div class="dialog-heading"><h2 id="search-title">ค้นหาในสรุป</h2><button data-close-dialog aria-label="ปิดการค้นหา">×</button></div><label for="search-input">คำค้น เช่น precision, PEAS, kNN</label><input id="search-input" type="search" autocomplete="off"><p id="search-status" role="status">พิมพ์คำเพื่อเริ่มค้นหา</p><ul id="search-results"></ul></dialog>
+<dialog id="image-dialog" aria-labelledby="image-title"><div class="dialog-heading"><h2 id="image-title">ภาพประกอบ</h2><button data-close-dialog aria-label="ปิดภาพ">×</button></div><div class="image-controls"><button data-zoom="out" aria-label="ย่อภาพ">−</button><button data-zoom="in" aria-label="ขยายภาพ">+</button><button data-zoom="reset">พอดีจอ</button><a id="image-original" target="_blank" rel="noopener">เปิดภาพต้นฉบับ ↗</a></div><div class="image-stage"><img id="zoom-image" alt=""></div><p id="image-caption"></p></dialog>
+</body></html>

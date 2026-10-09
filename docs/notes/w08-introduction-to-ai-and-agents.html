@@ -1,0 +1,326 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="สรุป INT182 Data Science และ AI สัปดาห์ 1–9 พร้อมไดอะแกรมและสูตรสำคัญ"><meta name="theme-color" content="#f7f6f3"><title>พื้นฐาน AI, Rational Agents และ PEAS · INT182</title><link rel="icon" href="../favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="../style.css"><script src="../app.js" defer></script></head>
+<body data-base="../" data-page="note"><a class="skip" href="#main">ข้ามไปเนื้อหา</a>
+<header class="topbar"><div class="topbar-inner"><a class="brand" href="../index.html"><span class="brand-mark">182</span><span>INT182 <small>Study notes</small></span></a><nav aria-label="เมนูหลัก"><button class="search-trigger" data-search-open aria-haspopup="dialog">ค้นหาเนื้อหา <kbd>/</kbd></button><a class="lang" href="w08-introduction-to-ai-and-agents.en.html" lang="en">English</a></nav></div></header>
+<div class="reader-layout"><aside class="reader-sidebar"><details class="week-menu" open><summary>ทุกสัปดาห์</summary><nav aria-label="เลือกสัปดาห์"><a href="w01-course-intro.html" ><span class="week-no">01</span><span>แนะนำวิชา + โครงสร้างโปรเจกต์</span></a><a href="w02-ds-ai-landscape-and-tools.html" ><span class="week-no">02</span><span>ภาพรวม DS/AI (ต่อ) + เครื่องมือ Orange</span></a><a href="w03-eda-and-model-fitting.html" ><span class="week-no">03</span><span>EDA และ Model Fitting — Box Plot, Correlation, Linear Regression</span></a><a href="w04-association-rules.html" ><span class="week-no">04</span><span>Association Rules — Market Basket Analysis, Apriori และ Support/Confidence/Lift</span></a><a href="w05-decision-trees-and-k-means.html" ><span class="week-no">05</span><span>Decision Trees, K-means Clustering และการทวนขอบเขต Exam 1</span></a><a href="w06-classification-and-model-validation.html" ><span class="week-no">06</span><span>Classification และการตรวจสอบโมเดล</span></a><a href="w07-classification-performance-metrics.html" ><span class="week-no">07</span><span>Classification Performance Metrics และการเลือกวิธีประเมิน</span></a><a href="w08-introduction-to-ai-and-agents.html" aria-current="page"><span class="week-no">08</span><span>พื้นฐาน AI, Rational Agents และ PEAS</span></a><a href="w09-introduction-to-ml-and-nearest-neighbors.html" ><span class="week-no">09</span><span>พื้นฐาน Machine Learning, k-NN และ AI Search</span></a></nav></details></aside><main id="main" class="reader"><div class="note-meta">WEEK 08 <span>2026-10-02</span></div><h1>พื้นฐาน AI, Rational Agents และ PEAS</h1><div class="reader-actions"><button data-read-week="8" aria-pressed="false">ทำเครื่องหมายว่าอ่านแล้ว</button><button data-print>พิมพ์บทนี้</button></div><article class="prose"><blockquote>
+<p>สรุปจาก <code>INT182_Lecture8_Intro-AI.pdf</code> (51 หน้า) ซึ่งดัดแปลงจาก Berkeley CS188 และ Duke COMPSCI 270 พร้อมบันทึกคาบ G2 ออนไลน์ 2 ต.ค. 2026 ภาพประกอบสรุปความสัมพันธ์จากสไลด์ ข้อมูลตัวอย่างข่าวและคลิปสะท้อนบริบทที่อาจารย์ยกในคาบ ไม่ใช่การตรวจสอบข่าวปัจจุบัน</p>
+</blockquote>
+<h2 id="01-ai-ในวิชานี้หมายถึงอะไร">01 AI ในวิชานี้หมายถึงอะไร</h2>
+<p>สไลด์ 5 ตั้งคำถามว่า AI คืออะไร มาได้อย่างไร และออกแบบระบบ AI อย่างไร ภาพยนตร์ทำให้เรานึกถึงหุ่นยนต์ทำได้ทุกอย่าง แต่ตัวอย่างระบบจริงมีขอบเขตเฉพาะ เช่น หุ่นยนต์เก็บผลผลิต โดรนตรวจสินค้าคงคลัง การรู้จำเสียง และการวางแผน (สไลด์ 6–14, 36–37)</p>
+<p>แนวทางหลักของบทนี้คือ <mark>acting rationally</mark>: ออกแบบการกระทำให้เหมาะกับเป้าหมายและข้อมูลที่มี การทำเหมือนมนุษย์กับการตัดสินใจที่เหมาะสมเป็นเกณฑ์คนละด้าน และ AI อาจเก่งบางงานโดยไม่ต้องเหมือนมนุษย์ทั้งหมด</p>
+<h2 id="02-ประวัติและรากฐาน">02 ประวัติและรากฐาน</h2>
+<p>สไลด์ 16–18 เชื่อม AI กับ philosophy, mathematics, neuroscience, economics, control theory, psychology และ linguistics</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>ช่วง</th><th>ภาพรวมตามสไลด์</th></tr></thead><tbody><tr><td>1940–1950</td><td>โมเดลวงจรของสมองและงาน Turing</td></tr><tr><td>1956</td><td>Dartmouth ใช้ชื่อ Artificial Intelligence</td></tr><tr><td>1950–1970</td><td>โปรแกรมเกมและการพิสูจน์ทฤษฎี</td></tr><tr><td>1970–1990</td><td>Knowledge-based / Expert Systems และ AI Winter</td></tr><tr><td>1990–2012</td><td>Statistical approaches, uncertainty, agents และ learning</td></tr><tr><td>2012 เป็นต้นมา</td><td>Big data, compute และ deep learning</td></tr></tbody></table></div>
+<p><em>(จาก transcript)</em> อาจารย์ชี้ว่าความพร้อมของข้อมูล อัลกอริทึม และกำลังประมวลผลร่วมกันทำให้ระบบปัจจุบันเกิดขึ้นได้ ประวัติในสไลด์เป็นภาพรวม ไม่ใช่รายการเหตุการณ์ครบทุกครั้ง</p>
+<h2 id="03-agent-และ-rational-agent">03 Agent และ Rational Agent</h2>
+<p><mark>Agent</mark> คือสิ่งที่รับรู้ environment ผ่าน <strong>sensors</strong> และกระทำต่อ environment ผ่าน <strong>actuators</strong> (สไลด์ 19–20)</p>
+<figure class="figure"><a href="../assets/w08-introduction-to-ai-and-agents/w8-agent-loop.svg" target="_blank" rel="noopener" class="diagram-link" aria-label="ขยายภาพ: วงจร Environment ส่ง percepts ผ่าน sensors ให้ Agent เลือกการกระทำผ่าน actuators"><img src="../assets/w08-introduction-to-ai-and-agents/w8-agent-loop.svg" alt="วงจร Environment ส่ง percepts ผ่าน sensors ให้ Agent เลือกการกระทำผ่าน actuators" loading="lazy" decoding="async"></a><figcaption>วงจร Environment ส่ง percepts ผ่าน sensors ให้ Agent เลือกการกระทำผ่าน actuators<a href="../assets/w08-introduction-to-ai-and-agents/w8-agent-loop.svg" target="_blank" rel="noopener" class="diagram-link figure-open">ขยายภาพ ↗</a></figcaption></figure>
+<p>Agent function จับคู่ <strong>ลำดับ percepts → action</strong> และทำงานจริงด้วย agent program บนเครื่อง ส่วน <mark>rational agent</mark> เลือก action ที่เพิ่ม expected utility ให้มากที่สุดตามข้อมูลที่มี Rationality จึงต้องพิจารณาเป้าหมาย ความไม่แน่นอน และข้อจำกัดของ environment ร่วมกัน</p>
+<h2 id="04-peas-ระบุงานให้ชัดก่อนออกแบบ">04 PEAS: ระบุงานให้ชัดก่อนออกแบบ</h2>
+<p><mark>PEAS</mark> ประกอบด้วย Performance measure, Environment, Actuators และ Sensors (สไลด์ 22–24)</p>
+<figure class="figure"><a href="../assets/w08-introduction-to-ai-and-agents/w8-peas.svg" target="_blank" rel="noopener" class="diagram-link" aria-label="ขยายภาพ: PEAS ของ automated taxi: เกณฑ์ผลงาน สภาพแวดล้อม อุปกรณ์กระทำ และเซนเซอร์"><img src="../assets/w08-introduction-to-ai-and-agents/w8-peas.svg" alt="PEAS ของ automated taxi: เกณฑ์ผลงาน สภาพแวดล้อม อุปกรณ์กระทำ และเซนเซอร์" loading="lazy" decoding="async"></a><figcaption>PEAS ของ automated taxi: เกณฑ์ผลงาน สภาพแวดล้อม อุปกรณ์กระทำ และเซนเซอร์<a href="../assets/w08-introduction-to-ai-and-agents/w8-peas.svg" target="_blank" rel="noopener" class="diagram-link figure-open">ขยายภาพ ↗</a></figcaption></figure>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>ตัวอย่าง</th><th>P</th><th>E</th><th>A</th><th>S</th></tr></thead><tbody><tr><td>Pacman</td><td>−1/step, +10 food, +500 win, −500 die, +200 scared ghost</td><td>เกมและพฤติกรรม ghost</td><td>ซ้าย ขวา ขึ้น ลง</td><td>เห็น state เกือบทั้งหมด ยกเว้นเวลาคงเหลือ power pellet</td></tr><tr><td>ระบบช่วยวินิจฉัย</td><td>สุขภาพผู้ป่วย ต้นทุน ชื่อเสียง</td><td>ผู้ป่วย บุคลากร ผู้ประกัน ศาล</td><td>หน้าจอ อีเมล</td><td>Keyboard/mouse ตามแบบจำลองในสไลด์</td></tr></tbody></table></div>
+<p>Sensors ของ agent ไม่จำเป็นต้องเป็นกล้องจริง และ actuators ไม่จำเป็นต้องเป็นแขนหุ่นยนต์ ข้อมูลเข้าและผลลัพธ์ดิจิทัลก็ทำหน้าที่นี้ได้</p>
+<h2 id="05-ชนิดของ-environment-เปลี่ยนการออกแบบ">05 ชนิดของ Environment เปลี่ยนการออกแบบ</h2>
+<p>สไลด์ 25–26 ให้ใช้คุณสมบัติของ environment เลือกเทคนิค:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>คุณสมบัติ</th><th>ผลต่อ agent</th></tr></thead><tbody><tr><td>Fully / partially observable</td><td>ถ้าเห็นไม่ครบ ต้องมี memory หรือ internal state</td></tr><tr><td>Single / multi-agent</td><td>ต้องคำนึงถึงพฤติกรรมของ agent อื่น; บางบริบทอาจต้องสุ่ม action</td></tr><tr><td>Deterministic / stochastic</td><td>ถ้าไม่แน่นอน ต้องเตรียมผลลัพธ์ที่เป็นไปได้</td></tr><tr><td>Static / dynamic</td><td>Static มีเวลาคิด; dynamic อาจเปลี่ยนระหว่างคำนวณ</td></tr><tr><td>Discrete / continuous</td><td>เวลาและการควบคุมต่อเนื่องอาจต้องมี controller ที่ทำงานต่อเนื่อง</td></tr><tr><td>Known / unknown physics</td><td>ไม่รู้ transition dynamics ต้องสำรวจ/เรียนรู้</td></tr><tr><td>Known / unknown performance measure</td><td>หากเป้าหมายยังไม่ชัด ต้องสังเกตหรือโต้ตอบกับผู้กำหนดเป้าหมาย</td></tr></tbody></table></div>
+<p><em>(จาก transcript)</em> รถอัตโนมัติมีผู้ขับอื่น สภาพอากาศ และการจราจรที่เปลี่ยนไป จึงซับซ้อนกว่าการออกคำสั่งคงที่ในโลกที่กำหนดแน่นอน</p>
+<h2 id="06-reflex-state-และ-goal-based-agents">06 Reflex, state และ goal-based agents</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>Agent</th><th>ใช้อะไรเลือก action</th><th>ข้อจำกัด/ความสามารถ</th></tr></thead><tbody><tr><td>Simple reflex</td><td>Percept ปัจจุบัน + condition-action rules</td><td>ไม่เก็บสิ่งที่มองไม่เห็นในปัจจุบัน</td></tr><tr><td>Reflex with state</td><td>Internal state + วิธีที่โลกเปลี่ยน + ผลของ action</td><td>รักษาข้อมูลจากอดีตช่วยเมื่อเห็นโลกไม่ครบ</td></tr><tr><td>Goal-based</td><td>State/model + goals + ผลที่คาดจาก action</td><td>คิดว่า action ใดพาเข้าใกล้เป้าหมาย</td></tr></tbody></table></div>
+<p>ตัวอย่างจากสไลด์ 28:</p>
+<pre><code class="language-python">class GoWestAgent(Agent):
+    def getAction(self, percept):
+        if Directions.WEST in percept.getLegalPacmanActions():
+            return Directions.WEST
+        else:
+            return Directions.STOP
+</code></pre>
+<p>กฎนี้ไปตะวันตกเมื่อทำได้ ไม่ได้พิจารณาอาหารหรือ ghost การทำ lookup table ครอบทุกสถานการณ์ก็อาจใหญ่เกินใช้จริง และ Pacman ยังมีข้อมูลที่เห็นไม่ครบ เช่นระยะเวลาของ power pellet (สไลด์ 27–33)</p>
+<h2 id="07-นิยาม-ai-สี่มุมมอง">07 นิยาม AI สี่มุมมอง</h2>
+<p>สไลด์ 38 แบ่งเป็นสองแกน: คิด/กระทำ และเหมือนมนุษย์/มีเหตุผล</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th></th><th>เหมือนมนุษย์</th><th>มีเหตุผล</th></tr></thead><tbody><tr><td>คิด</td><td>Think like humans</td><td>Think rationally</td></tr><tr><td>กระทำ</td><td>Act like humans</td><td>Act rationally</td></tr></tbody></table></div>
+<p><strong>Turing Test</strong> มุ่งพฤติกรรมที่ทำให้ผู้ตัดสินแยกจากมนุษย์ได้ยาก ส่วน <strong>Chinese room</strong> ตั้งคำถามว่าการทำตามกฎสัญลักษณ์จนตอบได้ถูกหมายถึงเข้าใจจริงหรือไม่ ตัวอย่าง ELIZA แสดงว่าการเลียนแบบบทสนทนาบางแบบทำให้ผู้ใช้รู้สึกกำลังคุยกับคนได้ (สไลด์ 39–42) บทนี้จึงเน้นประเมิน action ตามงาน มากกว่าตัดสินเรื่อง consciousness</p>
+<h2 id="08-traditional-ai-และส่วนที่เกี่ยวข้อง">08 Traditional AI และส่วนที่เกี่ยวข้อง</h2>
+<p>AI มีทั้งการใช้สัญลักษณ์/กฎและการเรียนรู้จากข้อมูล หัวข้อที่สไลด์ 45–47 ยกมา ได้แก่:</p>
+<ul>
+<li>Search: หาเส้นทางแก้ปัญหา เช่น Rubik’s cube</li>
+<li>Constraint satisfaction / optimization: จัดตารางประชุมตามข้อจำกัด</li>
+<li>Game playing: chess หรือ poker</li>
+<li>Logic / knowledge representation: แทนข้อเท็จจริงและอนุมาน</li>
+<li>Planning: วางลำดับเพื่อไปถึงเป้าหมาย</li>
+<li>Probability / decision theory: ตัดสินใจเมื่อไม่แน่นอน</li>
+</ul>
+<p>หัวข้อทับซ้อนกันได้ <em>(จาก transcript)</em> อาจารย์เปรียบ knowledge-based rules กับการใช้ข้อมูลฝึกโมเดล ซึ่งไม่ได้ทำให้ทุกระบบ AI ต้องเป็น machine learning</p>
+<h2 id="09-ความสามารถและข้อจำกัด">09 ความสามารถและข้อจำกัด</h2>
+<p>สไลด์ 35, 43–44 ยกเกมและงานที่กำหนดชัดเป็นตัวอย่างความสำเร็จ ขณะที่งานโลกจริงที่ยุ่งเหยิง กำกวม หรืออาศัย common sense ยังยาก การอธิบายเหตุผล การปรับวิธีเมื่อสถานการณ์เปลี่ยน และการโยงความรู้ข้ามบริบทเป็นจุดที่สไลด์ชวนเปรียบเทียบกับมนุษย์</p>
+<p><em>(จาก transcript)</em> ตัวอย่างข่าว ภาพสร้างด้วย AI และการนำระบบไปใช้ ชวนให้ดูทั้งศักยภาพและความน่าเชื่อถือ โดยควรแยกสิ่งที่ระบบแสดงออกจากความสามารถที่ทดสอบได้จริง</p>
+<h2 id="10-progress-ของโปรเจกต์-phase-2">10 Progress ของโปรเจกต์ Phase 2</h2>
+<p><em>(จาก transcript)</em> Progress ต้องแสดงสิ่งที่เพิ่มจาก Phase 1 และเข้าใกล้วัตถุประสงค์จริง ไม่ใช่เพียงเพิ่มสไลด์:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>มิติ</th><th>หลักฐานที่ควรแสดง</th></tr></thead><tbody><tr><td>Algorithms</td><td>เลือกวิธีชัดขึ้นและอธิบายเหตุผล</td></tr><tr><td>Data</td><td>แหล่งข้อมูล จำนวนแต่ละคลาส และตัวอย่างที่จับต้องได้</td></tr><tr><td>Software</td><td>โมดูลหรือโค้ดที่เริ่มทำ พร้อมภาพโครงสร้างถ้ามี</td></tr><tr><td>References</td><td>แหล่ง technical, domain knowledge และระบบใกล้เคียง</td></tr><tr><td>Pipeline</td><td>ขั้นตอนตั้งแต่ input จนถึง output และความคืบหน้าแต่ละขั้น</td></tr><tr><td>Evaluation</td><td>การแบ่ง train/test และหลักฐานว่า performance น่าเชื่อถือ</td></tr></tbody></table></div>
+<p>ตัวเลขตัวอย่าง rock-paper-scissors 80/75/80 รูป หรือ spam/non-spam หลายร้อยข้อความ เป็นตัวอย่างอธิบาย readiness ไม่ใช่จำนวนขั้นต่ำที่สั่งทุกทีม คาบนี้ระบุช่วงนำเสนอใน exam block 19–26 ต.ค.; วันที่เจาะจงที่กล่าวภายหลังอยู่ใน W09</p>
+<h2 id="11-ประกาศ-final-exam">11 ประกาศ Final Exam</h2>
+<p><em>(จาก transcript ช่วงต้นและท้ายคาบ)</em> อาจารย์ระบุให้นำโน้ต <strong>A4 หนึ่งแผ่น เขียนหรือพิมพ์ได้สองหน้า</strong>, เครื่องคิดเลข และ English dictionary แบบเล่มเข้าห้องสอบได้ <strong>ห้ามยืมหรือแชร์โน้ตกันในห้องสอบ</strong> และอาจารย์จะเก็บโน้ตหลังสอบ</p>
+<p>นี่คือข้อมูลจากบันทึกคาบ 2 ต.ค. ซึ่งชัดกว่าความคาดหมายใน W07; วันเวลาและประกาศสอบทางการต้องดูจากรายวิชา</p>
+<h2 id="อภิธานศัพท์-glossary">อภิธานศัพท์ (Glossary)</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>คำ</th><th>ความหมาย</th></tr></thead><tbody><tr><td>Agent</td><td>สิ่งที่รับรู้ environment และกระทำต่อ environment</td></tr><tr><td>Rational agent</td><td>agent ที่เลือก action เพื่อเพิ่ม expected utility</td></tr><tr><td>Percept</td><td>ข้อมูลที่ agent รับรู้ผ่าน sensors</td></tr><tr><td>Actuator</td><td>ช่องทางที่ agent ใช้กระทำต่อโลก</td></tr><tr><td>PEAS</td><td>Performance, Environment, Actuators, Sensors</td></tr><tr><td>Partially observable</td><td>มองเห็นข้อมูล state ของโลกไม่ครบ</td></tr><tr><td>Stochastic</td><td>ผลของการกระทำมีความไม่แน่นอน</td></tr><tr><td>Simple reflex agent</td><td>ใช้ percept ปัจจุบันกับ condition-action rules</td></tr><tr><td>Internal state</td><td>ข้อมูลภายในที่ช่วยแทนสิ่งที่มองไม่เห็นตอนนี้</td></tr><tr><td>Goal-based agent</td><td>เลือกการกระทำโดยพิจารณาเป้าหมาย</td></tr></tbody></table></div>
+<h2 id="สรุปท้ายบท">สรุปท้ายบท</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>หัวข้อ</th><th>ประเด็นสำคัญ</th></tr></thead><tbody><tr><td>AI</td><td>มีหลายวิธี; บทนี้เน้น acting rationally</td></tr><tr><td>Agent loop</td><td>Sensors → เลือก action → Actuators → Environment</td></tr><tr><td>PEAS</td><td>ระบุเกณฑ์ผลงาน โลก การกระทำ และข้อมูลรับเข้า</td></tr><tr><td>Environment</td><td>ความไม่แน่นอน/การมองเห็น/เวลาเปลี่ยนการออกแบบ</td></tr><tr><td>Agent design</td><td>Reflex → มี state → ใช้ goals</td></tr><tr><td>Phase 2</td><td>แสดง data, algorithms, software, references, pipeline และ evaluation</td></tr></tbody></table></div></article><nav class="pagination" aria-label="บทก่อนหน้าและถัดไป"><a href="w07-classification-performance-metrics.html"><small>← บทก่อนหน้า</small>Classification Performance Metrics และการเลือกวิธีประเมิน</a><a href="w09-introduction-to-ml-and-nearest-neighbors.html"><small>บทถัดไป →</small>พื้นฐาน Machine Learning, k-NN และ AI Search</a></nav></main><aside class="toc-sidebar"><nav class="toc" aria-label="สารบัญบทนี้"><strong>ในบทนี้</strong><a href="#01-ai-ในวิชานี้หมายถึงอะไร">01 AI ในวิชานี้หมายถึงอะไร</a><a href="#02-ประวัติและรากฐาน">02 ประวัติและรากฐาน</a><a href="#03-agent-และ-rational-agent">03 Agent และ Rational Agent</a><a href="#04-peas-ระบุงานให้ชัดก่อนออกแบบ">04 PEAS: ระบุงานให้ชัดก่อนออกแบบ</a><a href="#05-ชนิดของ-environment-เปลี่ยนการออกแบบ">05 ชนิดของ Environment เปลี่ยนการออกแบบ</a><a href="#06-reflex-state-และ-goal-based-agents">06 Reflex, state และ goal-based agents</a><a href="#07-นิยาม-ai-สี่มุมมอง">07 นิยาม AI สี่มุมมอง</a><a href="#08-traditional-ai-และส่วนที่เกี่ยวข้อง">08 Traditional AI และส่วนที่เกี่ยวข้อง</a><a href="#09-ความสามารถและข้อจำกัด">09 ความสามารถและข้อจำกัด</a><a href="#10-progress-ของโปรเจกต์-phase-2">10 Progress ของโปรเจกต์ Phase 2</a><a href="#11-ประกาศ-final-exam">11 ประกาศ Final Exam</a><a href="#อภิธานศัพท์-glossary">อภิธานศัพท์ (Glossary)</a><a href="#สรุปท้ายบท">สรุปท้ายบท</a></nav></aside></div>
+<footer class="site-footer"><span>INT182 · Data Science & AI<br>สรุปเพื่อทบทวนจากเอกสารประกอบการเรียน</span><a href="https://github.com/Phakinza007/int182-study-notes">GitHub ↗</a></footer>
+<dialog id="search-dialog" aria-labelledby="search-title"><div class="dialog-heading"><h2 id="search-title">ค้นหาในสรุป</h2><button data-close-dialog aria-label="ปิดการค้นหา">×</button></div><label for="search-input">คำค้น เช่น precision, PEAS, kNN</label><input id="search-input" type="search" autocomplete="off"><p id="search-status" role="status">พิมพ์คำเพื่อเริ่มค้นหา</p><ul id="search-results"></ul></dialog>
+<dialog id="image-dialog" aria-labelledby="image-title"><div class="dialog-heading"><h2 id="image-title">ภาพประกอบ</h2><button data-close-dialog aria-label="ปิดภาพ">×</button></div><div class="image-controls"><button data-zoom="out" aria-label="ย่อภาพ">−</button><button data-zoom="in" aria-label="ขยายภาพ">+</button><button data-zoom="reset">พอดีจอ</button><a id="image-original" target="_blank" rel="noopener">เปิดภาพต้นฉบับ ↗</a></div><div class="image-stage"><img id="zoom-image" alt=""></div><p id="image-caption"></p></dialog>
+</body></html>

@@ -1,0 +1,759 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="INT182 Data Science and AI notes for weeks 1–9, with diagrams and key formulas"><meta name="theme-color" content="#f7f6f3"><title>The DS/AI Landscape (continued) and the Orange Toolkit · INT182</title><link rel="icon" href="../favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="../style.css"><script src="../app.js" defer></script></head>
+<body data-base="../" data-page="note"><a class="skip" href="#main">Skip to content</a>
+<header class="topbar"><div class="topbar-inner"><a class="brand" href="../en.html"><span class="brand-mark">182</span><span>INT182 <small>Study notes</small></span></a><nav aria-label="Main menu"><button class="search-trigger" data-search-open aria-haspopup="dialog">Search notes <kbd>/</kbd></button><a class="lang" href="w02-ds-ai-landscape-and-tools.html" lang="th">ภาษาไทย</a></nav></div></header>
+<div class="reader-layout"><aside class="reader-sidebar"><details class="week-menu" open><summary>All weeks</summary><nav aria-label="Choose a week"><a href="w01-course-intro.en.html" ><span class="week-no">01</span><span>Course Introduction and Project Structure</span></a><a href="w02-ds-ai-landscape-and-tools.en.html" aria-current="page"><span class="week-no">02</span><span>The DS/AI Landscape (continued) and the Orange Toolkit</span></a><a href="w03-eda-and-model-fitting.en.html" ><span class="week-no">03</span><span>EDA and Model Fitting — Box Plot, Correlation, Linear Regression</span></a><a href="w04-association-rules.en.html" ><span class="week-no">04</span><span>Association Rules — Market Basket Analysis, Apriori and Support/Confidence/Lift</span></a><a href="w05-decision-trees-and-k-means.en.html" ><span class="week-no">05</span><span>Decision Trees, K-means Clustering, and the Exam 1 scope review</span></a><a href="w06-classification-and-model-validation.en.html" ><span class="week-no">06</span><span>Classification and Model Validation</span></a><a href="w07-classification-performance-metrics.en.html" ><span class="week-no">07</span><span>Classification Performance Metrics and Evaluation Methods</span></a><a href="w08-introduction-to-ai-and-agents.en.html" ><span class="week-no">08</span><span>Introduction to AI, Rational Agents, and PEAS</span></a><a href="w09-introduction-to-ml-and-nearest-neighbors.en.html" ><span class="week-no">09</span><span>Introduction to Machine Learning, k-NN, and AI Search</span></a></nav></details></aside><main id="main" class="reader"><div class="note-meta">WEEK 02 <span>2026-08-14</span></div><h1>The DS/AI Landscape (continued) and the Orange Toolkit</h1><div class="reader-actions"><button data-read-week="2" aria-pressed="false">Mark as read</button><button data-print>Print this note</button></div><article class="prose"><blockquote>
+<p>Group 2 (Friday 13.00–16.00 @ LX 12/1) — built on the deck <code>INT182_01_Intro-to-DS-Engineering-and-AI.pdf</code> (51 slides, Assoc. Prof. Dr. Pornchai Mongkolnam), from slide 19 to slide 51, which is the stretch taught as a continuation of last week, with additions from what the lecturer said in class (<code>INT182_G2_20260814.docx</code>)</p>
+<p>⚠️ The transcript comes from automatic speech recognition and is poor quality in several stretches (wrong words, broken sentences) — anything drawn from the transcript alone is marked <em>(from the transcript)</em>, and only what could be read with confidence is kept</p>
+<p>At the end of the session the lecturer opened the next deck (EDA &#x26; Model Fitting) and got about 16 slides in. All of that material lives in the Week 3 note, so that one topic does not end up split across two files</p>
+</blockquote>
+<h2 id="agenda">Agenda</h2>
+<ol>
+<li>Recap of the AI winter → the indicators of where AI is heading</li>
+<li>How much data the world produces, and two quotes worth remembering</li>
+<li>Where the terms Data Science and Data Scientist come from</li>
+<li>Big Data — 5 V's + 2 V's, and structured vs unstructured</li>
+<li>What data science actually does — the pipeline, life cycle and 4 A's</li>
+<li>The team, and the work on the data engineering side</li>
+<li>How AI, ML, DL and DS differ</li>
+<li>KDD and data mining</li>
+<li>Dataset sources and tools</li>
+<li>Hands-on: Orange Data Mining</li>
+</ol>
+<h2 id="01-recap--ai-has-its-ups-and-downs-hype-and-winter">01 Recap — AI has its ups and downs (hype and winter)</h2>
+<p>Last session stopped at the graph of AI's evolution, the one that rises and falls. The stretches where it collapses are called an <strong>AI winter</strong>.</p>
+<p><em>(from the transcript)</em> The lecturer explained where the word winter comes from: it is like the cold season, when there is little activity and animals <mark>hibernate</mark>. During an AI winter, activity in the field goes quiet, <strong>investment dries up</strong>, and little money arrives from either government or the private sector. Then it comes back up again — it is a <strong>cycle</strong>. Right now we are on the way up, and IT market indices carry valuations and market values so high that plenty of people are watching them nervously.</p>
+<figure class="figure"><a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ai_hype_winter.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="Enlarge image: The arc of AI&#x27;s popularity — the booms, the AI winters, and a timeline of the milestones (slide 19)"><img src="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ai_hype_winter.webp" alt="The arc of AI&#x27;s popularity — the booms, the AI winters, and a timeline of the milestones (slide 19)" loading="lazy" decoding="async"></a><figcaption>The arc of AI's popularity — the booms, the AI winters, and a timeline of the milestones (slide 19)<a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ai_hype_winter.webp" target="_blank" rel="noopener" class="diagram-link figure-open">Enlarge ↗</a></figcaption></figure>
+<h2 id="02-the-indicators-of-where-ai-is-heading">02 The indicators of where AI is heading</h2>
+<p>Two slides draw on <strong>“The AI Index 2026 Annual Report,” AI Index Steering Committee, Institute for Human-Centered AI, Stanford University (April 2026)</strong>.</p>
+<ul>
+<li><strong>AI Publications</strong> — publication counts act as an index of which organisations and institutions are actually doing research. <em>(from the transcript)</em> Government bodies, private companies and universities all publish, and most of it comes out of <mark>R&#x26;D</mark> work</li>
+<li><strong>AI Publications by Fields</strong> — shows which sub-fields under the AI umbrella people are researching. <em>(from the transcript)</em> The ones the lecturer listed: machine learning, computer vision, machine vision, pattern recognition, NLP, generative AI, robotics</li>
+<li><strong>AI Rankings</strong> — <a href="https://airankings.org/">https://airankings.org/</a> shows, for each field, where the research is happening and where the experts, faculty and master's/PhD students are. <em>(from the transcript)</em> He compared it with <mark>CS Rankings</mark>, which is broader, while AI Rankings is more specific; the data is refreshed periodically</li>
+</ul>
+<p><em>(from the transcript)</em> The definitions stressed in class:</p>
+<ul>
+<li><strong>Machine learning</strong> — making a machine learn and get smarter from data on its own, <strong>without a programmer writing out the steps explicitly</strong>. We only feed in data to train on</li>
+<li><strong>Computer vision (CV)</strong> — bound up with <mark>image processing</mark>; used to detect and recognise faces, or to identify and distinguish objects inside an image</li>
+<li><strong>Machine vision</strong> — applying computer vision to factory hardware and equipment, for instance automated systems that must recognise or count things. The example the lecturer had seen first-hand was a CP grilled-chicken plant near Minburi, where cameras capture the grilled pieces coming off the line and analyse whether any are burnt, what the quality is, and whether the count is complete — all without a person doing it</li>
+</ul>
+<figure class="figure"><a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ai_publications.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="Enlarge image: AI publications by topic, 2013–24 — machine learning far ahead of the rest (slide 21)"><img src="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ai_publications.webp" alt="AI publications by topic, 2013–24 — machine learning far ahead of the rest (slide 21)" loading="lazy" decoding="async"></a><figcaption>AI publications by topic, 2013–24 — machine learning far ahead of the rest (slide 21)<a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ai_publications.webp" target="_blank" rel="noopener" class="diagram-link figure-open">Enlarge ↗</a></figcaption></figure>
+<h2 id="03-how-much-data-the-world-produces-per-day">03 How much data the world produces per day</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Value</th><th>Meaning</th></tr></thead><tbody><tr><td>Quintillion</td><td>10<sup>18</sup> = million × million × million</td></tr><tr><td>Exabyte</td><td>1 quintillion bytes</td></tr><tr><td>In 2025</td><td>About <strong>400 quintillion bytes of new data per day</strong> worldwide, and still climbing as AI adoption accelerates</td></tr><tr><td>As DVDs</td><td>Roughly <strong>95–120 billion</strong> standard DVDs (4.7 GB each) every single day</td></tr></tbody></table></div>
+<p>(The figures on the slide cite an answer from <mark>DeepSeek</mark>, July 2026.)</p>
+<p><em>(from the transcript)</em> This data arrives in many forms and from many sources — video streaming, music, images, text and so on. The point the lecturer closed on: <strong>more data does not automatically mean better</strong>. If you have a mountain of it but cannot process it, none of it does you any good.</p>
+<h2 id="04-two-quotes-worth-remembering">04 Two quotes worth remembering</h2>
+<h3 id="data-is-the-new-oil--clive-humby-2006">“Data is the new oil” — Clive Humby (2006)</h3>
+<blockquote>
+<p>“Data is the new oil. It’s valuable, but if unrefined it cannot really be used. It has to be changed into gas, plastic, chemicals, etc to create a valuable entity that drives profitable activity; so must data be broken down, analyzed for it to have value.”</p>
+</blockquote>
+<p>Clive Humby is a British data commercialization entrepreneur, and the <mark>World Economic Forum</mark> picked the phrase up in a 2011 report.</p>
+<h3 id="ai-is-the-new-electricity--andrew-ng-2016">“AI is the new electricity” — Andrew Ng (2016)</h3>
+<p>Andrew Ng is the former Chief Scientist at <mark>Baidu</mark>, a co-founder of Coursera, and an adjunct professor at Stanford.</p>
+<blockquote>
+<p>“Anything that a typical human can do with at most 1 sec of thought, can probably now or soon be automated with AI.” — an imperfect rule, but quite a helpful one.</p>
+</blockquote>
+<p>Why the comparison holds: about a century ago the world electrified, replacing steam-powered machines and transforming transportation, manufacturing, agriculture and healthcare. AI is now poised to drive a transformation of similar scale across many industries. (A note on the slide: 5G latency is about <mark>single-digit milliseconds</mark> at best.)</p>
+<p><em>(from the transcript)</em> The lecturer tied this to the word <strong>democratize</strong> — AI is something everyone can reach, the way electricity is, rather than something confined to one group. It may not be free, but it is within reach at a reasonable price, much like the monthly phone and internet bills we already pay.</p>
+<h2 id="05-where-the-terms-data-science-and-data-scientist-come-from">05 Where the terms Data Science and Data Scientist come from</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Term</th><th>Year</th><th>Who</th></tr></thead><tbody><tr><td><strong>Data science</strong></td><td>1974</td><td><strong>Peter Naur</strong> proposed it as an alternative name for computer science</td></tr><tr><td><strong>Data scientist</strong></td><td>2008</td><td>Coined by <strong>DJ Patil</strong> and <strong>Jeff Hammerbacher</strong></td></tr></tbody></table></div>
+<p><em>(from the transcript)</em> Peter Naur was a well-known figure in programming languages, one of the people who laid down the rules and grammar for computer languages in the 1960s and 1970s — the era of <mark>Fortran and ALGOL</mark>, before Java, C++ and Python. So the idea of data science goes back a long way, but it never spread widely, and computer science is still the term in use. Note that <strong>data scientist came after data science</strong>, and that it names a <em>role</em> rather than a field of study.</p>
+<p>The definitions the slides quote:</p>
+<ul>
+<li><strong>Jeffrey Stanton (Syracuse University)</strong>: “Data Science refers to an emerging area of work concerned with the collection, preparation, analysis, visualization, management and preservation of large collections of information.”</li>
+<li><strong>Hilary Mason (chief scientist at bit.ly)</strong>: “A data scientist is someone who can obtain, scrub, explore, model and interpret data, blending hacking, statistics and machine learning.” — someone who gets hold of the data, cleans it up (scrubs it), explores it, builds a model and interprets what that model says</li>
+</ul>
+<figure class="figure"><a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ds_multidisciplinary.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="Enlarge image: Data science at the centre of many disciplines — domain expertise, maths, statistics, visualization, and more (slide 27)"><img src="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ds_multidisciplinary.webp" alt="Data science at the centre of many disciplines — domain expertise, maths, statistics, visualization, and more (slide 27)" loading="lazy" decoding="async"></a><figcaption>Data science at the centre of many disciplines — domain expertise, maths, statistics, visualization, and more (slide 27)<a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ds_multidisciplinary.webp" target="_blank" rel="noopener" class="diagram-link figure-open">Enlarge ↗</a></figcaption></figure>
+<h3 id="ds--a-jack-of-all-trades-and-a-master-of-some">DS = “A jack of all trades and a master of some”</h3>
+<p>(<mark>Brendan Tierney</mark>, 2012) — someone who can do many kinds of work but is genuinely expert in only a few. <em>(from the transcript)</em> The lecturer compared it to a <strong>duck</strong>, which can fly and swim but may not be outstanding at either.</p>
+<p>The slide titled “DS in some perspective” also marks out a <strong>danger zone</strong> — the region where you work on data alone without any theory to support it.</p>
+<figure class="figure"><a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_jack_of_all_trades.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="Enlarge image: Brendan Tierney&#x27;s &#x22;Data Science Is Multidisciplinary&#x22; diagram (slide 31)"><img src="../assets/w02-ds-ai-landscape-and-tools/w2_fig_jack_of_all_trades.webp" alt="Brendan Tierney&#x27;s &#x22;Data Science Is Multidisciplinary&#x22; diagram (slide 31)" loading="lazy" decoding="async"></a><figcaption>Brendan Tierney's "Data Science Is Multidisciplinary" diagram (slide 31)<a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_jack_of_all_trades.webp" target="_blank" rel="noopener" class="diagram-link figure-open">Enlarge ↗</a></figcaption></figure>
+<h2 id="06-big-data--5-vs--2-vs">06 Big Data — 5 V's + 2 V's</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>V</th><th>Meaning</th></tr></thead><tbody><tr><td><strong>Volume</strong></td><td>Sheer quantity; probably the best-known characteristic of big data</td></tr><tr><td><strong>Velocity</strong></td><td>The speed of incoming data and of processing it</td></tr><tr><td><strong>Variety</strong></td><td>The range of data types, arriving from many sources</td></tr><tr><td><strong>Veracity</strong></td><td>Data quality, cleanliness and accuracy — confidence and trust in the data</td></tr><tr><td><strong>Value</strong></td><td>Information for decision-making — the slide calls it arguably the most important of all</td></tr><tr><td>+ <strong>Variability</strong></td><td>Meaning that shifts with context, or inconsistencies in the data and in the speed at which it loads into your database</td></tr><tr><td>+ <strong>Visualization</strong></td><td>Making the collected and analysed data understandable and easy to read</td></tr></tbody></table></div>
+<h3 id="structured-vs-unstructured">Structured vs Unstructured</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Type</th><th>Characteristics</th><th>Examples</th></tr></thead><tbody><tr><td><strong>Structured</strong></td><td>Clear structure, easy to access and analyse</td><td>Tables, relational databases (with an explicit primary key)</td></tr><tr><td><strong>Unstructured</strong></td><td>No clear structural form</td><td>Text and comments, video, music, images, multimedia</td></tr><tr><td><strong>In between</strong> <em>(from the transcript)</em></td><td>Carries tags or partial structure; some people put it in the middle</td><td>XML, JSON</td></tr></tbody></table></div>
+<p><em>(from the transcript)</em> An example of using unstructured data: the comments under a video clip have to be mined for keywords, the word frequencies examined, and then judged as positive or negative sentiment — which is exactly what <mark>LLMs and generative AI</mark> do today.</p>
+<h2 id="07-what-data-science-actually-does">07 What data science actually does</h2>
+<figure class="figure"><a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ds_perspective.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="Enlarge image: DS from another angle — the intersection of domain knowledge, computer science, and maths/statistics, with the danger zone marked (slide 33)"><img src="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ds_perspective.webp" alt="DS from another angle — the intersection of domain knowledge, computer science, and maths/statistics, with the danger zone marked (slide 33)" loading="lazy" decoding="async"></a><figcaption>DS from another angle — the intersection of domain knowledge, computer science, and maths/statistics, with the danger zone marked (slide 33)<a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ds_perspective.webp" target="_blank" rel="noopener" class="diagram-link figure-open">Enlarge ↗</a></figcaption></figure>
+<h3 id="the-main-components">The main components</h3>
+<p>Data Collection → Data Cleaning and Preparation → Exploratory Data Analysis (EDA) → Data Modeling → Evaluation → Data Communication and Visualization</p>
+<h3 id="the-practical-definition--ds-is-the-whole-pipeline">The practical definition — DS is the whole pipeline</h3>
+<p>A data scientist understands and cares about <strong>the whole pipeline</strong> of extracting information out of data, which comes in three steps (<mark>Tim Kraska</mark>):</p>
+<ol>
+<li><strong>Preparing to run a model</strong> — gathering, cleaning, integrating, restructuring, transforming, loading, filtering, deleting, combining, merging, verifying, extracting, shaping</li>
+<li><strong>Running the model</strong></li>
+<li><strong>Communicating the results</strong></li>
+</ol>
+<p><em>(from the transcript)</em> The lecturer explained the word pipeline as <mark>upstream / midstream / downstream</mark> — a workflow that passes work along step by step, much like the way things are done in software engineering.</p>
+<h3 id="the-ds-life-cycle">The DS life cycle</h3>
+<ol>
+<li>Requirement engineering</li>
+<li><strong>Feature engineering</strong> — using <mark>domain knowledge</mark> to extract features (characteristics, properties, attributes, variables) from raw data</li>
+<li><strong>Feature selection</strong> — choosing the subset of features that genuinely matter</li>
+<li>Modelling</li>
+<li>Deployment and maintenance</li>
+</ol>
+<figure class="figure"><a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ds_process.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="Enlarge image: The data science process — from raw data through EDA and models to a data product and a decision (slide 39)"><img src="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ds_process.webp" alt="The data science process — from raw data through EDA and models to a data product and a decision (slide 39)" loading="lazy" decoding="async"></a><figcaption>The data science process — from raw data through EDA and models to a data product and a decision (slide 39)<a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ds_process.webp" target="_blank" rel="noopener" class="diagram-link figure-open">Enlarge ↗</a></figcaption></figure>
+<h3 id="the-7-key-steps-of-ds-work">The 7 key steps of DS work</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Step</th><th>Note from the slide</th></tr></thead><tbody><tr><td>1. Business problem</td><td>Ask “why” questions — the slide puts it as playing the part of an inquisitive young novice monk</td></tr><tr><td>2. Data acquisition</td><td></td></tr><tr><td>3. Data preparation</td><td>Cleaning and transformation — <strong>the most time-consuming process</strong></td></tr><tr><td>4. Exploratory data analysis</td><td>Features and parameters — <strong>the most important step</strong></td></tr><tr><td>5. Data modeling</td><td>Data mining, machine learning, deep learning — <strong>the most technical part</strong></td></tr><tr><td>6. Visualization and communication</td><td></td></tr><tr><td>7. Deployment and maintenance</td><td></td></tr></tbody></table></div>
+<p><em>(from the transcript)</em> All of this is a <strong>cycle</strong>, not a straight line — once it is deployed for real and users start using it, you collect <mark>feedback</mark> and loop back round to improve it.</p>
+<h3 id="the-4-as-of-data-science">The 4 A's of Data Science</h3>
+<p>The roles data scientists play, or help others play (<mark>Saltz &#x26; Stanton</mark>, 2018)</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>A</th><th>Meaning</th></tr></thead><tbody><tr><td>Data <strong>Architecture</strong></td><td>Designing the architecture of the data system</td></tr><tr><td>Data <strong>Acquisition</strong></td><td>Getting hold of the data / data collection</td></tr><tr><td>Data <strong>Analysis</strong></td><td>Analysing the data</td></tr><tr><td>Data <strong>Archiving</strong></td><td>Keeping records so they can be searched and retrieved later <em>(from the transcript: compared to a national archive, or to version control, which tells you who changed what and when)</em></td></tr></tbody></table></div>
+<h2 id="08-the-data-science-team-and-the-work-on-the-data-engineering-side">08 The data science team, and the work on the data engineering side</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Role</th><th>What they do</th></tr></thead><tbody><tr><td><strong>Data scientist (DS)</strong></td><td>Prepares data and engineers features — the most valuable skill is training models</td></tr><tr><td><strong>Data engineer (DE)</strong></td><td>Focused on data acquisition; builds data pipelines — a 5:1 DE:DS ratio is not uncommon</td></tr><tr><td><strong>Data analyst (DA)</strong></td><td>Assists the DS with data preparation</td></tr><tr><td><strong>Application architect (AA)</strong></td><td>Designs the complete solution; deploys and maintains models in production</td></tr></tbody></table></div>
+<h3 id="what-data-engineering-covers">What data engineering covers</h3>
+<ul>
+<li><strong>Data pipelines</strong> — efficient, reliable systems for moving data from various sources (databases, APIs, files) to storage and processing platforms</li>
+<li><strong>Data storage</strong> — selecting and managing the right storage for the data's characteristics and query patterns (relational databases, data warehouses, <mark>data lakes</mark>, NoSQL)</li>
+<li><strong>Data transformation</strong> — cleaning and transforming raw data into a form fit for analysis</li>
+<li><strong>Data quality</strong> — accuracy, completeness, consistency and timeliness</li>
+<li><strong>ETL (Extract, Transform, Load)</strong> — <em>(from the transcript: some places call it <mark>ELT</mark>, whichever suits)</em> pull the data out → transform, clean and reformat it → load it into the database ready for analysis</li>
+</ul>
+<p>The tools the slides name: SQL, NoSQL, Hadoop, Snowflake, Apache Spark, Airflow, Kafka, the languages Python, Java and <mark>Scala</mark>, and the AWS / Azure / GCP clouds.</p>
+<h2 id="09-data-product--insight--actionable">09 Data product → insight → actionable</h2>
+<p><strong>A data product is the output of any data science activity</strong> — a <mark>recommender system</mark>, for instance. We generate actionable insights out of big data using data science.</p>
+<p><em>(from the transcript)</em> Compare it with the <strong>work product</strong> of software engineering (requirement spec, test plan, test case, project plan, risk plan, prototype) — the data science side has its own data products, whether that is the model itself, its weights, or the datasets used to train and test it.</p>
+<p>Two words to keep apart:</p>
+<ul>
+<li><strong>Insight</strong> = a thorough, deep understanding gained from analysing the data</li>
+<li><strong>Actionable</strong> = if you do X, how will Y improve — once you have the insight you must be able to <strong>take action</strong> on it, for instance analysing the data, finding the point where your product loses to a competitor, and putting resources into that point</li>
+</ul>
+<figure class="figure"><a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_data_product.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="Enlarge image: Data → Insight → Action, with DJ Patil&#x27;s definition of a data product (slide 42)"><img src="../assets/w02-ds-ai-landscape-and-tools/w2_fig_data_product.webp" alt="Data → Insight → Action, with DJ Patil&#x27;s definition of a data product (slide 42)" loading="lazy" decoding="async"></a><figcaption>Data → Insight → Action, with DJ Patil's definition of a data product (slide 42)<a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_data_product.webp" target="_blank" rel="noopener" class="diagram-link figure-open">Enlarge ↗</a></figcaption></figure>
+<h2 id="10-how-ai-ml-dl-and-ds-differ">10 How AI, ML, DL and DS differ</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Abbreviation</th><th>Definition on the slide</th></tr></thead><tbody><tr><td><strong>AI</strong></td><td>Enable machines to think — building machines that can mimic human intelligence</td></tr><tr><td><strong>ML</strong></td><td>Provide statistical tools to explore and analyse data (supervised, unsupervised, reinforcement learning), letting computers learn from data without being explicitly programmed</td></tr><tr><td><strong>DL</strong></td><td>Mimic how human brains work so machines can learn (ANN, CNN, RNN, transfer learning)</td></tr><tr><td><strong>DS</strong></td><td>Apply mathematical and statistical tools and techniques from DL, ML and AI to data (that is big enough)</td></tr></tbody></table></div>
+<p><em>(from the transcript)</em> The additional explanations:</p>
+<ul>
+<li><strong>AI is the broadest</strong> — it mimics human <em>intelligence</em>, by whatever means. A two-legged robot that can do a somersault or play ping-pong counts as AI</li>
+<li><strong>DL mimics the human <em>brain</em></strong> — artificial neural networks, of several kinds, such as CNNs for <mark>image classification</mark> and RNNs that feed information back round</li>
+<li><strong>ML is part of AI but not all of AI</strong> — look at the colours of the ellipses on slide 43</li>
+<li><strong>DS borrows other people's techniques</strong> rather than inventing new ones, and concentrates on applying numbers and statistics to real data</li>
+<li>The rough timeline given in class: AI around 1950 → machine learning <mark>around 1980</mark> → deep learning around 2010 → LLMs and ChatGPT around 2022–2023 (just after COVID)</li>
+</ul>
+<figure class="figure"><a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ai_ml_dl_ds.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="Enlarge image: AI ⊃ ML ⊃ DL, and where DS sits across all three (slide 43)"><img src="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ai_ml_dl_ds.webp" alt="AI ⊃ ML ⊃ DL, and where DS sits across all three (slide 43)" loading="lazy" decoding="async"></a><figcaption>AI ⊃ ML ⊃ DL, and where DS sits across all three (slide 43)<a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ai_ml_dl_ds.webp" target="_blank" rel="noopener" class="diagram-link figure-open">Enlarge ↗</a></figcaption></figure>
+<h3 id="ds-vs-ml">DS vs ML</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Machine Learning</th><th>Data Science</th></tr></thead><tbody><tr><td>Develop new (individual) models</td><td>Explore many models, build and tune hybrids</td></tr><tr><td>Prove mathematical properties of models</td><td>Understand the empirical properties of models</td></tr><tr><td>Improve and validate on a few relatively clean, small datasets</td><td>Develop and use tools that can handle massive datasets</td></tr><tr><td><strong>Publish a paper</strong></td><td><strong>Take action!</strong></td></tr></tbody></table></div>
+<p>(<mark>Daisy Zhe Wang</mark>, University of Florida, 2015)</p>
+<figure class="figure"><a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ds_vs_ml.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="Enlarge image: How DS and ML differ, side by side (slide 45)"><img src="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ds_vs_ml.webp" alt="How DS and ML differ, side by side (slide 45)" loading="lazy" decoding="async"></a><figcaption>How DS and ML differ, side by side (slide 45)<a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_ds_vs_ml.webp" target="_blank" rel="noopener" class="diagram-link figure-open">Enlarge ↗</a></figcaption></figure>
+<h2 id="11-kdd-and-data-mining">11 KDD and data mining</h2>
+<p><strong>KDD = Knowledge Discovery in Databases</strong> — a broad term covering data science, data mining, databases, visualization and statistics all at once (see the diagram on slide 47). The process runs: throw the data into a database or data warehouse → selection → preprocessing → <mark>transformation</mark> → <strong>data mining</strong> to find patterns → interpretation → knowledge.</p>
+<p><strong>Data mining (DM)</strong> is the process of garnering information from huge databases that was previously incomprehensible and unknown, and then using that information to make relevant business decisions — a set of methods used in knowledge discovery to surface relationships and patterns nobody knew about. It is a confluence of AI, data management, <mark>pattern recognition</mark>, visualization, machine learning and statistics.</p>
+<p><em>(from the transcript)</em> A <strong>data warehouse</strong> is a large, varied database, and the crucial point is that it <strong>must carry time stamps and be divided by period</strong> (which is what makes it a <mark>temporal database</mark>). If you dump data in without knowing when each piece happened, you cannot compare month against month or year against year, and you cannot pick a target date with a selection.</p>
+<figure class="figure"><a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_kdd_dm.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="Enlarge image: The KDD steps — selection, preprocessing, transformation, data mining, interpretation (slide 47)"><img src="../assets/w02-ds-ai-landscape-and-tools/w2_fig_kdd_dm.webp" alt="The KDD steps — selection, preprocessing, transformation, data mining, interpretation (slide 47)" loading="lazy" decoding="async"></a><figcaption>The KDD steps — selection, preprocessing, transformation, data mining, interpretation (slide 47)<a href="../assets/w02-ds-ai-landscape-and-tools/w2_fig_kdd_dm.webp" target="_blank" rel="noopener" class="diagram-link figure-open">Enlarge ↗</a></figcaption></figure>
+<h2 id="12-dataset-sources-and-the-tools-used-in-this-course">12 Dataset sources and the tools used in this course</h2>
+<h3 id="dataset-repositories">Dataset repositories</h3>
+<ul>
+<li><a href="https://archive.ics.uci.edu/">https://archive.ics.uci.edu/</a> (UCI Machine Learning Repository)</li>
+<li><a href="https://www.kaggle.com/">https://www.kaggle.com/</a></li>
+</ul>
+<h3 id="software-tools">Software tools</h3>
+<ul>
+<li><strong>RStudio</strong> — <a href="https://posit.co/downloads">https://posit.co/downloads</a></li>
+<li><strong>Orange Data Mining</strong> — <a href="https://orangedatamining.com/">https://orangedatamining.com/</a></li>
+</ul>
+<p><em>(from the transcript)</em> <strong>Install both on your own machine</strong>, because the class will not be using the computer lab.</p>
+<h2 id="13-hands-on-orange-data-mining">13 Hands-on: Orange Data Mining</h2>
+<p>Orange is <strong>visual programming</strong> — you drag widgets onto a canvas and wire them together, rather like <mark>Scratch</mark>, with no code required (though you can splice in a Python Script widget).</p>
+<h3 id="how-the-widgets-fit-together">How the widgets fit together</h3>
+<ul>
+<li>Start with an input widget: <strong>File</strong> (CSV / Excel / a SQL table connection) or <strong>Datasets</strong> (the built-in sets that ship with the program, such as <mark>Iris and Titanic</mark>)</li>
+<li>Each widget takes one input but <strong>can fan its output out along several paths</strong> — run as many parallel branches as you like</li>
+<li>Orange workspace files use the extension <strong><code>.ows</code></strong> (Orange Workspace) — the examples handed out are in the <code>code/</code> folder</li>
+<li>Right-click a widget to rename it so it reads clearly, and save as you go</li>
+</ul>
+<h3 id="the-widget-groups-touched-in-class">The widget groups touched in class</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Group</th><th>Widget</th><th>What it does</th></tr></thead><tbody><tr><td>Data</td><td><strong>File / Datasets</strong></td><td>Import the data</td></tr><tr><td>Data</td><td><strong>Data Table</strong></td><td>View the raw table, with instance / feature / missing counts</td></tr><tr><td>Data</td><td><strong>Edit Domain</strong></td><td>Rename columns (for raw data that has no header)</td></tr><tr><td>Data</td><td><strong>Select Columns</strong></td><td>Choose which columns are features (x) and which is the target (y)</td></tr><tr><td>Transform</td><td>rename / select column or row, split, merge</td><td>Reshape the table</td></tr><tr><td>Transform</td><td><strong>Preprocess</strong></td><td>Impute, remove rows with missing values, normalize and so on</td></tr><tr><td>Visualize</td><td><strong>Scatter Plot</strong></td><td>Plot one pair of variables, with an option to show the regression line</td></tr><tr><td>Model</td><td><strong>Linear Regression</strong></td><td>Produces the intercept and the coefficients</td></tr><tr><td>Evaluate</td><td><strong>Test and Score</strong>, <strong>Predictions</strong></td><td>Test and predict</td></tr></tbody></table></div>
+<h3 id="the-datasets-used">The datasets used</h3>
+<p><strong>Automobile / imports-85 from UCI</strong> — car data collected back in 1985, applicable to work on car and accident insurance <em>(from the transcript)</em></p>
+<ul>
+<li><strong>205 instances (rows), 26 features, 1.1% missing data</strong></li>
+<li>Price (the 26th attribute) is <strong>continuous</strong>, ranging roughly from <mark>5,000 to 45,000 USD</mark></li>
+<li>The non-numeric columns include body-style (hardtop, wagon, sedan…), aspiration (standard/turbo) and make. Orange marks them <strong>N = numerical (in red)</strong> and <strong>C = categorical</strong></li>
+<li>The raw data <strong>has no header</strong>, so you have to name the columns yourself with <mark>Edit Domain</mark> first</li>
+<li><strong>Missing data in this file is written as <code>?</code></strong> — click the price column header to sort and four rows of <code>?</code> appear (elsewhere you may see <code>NA</code> for not available, or <code>NaN</code>)</li>
+</ul>
+<p><strong>The Iris dataset (built-in)</strong> — three species of flower (<mark>setosa, versicolor, virginica</mark>), <strong>150 data points</strong>, 50 of each, with four attributes: the width and length of the petal and of the sepal, in centimetres, plus one target column.</p>
+<p><em>(from the transcript)</em> One row of data goes by several names: <strong>data point / row / record / instance / observation</strong>.</p>
+<p>The Iris problem is this: given a new data point, which species is it likely to be? That is <strong>classification</strong> (sorting into categories), which is not the same as <strong>clustering</strong> (grouping).</p>
+<h3 id="what-was-done-in-the-scatter-plot">What was done in the Scatter Plot</h3>
+<ul>
+<li>You choose the x and y axes yourself (the default may be sepal length against sepal width)</li>
+<li>There is a <strong>Show regression line</strong> checkbox, and an <strong>r</strong> value appears alongside — the value obtained in class was <strong>r = 0.81</strong> for horsepower against price</li>
+<li>Colour can be graded by horsepower or price, and shape can be varied when a categorical variable has several values, such as the three Iris species</li>
+<li><em>(from the transcript)</em> The regression line is the line that passes through the data points best in a linear sense, and it can be used to estimate: at 200 horsepower, the price should be somewhere around <mark>30,000 USD</mark>. The value r is <strong>similar</strong> to the slope of a line in that the two vary together, <strong>but it is not the same thing</strong></li>
+</ul>
+<h3 id="what-was-done-in-preprocess">What was done in Preprocess</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Option</th><th>Meaning</th></tr></thead><tbody><tr><td><strong>Impute</strong></td><td>Put a value in place of the missing data (data imputation) — use the mean, the most frequent value, or a random value, as you prefer</td></tr><tr><td><strong>Remove rows with missing values</strong></td><td>Drop any row containing a missing value outright</td></tr><tr><td><strong>Normalize</strong></td><td>Bring the numbers onto one standard scale — <strong>standardize to μ=0, σ²=1 (z-score)</strong>, or <strong>normalize to the interval [0,1]</strong> (take min and max, then the ratio), or to [-1, 1]</td></tr></tbody></table></div>
+<p><strong>Why normalize</strong> <em>(from the transcript)</em> — each numeric column spans a different range. Horsepower runs from about 50 to 300, while engine size runs from <mark>800 to 3000 cc</mark>. When errors are computed and squared, the difference from the wide-ranging column dominates (500² against 30²), so the comparison is not fair and you may end up choosing the wrong feature — “when you compare, compare oranges with oranges, not oranges with apples.”</p>
+<p><strong>Observations from the experiment in class</strong></p>
+<ul>
+<li>Preprocess applies only to the columns that are <strong>features</strong>, not to the <strong>target</strong> (price stays at its raw values, because price is what we are predicting)</li>
+<li>After normalizing, <strong>the intercept and the coefficients change</strong>, but the final predicted value still comes out as the same price</li>
+</ul>
+<h2 id="14-announcements-and-work-set-in-class">14 Announcements and work set in class</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Item</th><th>Detail</th></tr></thead><tbody><tr><td>Attendance</td><td>Sign the sheet passed around the room (a full signature is not required, as long as it shows you were there). If you cannot attend, send evidence via Teams</td></tr><tr><td>Make-up session</td><td>The Wednesday group who missed their class have a make-up on Monday morning (the morning group's usual time). Anyone who cannot make Friday can join on Monday instead</td></tr><tr><td>Project teams</td><td><strong>4–5 people</strong>, 4 recommended. Form your teams soon</td></tr><tr><td><strong>Project idea presentation (week 4)</strong></td><td><strong>3–5 minutes</strong> per team, one representative presenting at the front, using PowerPoint or PDF of about <strong>2–3 slides</strong>, covering: the topic, where the data comes from, what the data looks like, and what will be analysed with what. On the AI side, say what application or system will be built — an example to show is a bonus</td></tr><tr><td>Orange homework</td><td>The lecturer said he <strong>will set a simple piece of Orange homework and post the details afterwards</strong> — watch for the message <em>(the format and due date are not yet confirmed)</em></td></tr><tr><td>Midterm</td><td>Week 6</td></tr></tbody></table></div>
+<h3 id="tools-suggested-for-project-work-from-the-transcript">Tools suggested for project work <em>(from the transcript)</em></h3>
+<ul>
+<li><strong>Teachable Machine</strong> — train a model on images, sound or poses without writing code. The lecturer would like 2–3 teams to try it</li>
+<li><strong>Roboflow Universe</strong> — thousands of datasets and projects to choose from, and <mark>YOLO</mark> for <strong>transfer learning</strong> (take a model somebody already trained, with its weights, and build on it by training further on your own data — photographing fish at a Thai market, for example, since the original dataset may not have them)</li>
+<li><strong>MediaPipe</strong> (from <mark>Google</mark>) — object detection and detection-point work</li>
+<li><strong>Kaggle</strong> — for anyone who wants to write the code themselves</li>
+</ul>
+<h2 id="glossary">Glossary</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Term</th><th>Short definition</th></tr></thead><tbody><tr><td>AI winter</td><td>A stretch where activity and investment in AI go quiet, the downward part of the cycle of expectations around AI</td></tr><tr><td>AI Index Report</td><td>Stanford HAI's annual report gathering indicators of movement in the AI field; the slides use the 2026 edition</td></tr><tr><td>Quintillion</td><td>Ten to the power of eighteen, or million times million times million — 1 quintillion bytes is 1 exabyte</td></tr><tr><td>Data is the new oil</td><td>Clive Humby's 2006 phrase: data is valuable but useless unrefined, and must be broken down and analysed first</td></tr><tr><td>AI is the new electricity</td><td>Andrew Ng's 2016 phrase: AI will transform industry the way electricity once did, and everyone can reach it</td></tr><tr><td>Peter Naur</td><td>The person who proposed the term data science in 1974 as an alternative name for computer science</td></tr><tr><td>Data scientist</td><td>The role of someone who obtains, cleans, explores, models and interprets data; the term was coined by DJ Patil and Jeff Hammerbacher in 2008</td></tr><tr><td>Volume</td><td>The sheer quantity of data, one of the 5 V's of big data</td></tr><tr><td>Velocity</td><td>The speed at which data arrives and is processed</td></tr><tr><td>Variety</td><td>The range of data types and of the sources they come from</td></tr><tr><td>Veracity</td><td>The quality of the data and how far it can be trusted</td></tr><tr><td>Value</td><td>What the data is worth for decision-making; the slide names it the most important of the 5 V's</td></tr><tr><td>Variability</td><td>Meaning that shifts with context, or inconsistency within the data</td></tr><tr><td>Structured data</td><td>Data with a clear structure, such as tables in a relational database</td></tr><tr><td>Unstructured data</td><td>Data with no clear structure, such as text, images, audio and video</td></tr><tr><td>Feature engineering</td><td>Using domain knowledge to extract characteristics or variables out of raw data</td></tr><tr><td>Feature selection</td><td>Choosing only the subset of features that genuinely matter</td></tr><tr><td>4 A's</td><td>The four sides of the data scientist's role: Architecture, Acquisition, Analysis and Archiving</td></tr><tr><td>ETL</td><td>Extract, Transform, Load — pulling data out, transforming it, then loading it into the target system</td></tr><tr><td>Data product</td><td>The output of a data science activity, such as a recommender system, a model, or the dataset used to train it</td></tr><tr><td>Insight</td><td>A deep understanding arrived at by analysing data</td></tr><tr><td>Actionable</td><td>The property of an insight that lets you act on it — if you do X, then Y improves</td></tr><tr><td>Deep learning</td><td>Learning in depth that mimics how the human brain works, using artificial neural networks</td></tr><tr><td>KDD</td><td>Knowledge Discovery in Databases, the process of discovering knowledge from databases, with data mining inside it</td></tr><tr><td>Data mining</td><td>Pulling previously unknown information and patterns out of large databases</td></tr><tr><td>Data warehouse</td><td>A large store of data divided by time period, which is what makes historical comparison possible</td></tr><tr><td>Orange Data Mining</td><td>A visual programming tool for data mining, driven by dragging widgets and wiring them together</td></tr><tr><td>Widget</td><td>One unit of work in Orange that takes an input and passes an output on to other units</td></tr><tr><td>.ows</td><td>The file extension of an Orange workspace, holding the whole layout of connected widgets</td></tr><tr><td>Instance</td><td>One row of data, also called a data point, row, record or observation</td></tr><tr><td>Data imputation</td><td>Substituting a value for missing data, for instance the mean or the most frequent value</td></tr><tr><td>Normalization</td><td>Bringing numbers onto one standard scale so they can be compared fairly</td></tr><tr><td>Transfer learning</td><td>Taking an already-trained model with its weights and building on it by training further on your own data</td></tr></tbody></table></div>
+<h2 id="chapter-summary">Chapter summary</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Point</th><th>What to remember</th></tr></thead><tbody><tr><td>The cycle of AI</td><td>It has both hype phases and AI winters; we are on the way up right now, with valuations high enough to be watched nervously</td></tr><tr><td>A figure worth citing</td><td>In 2025 the world produced roughly 400 quintillion bytes of new data per day</td></tr><tr><td>The two phrases</td><td>Data is the new oil (Humby, 2006) and AI is the new electricity (Ng, 2016)</td></tr><tr><td>Where the field's names come from</td><td>Data science from Peter Naur in 1974, data scientist from DJ Patil and Jeff Hammerbacher in 2008</td></tr><tr><td>Big data</td><td>Remember the 5 V's (Volume, Velocity, Variety, Veracity, Value) plus 2 more (Variability, Visualization), with Value the most important</td></tr><tr><td>The longest and the most important steps</td><td>Data preparation takes the most time, while EDA is the most important step</td></tr><tr><td>How the terms nest</td><td>AI is broadest → ML sits inside AI → DL mimics the brain, while DS borrows all of it and applies it to real data in order to take action</td></tr><tr><td>KDD and DM</td><td>KDD is the whole knowledge-discovery process, with data mining as one step inside it, and a data warehouse must carry time stamps</td></tr><tr><td>This course's tools</td><td>RStudio (posit.co) and Orange (orangedatamining.com), installed on your own machine, with datasets from UCI and Kaggle</td></tr><tr><td>Orange</td><td>Wire widgets together by dragging; remember the order File → Data Table → Edit Domain → Select Columns → Preprocess → Scatter Plot → Linear Regression</td></tr><tr><td>A caution when preprocessing</td><td>Normalize the features only, never the target, and missing data in imports-85 is written as <code>?</code></td></tr><tr><td>What to prepare</td><td>Form a team of 4–5 and get ready to pitch the project idea in 3–5 minutes over 2–3 slides in week 4</td></tr></tbody></table></div></article><nav class="pagination" aria-label="Previous and next notes"><a href="w01-course-intro.en.html"><small>← Previous</small>Course Introduction and Project Structure</a><a href="w03-eda-and-model-fitting.en.html"><small>Next →</small>EDA and Model Fitting — Box Plot, Correlation, Linear Regression</a></nav></main><aside class="toc-sidebar"><nav class="toc" aria-label="On this page"><strong>On this page</strong><a href="#agenda">Agenda</a><a href="#01-recap--ai-has-its-ups-and-downs-hype-and-winter">01 Recap — AI has its ups and downs (hype and winter)</a><a href="#02-the-indicators-of-where-ai-is-heading">02 The indicators of where AI is heading</a><a href="#03-how-much-data-the-world-produces-per-day">03 How much data the world produces per day</a><a href="#04-two-quotes-worth-remembering">04 Two quotes worth remembering</a><a href="#05-where-the-terms-data-science-and-data-scientist-come-from">05 Where the terms Data Science and Data Scientist come from</a><a href="#06-big-data--5-vs--2-vs">06 Big Data — 5 V&#39;s + 2 V&#39;s</a><a href="#07-what-data-science-actually-does">07 What data science actually does</a><a href="#08-the-data-science-team-and-the-work-on-the-data-engineering-side">08 The data science team, and the work on the data engineering side</a><a href="#09-data-product--insight--actionable">09 Data product → insight → actionable</a><a href="#10-how-ai-ml-dl-and-ds-differ">10 How AI, ML, DL and DS differ</a><a href="#11-kdd-and-data-mining">11 KDD and data mining</a><a href="#12-dataset-sources-and-the-tools-used-in-this-course">12 Dataset sources and the tools used in this course</a><a href="#13-hands-on-orange-data-mining">13 Hands-on: Orange Data Mining</a><a href="#14-announcements-and-work-set-in-class">14 Announcements and work set in class</a><a href="#glossary">Glossary</a><a href="#chapter-summary">Chapter summary</a></nav></aside></div>
+<footer class="site-footer"><span>INT182 · Data Science & AI<br>Study summaries based on course materials</span><a href="https://github.com/Phakinza007/int182-study-notes">GitHub ↗</a></footer>
+<dialog id="search-dialog" aria-labelledby="search-title"><div class="dialog-heading"><h2 id="search-title">Search the notes</h2><button data-close-dialog aria-label="Close search">×</button></div><label for="search-input">Keyword, e.g. precision, PEAS, kNN</label><input id="search-input" type="search" autocomplete="off"><p id="search-status" role="status">Type a keyword to start</p><ul id="search-results"></ul></dialog>
+<dialog id="image-dialog" aria-labelledby="image-title"><div class="dialog-heading"><h2 id="image-title">Diagram</h2><button data-close-dialog aria-label="Close image">×</button></div><div class="image-controls"><button data-zoom="out" aria-label="Zoom out">−</button><button data-zoom="in" aria-label="Zoom in">+</button><button data-zoom="reset">Fit</button><a id="image-original" target="_blank" rel="noopener">Open original ↗</a></div><div class="image-stage"><img id="zoom-image" alt=""></div><p id="image-caption"></p></dialog>
+</body></html>

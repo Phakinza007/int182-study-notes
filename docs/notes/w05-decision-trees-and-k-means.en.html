@@ -1,0 +1,1332 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="INT182 Data Science and AI notes for weeks 1–9, with diagrams and key formulas"><meta name="theme-color" content="#f7f6f3"><title>Decision Trees, K-means Clustering, and the Exam 1 scope review · INT182</title><link rel="icon" href="../favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="../style.css"><script src="../app.js" defer></script></head>
+<body data-base="../" data-page="note"><a class="skip" href="#main">Skip to content</a>
+<header class="topbar"><div class="topbar-inner"><a class="brand" href="../en.html"><span class="brand-mark">182</span><span>INT182 <small>Study notes</small></span></a><nav aria-label="Main menu"><button class="search-trigger" data-search-open aria-haspopup="dialog">Search notes <kbd>/</kbd></button><a class="lang" href="w05-decision-trees-and-k-means.html" lang="th">ภาษาไทย</a></nav></div></header>
+<div class="reader-layout"><aside class="reader-sidebar"><details class="week-menu" open><summary>All weeks</summary><nav aria-label="Choose a week"><a href="w01-course-intro.en.html" ><span class="week-no">01</span><span>Course Introduction and Project Structure</span></a><a href="w02-ds-ai-landscape-and-tools.en.html" ><span class="week-no">02</span><span>The DS/AI Landscape (continued) and the Orange Toolkit</span></a><a href="w03-eda-and-model-fitting.en.html" ><span class="week-no">03</span><span>EDA and Model Fitting — Box Plot, Correlation, Linear Regression</span></a><a href="w04-association-rules.en.html" ><span class="week-no">04</span><span>Association Rules — Market Basket Analysis, Apriori and Support/Confidence/Lift</span></a><a href="w05-decision-trees-and-k-means.en.html" aria-current="page"><span class="week-no">05</span><span>Decision Trees, K-means Clustering, and the Exam 1 scope review</span></a><a href="w06-classification-and-model-validation.en.html" ><span class="week-no">06</span><span>Classification and Model Validation</span></a><a href="w07-classification-performance-metrics.en.html" ><span class="week-no">07</span><span>Classification Performance Metrics and Evaluation Methods</span></a><a href="w08-introduction-to-ai-and-agents.en.html" ><span class="week-no">08</span><span>Introduction to AI, Rational Agents, and PEAS</span></a><a href="w09-introduction-to-ml-and-nearest-neighbors.en.html" ><span class="week-no">09</span><span>Introduction to Machine Learning, k-NN, and AI Search</span></a></nav></details></aside><main id="main" class="reader"><div class="note-meta">WEEK 05 <span>2026-09-04</span></div><h1>Decision Trees, K-means Clustering, and the Exam 1 scope review</h1><div class="reader-actions"><button data-read-week="5" aria-pressed="false">Mark as read</button><button data-print>Print this note</button></div><article class="prose"><blockquote>
+<p>Built from the 4 Sep 2026 session (a 3 h 36 min recording, <code>INT182_20260904.docx</code>), on the decks <code>Decision Trees.pdf</code> (27 slides) and <code>K-means clustering basics.pdf</code> (25 slides) by Assoc. Prof. Dr. Pornchai Mongkolnam</p>
+<p>⚠️ The transcript comes from automatic speech recognition and is <strong>badly mangled</strong> in long stretches (<code>เคมี</code> = K-means, <code>ดิสชั่นทรี</code> = decision tree, <code>เอ็นโทรพี่</code> = entropy, <code>อีฟเด่น</code> = if–then). Anything drawn from the transcript alone is marked <em>(from the transcript)</em></p>
+<p>This was the last session before Exam 1. The lecturer split it four ways: <strong>(1)</strong> the exam announcement, <strong>(2)</strong> a refill of the Association Rules left over from class 4 (~30 min), <strong>(3)</strong> Decision Trees, <strong>(4)</strong> K-means — closing by walking the earlier decks page by page to say <strong>exactly which points will be on the paper</strong></p>
+</blockquote>
+<h2 id="agenda">Agenda</h2>
+<ol>
+<li>Exam 1 — everything the lecturer announced</li>
+<li>The scope — five slide sets, and the one that was cut</li>
+<li>Which formulas are examined and which are not</li>
+<li>The Association Rules refill (pointer to W04)</li>
+<li>Decision Tree — what it is, where it sits</li>
+<li>The anatomy of a tree</li>
+<li>Why a short tree beats a tall one</li>
+<li>Entropy — how messy a group is</li>
+<li>Information Gain — how much a question reduces that mess</li>
+<li>The tree-building steps (ID3)</li>
+<li>A full worked example — PlayTennis</li>
+<li>Stopping conditions and overfitting</li>
+<li>The exercise — 12 people and ice cream</li>
+<li>Decision Trees in Orange</li>
+<li>Random Forest (mentioned in passing)</li>
+<li>K-means — what clustering is</li>
+<li>K is a hyperparameter</li>
+<li>Centroid</li>
+<li>Euclidean distance</li>
+<li>Normalization, and why it is necessary</li>
+<li>The K-means algorithm</li>
+<li>WCSS and the Elbow method</li>
+<li>K-modes and K-prototypes</li>
+<li>Hard vs soft clustering</li>
+<li>The deck-by-deck exam walkthrough</li>
+<li>Glossary</li>
+<li>Chapter summary</li>
+</ol>
+<hr>
+<h2 id="01-exam-1--everything-the-lecturer-announced">01 Exam 1 — everything the lecturer announced</h2>
+<p><em>(this section comes entirely from the transcript — confirm against the official announcement)</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Item</th><th>Detail</th></tr></thead><tbody><tr><td>Date</td><td><strong>Friday</strong> of the following week. The lecturer said "in the evening" but was unsure himself — <strong>check the announcement and the room again</strong></td></tr><tr><td>Questions</td><td><strong>50</strong></td></tr><tr><td>Format</td><td><strong>All multiple choice</strong>, <strong>single select</strong>, <strong>four options</strong> a/b/c/d</td></tr><tr><td>Answering</td><td><strong>Bubble sheet filled in with pencil</strong> (a sheet, not a booklet). Bring your own <strong>2B pencil</strong> — he could not remember whether it was 2B or HB, so take 2B</td></tr><tr><td>Marks</td><td>Every question is worth the same. The overall weighting may still be adjusted, because some material has not been taught yet</td></tr><tr><td>Time</td><td><strong>3 hours</strong> — nearly 4 minutes a question. He expects 1–2 minutes each, so there is time to spare</td></tr><tr><td>Leaving early</td><td>Allowed after 1 hour, but he suggests staying at least 2 and re-reading</td></tr><tr><td>Calculator</td><td><strong>Not needed.</strong> Not banned from the room, but it must be switched off and unused</td></tr><tr><td>Books / notes</td><td><strong>None</strong> — closed book</td></tr><tr><td>Exams this term</td><td><strong>Two only</strong> — this one and the final. Both written papers</td></tr></tbody></table></div>
+<p><code>ระวัง</code> <em>(from the transcript — the ASR is badly mangled here)</em>: there is a passage about "one volume" that may be brought in "in case you need to look up vocabulary in the questions", and about invigilators <strong>checking whether anything has been written inside it</strong>. That reads like a <strong>dictionary</strong> being permitted provided nothing is written in it — but the sentences are too corrupted to be certain. <strong>Ask the lecturer or check the announcement before the exam.</strong></p>
+<h3 id="how-hard-is-it">How hard is it?</h3>
+<p>He had <strong>Dr Cha (Kritsada)</strong> review the paper. The verdict:</p>
+<ul>
+<li>Easy and hard questions mixed; Dr Cha said "some questions are hard"</li>
+<li>Hard because <strong>the options are close together</strong> — if you have only "heard it in passing" you will not be able to pick which one it actually is</li>
+<li>Some questions require <strong>applying</strong> the material rather than reciting a slide</li>
+<li>But if you have prepared, "you should be fine" — he hopes most people score <strong>40+ out of 50</strong></li>
+</ul>
+<h3 id="his-own-advice-on-preparing">His own advice on preparing</h3>
+<p>Throw the slide PDFs into a Gen AI, have it summarise them, and <strong>have it write practice questions for you</strong>. He said this outright: "do whatever you like … I hope some will overlap, maybe not all of them" — the paper is a set he wrote himself.</p>
+<h3 id="after-the-exam">After the exam</h3>
+<ul>
+<li>One week later he returns for <strong>one more session</strong> to finish the <strong>Classification and Metrics</strong> deck (~10 slides of theory)</li>
+<li>Then <strong>Dr Chakrida</strong> takes over for part 2, on <strong>AI</strong> — theory plus applications</li>
+</ul>
+<hr>
+<h2 id="02-the-scope--five-slide-sets">02 The scope — five slide sets</h2>
+<p>He opened the class-material folder live and counted them out. <strong>Five sets</strong> are in scope:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>#</th><th>Slide set</th><th>File</th><th>Taught</th></tr></thead><tbody><tr><td>1</td><td><strong>Intro to Data Science, Engineering and AI</strong></td><td><code>INT182_01_Intro-to-DS-Engineering-and-AI.pdf</code></td><td>W1</td></tr><tr><td>2</td><td><strong>EDA – Model Fitting</strong></td><td><code>INT182_02_EDA-Model-Fitting.pdf</code></td><td>W3</td></tr><tr><td>3</td><td><strong>Association Rules</strong></td><td><code>Association rules.pdf</code> (19 slides)</td><td>W4 + this class's refill</td></tr><tr><td>4</td><td><strong>Decision Trees</strong></td><td><code>Decision Trees.pdf</code> (27 slides)</td><td>this class</td></tr><tr><td>5</td><td><strong>K-means clustering basics</strong></td><td><code>K-means clustering basics.pdf</code> (25 slides)</td><td>this class</td></tr></tbody></table></div>
+<blockquote>
+<p>➤ <strong><code>Classification and Metrics.pdf</code> (71 slides) has been pulled out of the class material because it has not been taught — it is not on Exam 1.</strong> His words: "this one isn't on it yet". It comes after the exam.</p>
+</blockquote>
+<p><code>เกร็ดเสริม</code>: the <strong>AI Index Report 2026</strong> (<code>ai_index_report_2026.pdf</code>) sits in the folder too. He called it background reading — he did not say it is examined.</p>
+<hr>
+<h2 id="03-which-formulas-are-examined-and-which-are-not">03 Which formulas are examined and which are not</h2>
+<p>He was unusually explicit here, and this saves a lot of revision time.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Formula</th><th>On the paper?</th><th>What he said</th></tr></thead><tbody><tr><td><strong>Support</strong></td><td>✅ <strong>Yes</strong> (probably one question)</td><td>"if it comes up, it's one" · support = the ratio of the frequency to the total</td></tr><tr><td><strong>Confidence</strong></td><td>✅ Must be memorised</td><td>"support and confidence are the ones you have to remember"</td></tr><tr><td><strong>Lift</strong></td><td>⚠️ "no need to memorise it right now" when teaching, though class 4 covered it fully</td><td>know the concept (lift > 1 / = 1 / &#x3C; 1)</td></tr><tr><td><strong>Entropy</strong> (−Σ pᵢ log₂ pᵢ)</td><td>❌ <strong>No</strong></td><td>"entropy isn't on it, it's too complicated … none of that log pᵢ business. <strong>The concept is enough</strong>"</td></tr><tr><td><strong>Information Gain</strong></td><td>❌ The formula is not asked</td><td>you must know what it is and what it does</td></tr><tr><td><strong>Correlation</strong> (Pearson)</td><td>❌ The formula is not asked</td><td>"no need to memorise the formula, just know what positive and negative mean, that's enough"</td></tr><tr><td><strong>p-value</strong></td><td>❌ Not asked</td><td>"you'd need statistics before you could explain it"</td></tr><tr><td><strong>R²</strong></td><td>❌ Not asked</td><td>—</td></tr><tr><td><strong>Polynomial regression</strong></td><td>❌ Not on it</td><td>—</td></tr><tr><td><strong>The algorithm's name (ID3)</strong></td><td>❌ No need to memorise</td><td>"this is the algorithm's name, you don't need to remember it"</td></tr></tbody></table></div>
+<hr>
+<h2 id="04-the-association-rules-refill">04 The Association Rules refill</h2>
+<p>The first half hour re-covered Association Rules, because "last time I went a bit too fast". Nothing was new beyond class 4 — see <strong><a href="w04-association-rules.en.html">W04-Association-Rules.en.md</a></strong>, which is more detailed.</p>
+<p>What he repeated:</p>
+<ul>
+<li><strong>A rule needs at least one item on each side of the arrow</strong> — neither the antecedent nor the consequent may be empty, so you need <strong>at least 2 items</strong> in total before you can build a rule</li>
+<li><strong>A 3-itemset generates 6 rules</strong> — you have to swap through every direction</li>
+<li>The order of work: find the support of each itemset → discard anything below the threshold → generate rules from what remains → compute the confidence of every rule → discard anything below min confidence</li>
+<li><strong>Association Rule Mining = Market Basket Analysis (MBA)</strong> — a synonym you need</li>
+<li>The famous example: "when a customer buys diapers, 80% will also buy beer". He said himself he does not know whether it is true or a joke</li>
+<li><strong>Association Rules are rule-based</strong>, exactly like Decision Trees — both work on if–then</li>
+</ul>
+<hr>
+<h2 id="05-decision-tree--what-it-is-where-it-sits">05 Decision Tree — what it is, where it sits</h2>
+<p><strong>Decision Trees are supervised learning</strong> — learning <em>with</em> a teacher, meaning the data carries a <strong>label</strong> saying what each thing is.</p>
+<p>Examples of a label he gave: this picture is a cat; this object is an apple; a house with 2 floors and this much floor area → what price?</p>
+<h3 id="the-other-classifiers-on-slide-3">The other classifiers on slide 3</h3>
+<p>The deck lists five classification methods — <strong>easy material for options</strong>:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Method</th><th>How it works</th></tr></thead><tbody><tr><td><strong>K-nearest neighbors (KNN)</strong></td><td>predicts from the training points in the neighbourhood of the given test point</td></tr><tr><td><strong>Decision Trees (DT)</strong></td><td>split the dataset at every node on the value of a variable, then classify at a leaf from the aggregate class labels</td></tr><tr><td><strong>Naive Bayes (NB)</strong></td><td>classifies using data likelihood probabilities, <strong>assuming features are independent</strong> to simplify the model</td></tr><tr><td><strong>Logistic regression (LR)</strong></td><td>fits class probabilities with a <strong>sigmoid function</strong>, obtaining coefficients by <strong>gradient descent</strong></td></tr><tr><td><strong>Support vector machine (SVM)</strong></td><td>learns the <strong>hyperplane</strong> separating two classes with the <strong>maximum margin</strong></td></tr></tbody></table></div>
+<p><code>ระวัง</code>: the opening sentence of that slide is a definition that can be asked directly — <strong>"In classification models the target variable or class label is categorical, whereas in regression the target variable is numeric."</strong></p>
+<h3 id="what-makes-decision-trees-notable">What makes Decision Trees notable</h3>
+<p><strong>They do both classification and regression.</strong> The deck shows both:</p>
+<ul>
+<li><strong>Classification</strong>: "Play an outdoor sport?" → the label is Yes/No</li>
+<li><strong>Regression</strong>: "Predict a house price" → the label is a <strong>number</strong>, and nodes compare greater-than / less-than</li>
+</ul>
+<p>He stressed this is the model's <strong>advantage</strong>, and that other models share it.</p>
+<hr>
+<h2 id="06-the-anatomy-of-a-tree">06 The anatomy of a tree</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Part</th><th>Name</th><th>Meaning</th></tr></thead><tbody><tr><td>The start</td><td><strong>root node</strong></td><td>the biggest node, the first question · <strong>the most important one</strong></td></tr><tr><td>The middle</td><td><strong>decision node</strong> / internal node</td><td>a <strong>question</strong> — written with a <code>?</code></td></tr><tr><td>The lines out of a node</td><td><strong>branch</strong></td><td>the <strong>answer</strong> to that question</td></tr><tr><td>The ends</td><td><strong>leaf node</strong></td><td>a terminal point · it is a <strong>label</strong> (output), not a question</td></tr></tbody></table></div>
+<h3 id="how-many-branches-per-node">How many branches per node?</h3>
+<ul>
+<li><strong>binary</strong> = 2 ways (simplest, the default) → <strong>binary classification</strong>, yes/no</li>
+<li><strong>ternary</strong> = 3 ways, or more → <strong>multiclass classification</strong></li>
+<li>"two at a time is fine too … it depends on the application, all of them work"</li>
+</ul>
+<p><code>ระวัง</code> <strong>The rule he repeated twice: an attribute used once may not be used again on the same path</strong> — "if you've used Outlook, you shouldn't have Outlook again further down."</p>
+<hr>
+<h2 id="07-why-a-short-tree-beats-a-tall-one">07 Why a short tree beats a tall one</h2>
+<p>The question he put to the room: a tree that is <strong>not tall</strong> but works well, versus a <strong>tall</strong> one — which is better?</p>
+<p><strong>A short one</strong>, because:</p>
+<ul>
+<li>it finishes sooner, using less energy and less computation</li>
+<li><strong>fewer questions is better</strong></li>
+</ul>
+<p>His analogy: it is like <strong>queuing, or going to the doctor</strong> — there is a <strong>screening</strong> process, and the best screening is the one that <strong>separates people fastest</strong>. <strong>The first question is the most important</strong>, because it separates the most.</p>
+<p>➤ <strong>So the heart of a Decision Tree is: which feature do you ask first?</strong> — answered by <strong>Entropy + Information Gain</strong>.</p>
+<hr>
+<h2 id="08-entropy--how-messy-a-group-is">08 Entropy — how messy a group is</h2>
+<p><strong>Entropy measures how messy or impure a group is</strong> (the deck's own wording).</p>
+<p>The interchangeable words he listed — worth knowing because <strong>an option may use any of them</strong>:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Word</th><th>Sense</th></tr></thead><tbody><tr><td><strong>disorder</strong></td><td>not in order</td></tr><tr><td><strong>messy / mess</strong></td><td>untidy</td></tr><tr><td><strong>impure</strong></td><td>many things mixed together</td></tr><tr><td><strong>randomness</strong></td><td>random, not clear-cut</td></tr><tr><td><strong>uncertainty</strong></td><td>not straightforward</td></tr></tbody></table></div>
+<h3 id="the-values">The values</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Value</th><th>State</th><th>The deck's example</th></tr></thead><tbody><tr><td><strong>Entropy = 0</strong></td><td><strong>Perfectly Pure</strong> — everyone in the group is the same category</td><td>reach into a bag of 10 Red Delicious apples → 0 uncertainty</td></tr><tr><td><strong>Entropy = 1</strong></td><td><strong>Maximum Mess</strong> — a perfect 50/50 split</td><td>reach into a bag of 10 fruits, 5 apples and 5 oranges → no idea what you will pull out</td></tr></tbody></table></div>
+<h3 id="his-classroom-analogy">His classroom analogy</h3>
+<ul>
+<li>Everyone sitting <strong>at random</strong>, men and women mixed → <strong>high entropy</strong>, scattered and impure</li>
+<li>Screened so <strong>men sit left, women sit right</strong> → <strong>low entropy</strong>, cleanly separated and pure</li>
+<li>Sitting <strong>strictly alternating</strong>, man-woman-man-woman → <strong>maximum mess</strong></li>
+<li>A room of only women → <strong>entropy = 0 immediately</strong></li>
+</ul>
+<p>➤ <strong>Every question in the tree exists to make the groups as pure as possible, as fast as possible.</strong></p>
+<p><code>เกร็ดเสริม</code> The formula has <code>C</code> = <strong>the number of classes</strong> — play/don't play = 2, cat/dog/mouse = 3. <strong>But the formula is not examined.</strong></p>
+<hr>
+<h2 id="09-information-gain--how-much-a-question-reduces-that-mess">09 Information Gain — how much a question reduces that mess</h2>
+<p>The deck: <em>"Information Gain measures how much a question reduces that messiness."</em></p>
+<pre><code>Information Gain = Entropy(Parent Node) − Weighted Average Entropy(Child Nodes)
+</code></pre>
+<ul>
+<li><strong>The parent's entropy minus the weighted entropy of the children</strong></li>
+<li>It must be <strong>weighted</strong> because each child holds a different number of data points — "sometimes this child gets more, that child gets less"</li>
+<li><strong>IG is a positive quantity — more is better</strong>, because it means "we gained a lot of information"</li>
+<li>The deck defines it as <em>"the reduction in Entropy after you split your data based on a specific question (or feature)"</em></li>
+</ul>
+<p>➤ <strong>Pick the feature with the highest IG as the question.</strong></p>
+<hr>
+<h2 id="10-the-tree-building-steps-id3">10 The tree-building steps (ID3)</h2>
+<p>The deck names it <strong>ID3 Algorithm by R. Quinlan, 1986</strong>.</p>
+<p><code>ระวัง</code> The ASR renders the year as "2026", which is wrong — he goes on to say "<strong>40 years ago</strong>", which matches the deck's <strong>1986</strong> exactly. And <strong>the algorithm's name need not be memorised</strong>, by his own instruction.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Step</th><th>What you do</th></tr></thead><tbody><tr><td><strong>1</strong></td><td>Compute the <strong>entropy of the whole dataset</strong> (root/parent)</td></tr><tr><td><strong>2</strong></td><td><strong>Try each feature as the root</strong> — split on each of its values, take each branch's entropy, then the weighted average</td></tr><tr><td><strong>3</strong></td><td>Compute <strong>IG = Entropy(parent) − Weighted Entropy(branches)</strong> for every feature and <strong>pick the highest</strong></td></tr><tr><td><strong>4</strong></td><td>Draw the first split — root node and its children</td></tr><tr><td><strong>5</strong></td><td><strong>Recurse</strong> — apply the same process to every subset, choosing that subset's best feature, and on into the grandchildren, <strong>until a stopping condition is met</strong> (pure node, max depth, minimum samples)</td></tr></tbody></table></div>
+<hr>
+<h2 id="11-a-full-worked-example--playtennis">11 A full worked example — PlayTennis</h2>
+<p>The deck calls it <em>"one of the most famous decision tree examples (Quinlan, 1986)"</em>.</p>
+<p><strong>To play tennis or not?</strong> — 14 rows, <strong>9 "Yes"</strong> and <strong>5 "No"</strong>.</p>
+<p>Four features: <strong>Outlook, Temperature, Humidity, Windy</strong> (x₁…x₄, with the label as y).</p>
+<h3 id="step-1--entropy-of-the-whole-set">Step 1 — entropy of the whole set</h3>
+<p>From 9 Yes / 5 No out of 14 → <strong>Entropy(full set) ≈ 0.94</strong></p>
+<p>His reading of it: <strong>0.94 is close to 1, so this dataset is not orderly at all</strong> — Yes and No are thoroughly mixed. We start from high mess and drive it down.</p>
+<h3 id="step-2--ig-feature-by-feature">Step 2 — IG feature by feature</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Feature</th><th>Information Gain</th></tr></thead><tbody><tr><td><strong>Outlook</strong></td><td><strong>≈ 0.247</strong> ← highest</td></tr><tr><td>Humidity</td><td>≈ 0.15</td></tr><tr><td>Temperature</td><td>lower</td></tr><tr><td>Windy</td><td>lower</td></tr></tbody></table></div>
+<p>➤ The deck states it flatly: <em>"Finally, the best split is Outlook (IG = 0.247) → Highest! So Outlook becomes the root node."</em></p>
+<h3 id="step-3--recurse-down-each-branch">Step 3 — recurse down each branch</h3>
+<p>Outlook takes three values: <strong>Sunny / Overcast / Rain</strong></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Branch</th><th>Size</th><th>Result</th></tr></thead><tbody><tr><td><strong>Overcast</strong></td><td>4 samples</td><td><strong>4 Yes, 0 No → pure node → a leaf, Yes, immediately</strong></td></tr><tr><td><strong>Sunny</strong></td><td>5 samples (2 Yes + 3 No)</td><td>recompute IG on those 5 rows over Humidity/Temperature/Windy → <strong>only Humidity splits well</strong> · High = 0 Yes/3 No · Normal = 2 Yes/0 No</td></tr><tr><td><strong>Rain</strong></td><td>5 samples (3 Yes + 2 No)</td><td>recompute over Temperature/Humidity/Windy → <strong>Windy splits best</strong></td></tr></tbody></table></div>
+<h3 id="the-resulting-tree">The resulting tree</h3>
+<pre><code>                    Outlook
+        ┌──────────────┼──────────────┐
+     Sunny         Overcast          Rain
+        │              │               │
+    Humidity          Yes            Windy
+    ┌───┴───┐                      ┌───┴───┐
+  High   Normal                  True    False
+    │       │                      │       │
+   No      Yes                    No      Yes
+</code></pre>
+<p><code>ระวัง</code> <strong>Note that as soon as a branch is pure (Overcast) it becomes a leaf and asks nothing further</strong> — that is the first stopping condition.</p>
+<hr>
+<h2 id="12-stopping-conditions-and-overfitting">12 Stopping conditions and overfitting</h2>
+<p>The question he says people always ask: <strong>how deep should the tree go?</strong></p>
+<p>The problem: left alone the program <strong>does not stop</strong> — it keeps splitting until each leaf holds one data point or none. That wastes time and produces a needlessly complicated tree.</p>
+<h3 id="the-stopping-conditions-in-use">The stopping conditions in use</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Method</th><th>Meaning</th></tr></thead><tbody><tr><td><strong>max depth</strong></td><td>fix the number of levels in advance</td></tr><tr><td><strong>minimum samples</strong></td><td>stop if fewer than <em>n</em> data points remain in a branch (say &#x3C; 50)</td></tr><tr><td><strong>pure node</strong></td><td>if the node is already pure (entropy 0) it becomes a leaf</td></tr></tbody></table></div>
+<h3 id="overfitting">Overfitting</h3>
+<p>"Going too fine, too deep, until only a few data points are left at the bottom, is not actually good — because it has <strong>learned too much from the data we trained on</strong>."</p>
+<p>His <strong>tailoring</strong> analogy <em>(from the transcript — and he said it will be examined)</em>:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th></th><th>The analogy</th><th>The meaning</th></tr></thead><tbody><tr><td><strong>Overfitting</strong></td><td>a suit cut <strong>exactly</strong> for one person, a perfect fit</td><td>useless on anyone else, because sizes differ · it fits one group and is <strong>not general</strong></td></tr><tr><td><strong>Underfitting</strong></td><td>a suit that is <strong>too loose</strong></td><td>too little learning, also bad</td></tr></tbody></table></div>
+<p>➤ <strong>He said outright he will ask "what is overfitting?"</strong></p>
+<hr>
+<h2 id="13-the-exercise--12-people-and-ice-cream">13 The exercise — 12 people and ice cream</h2>
+<p>Slides 18–27 are a complete exercise with its solution.</p>
+<p><strong>The brief</strong>: 12 people were surveyed on what influences whether they would <strong>buy ice cream</strong>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Feature</th><th>Values</th></tr></thead><tbody><tr><td><strong>Weather</strong></td><td>Sunny / Cloudy / Rainy</td></tr><tr><td><strong>DayOfWeek</strong></td><td>Weekend / Weekday</td></tr><tr><td><strong>HasMoney</strong></td><td>Yes / No</td></tr><tr><td><strong>CravingLevel</strong></td><td>how much they want it</td></tr><tr><td><strong>Target: BuysIceCream</strong></td><td><strong>Yes / No</strong></td></tr></tbody></table></div>
+<h3 id="the-tasks-the-deck-sets">The tasks the deck sets</h3>
+<ol>
+<li>Entropy of the full dataset (before any split)</li>
+<li>For each feature: split by value → entropy of each branch → weighted average → <strong>IG = Root Entropy − Weighted Entropy</strong></li>
+<li>Choose the highest IG</li>
+<li>Draw the first split</li>
+<li>Recurse until a stopping condition</li>
+</ol>
+<h3 id="the-solution">The solution</h3>
+<p>➤ <strong>Weather has the highest IG → it becomes the root.</strong> The deck draws <strong>Rainy → No</strong> as a finished leaf, leaving Sunny and Cloudy as <code>?</code> still to be split.</p>
+<p><code>เกร็ดเสริม</code> He read out one row: rain + weekend + has money + wants it badly → and that person <strong>said no</strong>. "It's just one of the data points they collected" — his way of pointing out that real data is not tidy.</p>
+<hr>
+<h2 id="14-decision-trees-in-orange">14 Decision Trees in Orange</h2>
+<p>He demonstrated live in <strong>Orange</strong> on the same ice-cream dataset (sample files are in <code>code/</code>).</p>
+<ol>
+<li>Load the data — <strong>12 data points</strong>, 4 feature columns, 1 <strong>target</strong> column</li>
+<li><strong>Mark the target explicitly</strong> — Orange flags it green, type <strong>categorical</strong></li>
+<li>Wire it into the Tree widget</li>
+</ol>
+<h3 id="the-parameters-on-the-tree-widget">The parameters on the Tree widget</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Parameter</th><th>Effect</th></tr></thead><tbody><tr><td><strong>Induce binary tree</strong></td><td>ticked = force binary · unticked = branch on however many values the feature actually has</td></tr><tr><td><strong>Max tree depth</strong></td><td>cap the depth</td></tr><tr><td><strong>Split subsets smaller than…</strong></td><td>the <strong>stopping condition</strong> — stop splitting once fewer than <em>n</em> rows remain</td></tr></tbody></table></div>
+<p><strong>What he wanted noticed</strong>: with binary ticked, Weather's three values get grouped — <strong>Cloudy and Sunny together</strong> on one side, <strong>Rainy</strong> on the other, to be separated later. Untick it and it <strong>fans into three branches at once</strong>.</p>
+<p>➤ <strong>So the tree looks different depending on whether binary is forced</strong> — and neither version is wrong.</p>
+<p>Orange annotates each node: 12 rows at the start (6 Yes / 6 No) → 4 left, 4 middle, 4 right · the Sunny branch ends 3 Yes / 1 No.</p>
+<p>You can then wire <strong>Test data → Prediction</strong> (the example has 6 test cases) and read a <strong>Test Score</strong>.</p>
+<hr>
+<h2 id="15-random-forest-mentioned-in-passing">15 Random Forest (mentioned in passing)</h2>
+<p><em>(from the transcript — he said "we're not covering it, this basic one is enough for now")</em></p>
+<ul>
+<li>A plain Decision Tree gives you <strong>one tree</strong></li>
+<li>Someone reasoned that one tree may not do well — like deciding alone → <strong>why not use many?</strong></li>
+<li><strong>Random Forest</strong> = <strong>100 / 200 / 300 / 500</strong> trees, then <strong>take the majority vote</strong></li>
+<li>Each tree must be <strong>different</strong> — different criteria for picking features, randomisation, a mix of tall and short trees</li>
+<li><strong>Diversity is the point.</strong> If every tree were identical there would be nothing gained</li>
+</ul>
+<hr>
+<h2 id="16-k-means--what-clustering-is">16 K-means — what clustering is</h2>
+<p><strong>Clustering in data science = grouping similar data points together and putting the different ones in another group</strong> — also called <strong>cluster analysis</strong>.</p>
+<p>The deck: <em>"K-means clustering is one of the most popular and widely used <strong>unsupervised</strong> machine learning algorithms. It is used to group similar data points together into clusters, <strong>without prior knowledge of the group labels</strong>."</em></p>
+<h3 id="ระวัง--this-one-is-definitely-on-the-paper"><code>ระวัง</code> — this one is definitely on the paper</h3>
+<p>His words: <strong>"this is an exam question — I might ask which category K-means falls into."</strong></p>
+<p>➤ <strong>K-means = unsupervised learning</strong> · <strong>because no label is used</strong></p>
+<h3 id="clustering--classification">Clustering ≠ Classification</h3>
+<p>He was emphatic: <strong>"clustering and classification are separate."</strong></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th></th><th>Classification</th><th>Clustering</th></tr></thead><tbody><tr><td>Type</td><td>supervised</td><td><strong>unsupervised</strong></td></tr><tr><td>Uses labels?</td><td><strong>yes</strong></td><td><strong>no</strong></td></tr><tr><td>Can you score it right/wrong?</td><td>yes</td><td><strong>no</strong> — "you don't know what's right or wrong, you just group them"</td></tr><tr><td>What you judge instead</td><td>accuracy etc.</td><td><strong>whether it is good or not</strong> — "you have to see whether it works when you use it"</td></tr><tr><td>Example</td><td>Decision Tree (play/don't play)</td><td>segmenting customers</td></tr></tbody></table></div>
+<p><strong>His real-world example</strong>: you own a product and want to know what kinds of people buy it → take each person's attributes (in town / out of town, single, single mum, single dad …) and have it group them — <strong>without knowing whether the answer is right</strong>.</p>
+<hr>
+<h2 id="17-k-is-a-hyperparameter">17 K is a hyperparameter</h2>
+<p><strong>K = the number of clusters you want</strong>, and <strong>the user chooses it in advance</strong>.</p>
+<p>The deck: <em>"The 'K' in K-means is the number of clusters you want to find (<strong>you choose K in advance</strong>)."</em></p>
+<h3 id="ระวัง--also-definitely-on-the-paper"><code>ระวัง</code> — also definitely on the paper</h3>
+<p>His words: <strong>"I'm going to ask how a parameter and a hyperparameter differ. There'll be options to pick from."</strong></p>
+<p>➤ <strong>K is a hyperparameter</strong> — set by the <strong>user / data scientist</strong>, not learned by the model.</p>
+<p>He said it again during the EDA walkthrough: <strong>"what is a model parameter, what is a hyperparameter — go and read it again."</strong></p>
+<p><code>เกร็ดเสริม</code> <strong>"There's no right and no wrong"</strong> — Iris can be cut into 3, 4 or 5 groups. What matters is whether it works when applied.</p>
+<hr>
+<h2 id="18-centroid">18 Centroid</h2>
+<p><strong>A centroid is the centre point of a cluster.</strong></p>
+<p>Related words he ran through, because the room said they had never heard "centroid":</p>
+<ul>
+<li><strong>center</strong></li>
+<li><strong>CG = center of gravity</strong> (from physics)</li>
+<li><strong>COM = center of mass</strong></li>
+</ul>
+<p><strong>The triangle example</strong> (it is on the slide): the centroid of a triangle is the <strong>intersection of the medians</strong> — draw from each vertex to the midpoint of the opposite side, and all three meet at one point, assuming the object is uniform and of even thickness.</p>
+<p>➤ <strong>Three points is easy — but what about ten thousand?</strong> That is what the algorithm is for.</p>
+<hr>
+<h2 id="19-euclidean-distance">19 Euclidean distance</h2>
+<p><strong>Similarity is measured by distance</strong> — <strong>closer means more alike, further means more different.</strong></p>
+<p><strong>Euclidean distance</strong> is what you learned in school without anyone naming it — it comes straight from <strong>Pythagoras</strong> (a² + b² = c²):</p>
+<pre><code>d = √[ (x₁ − x₂)² + (y₁ − y₂)² ]
+</code></pre>
+<h3 id="wcss">WCSS</h3>
+<p><strong>WCSS = Within-Cluster Sum of Squares.</strong></p>
+<p>The deck: <em>"K-means divides the data into k clusters by <strong>minimizing the sum of the squared distances</strong> of each record/data point to the mean of its assigned cluster. This is referred to as the within-cluster sum of squares or <strong>within-cluster SS (WCSS)</strong>."</em></p>
+<p><strong>Why square it?</strong> His explanation:</p>
+<ul>
+<li>without squaring you would need a square root, which is <strong>slow and fiddly</strong></li>
+<li>we do not need a <strong>precise</strong> number — only enough to compare <strong>near or far</strong></li>
+<li>"I want to know this person is taller than that one, not by how much"</li>
+<li>➤ <strong>it makes the computation very fast</strong></li>
+</ul>
+<p><code>เกร็ดเสริม</code> The deck notes that R uses <strong>Hartigan and Wong (1979)</strong>, which partitions so that WCSS is minimised.</p>
+<hr>
+<h2 id="20-normalization-and-why-it-is-necessary">20 Normalization, and why it is necessary</h2>
+<p><strong>The problem: different scales.</strong></p>
+<p>His examples:</p>
+<ul>
+<li><strong>age</strong> spans at most about 100</li>
+<li><strong>income</strong> can differ by nearly a million</li>
+</ul>
+<p>Or from the <code>imports-85</code> dataset used for linear regression:</p>
+<ul>
+<li><strong>horsepower</strong> runs <strong>48 – 288</strong></li>
+<li><strong>price</strong> runs <strong>5,000 – 40,005</strong></li>
+</ul>
+<p><strong>Why that matters</strong>: machine learning computes an <strong>error</strong> (a difference) and <strong>squares it</strong>. A variable in the tens of thousands squares into the millions, while one in the hundreds squares only into the tens of thousands.</p>
+<p>➤ <strong>It is not fair — the model will over-weight the large-valued feature and learn with a lean.</strong></p>
+<h3 id="ระวัง--he-tied-this-straight-to-the-exam"><code>ระวัง</code> — he tied this straight to the exam</h3>
+<p><strong>"That's bias, and I ask about bias on the paper — what kinds of bias are there, data bias, human bias, go and look it up."</strong></p>
+<p>➤ <strong>Unequal scales count as data bias.</strong></p>
+<h3 id="the-fix">The fix</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Method</th><th>What it does</th></tr></thead><tbody><tr><td><strong>Normalization</strong></td><td>squeeze into <strong>0 to 1</strong> — lowest becomes 0, highest becomes 1, the rest interpolated</td></tr><tr><td><strong>Standardization (Z-score)</strong></td><td>use the standard deviation — needs statistics first</td></tr></tbody></table></div>
+<p><strong>In Orange</strong>: the <strong>Preprocess</strong> widget → <strong>Normalize</strong> → choose 0–1 or standard deviation.</p>
+<p><code>เกร็ดเสริม</code> Orange normalises <strong>only the features, never the target</strong>, since the target is the output — though you can select columns yourself.</p>
+<p><code>เกร็ดเสริม</code> <strong>Preprocessing</strong> = whatever you do <strong>before</strong> the next stage. Another example: an image shot at 1000×1000 when the model wants 500×500 must be preprocessed.</p>
+<hr>
+<h2 id="21-the-k-means-algorithm">21 The K-means algorithm</h2>
+<p>The deck gives five steps:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Step</th><th>What happens</th></tr></thead><tbody><tr><td><strong>1</strong></td><td><strong>Select k centroids</strong> — k rows of the dataset chosen at random</td></tr><tr><td><strong>2</strong></td><td><strong>Assign each data point to its closest centroid</strong></td></tr><tr><td><strong>3</strong></td><td><strong>Recalculate the centroids</strong> as the average of all data points in each cluster</td></tr><tr><td><strong>4</strong></td><td><strong>Reassign data points</strong> to their closest centroids again</td></tr><tr><td><strong>5</strong></td><td><strong>Repeat steps 3 and 4</strong> until the data points <strong>are no longer reassigned</strong>, or the <strong>maximum number of iterations</strong> is reached</td></tr></tbody></table></div>
+<p>What he added <em>(from the transcript)</em>:</p>
+<ul>
+<li><strong>the initial centroids can simply be random</strong> — with ten thousand points and k = 3, pick 3 of the ten thousand</li>
+<li>after the first round the centroids <strong>"may be off"</strong>, because with real members some lean left and some lean right → the true middle must be recomputed</li>
+<li>once a centroid moves, <strong>a point that was blue may turn red</strong> on the next pass</li>
+<li><strong>"it shifts back and forth until it settles, and that's the end of it"</strong></li>
+<li><strong>"it isn't one round and done"</strong></li>
+</ul>
+<h3 id="ระวัง--k-means-is-non-deterministic"><code>ระวัง</code> — K-means is non-deterministic</h3>
+<p>The deck states it plainly: <em>"The basic k-means clustering is based on a <strong>non-deterministic</strong> algorithm. This means that <strong>running the algorithm several times on the same data could give different results</strong>. The non-deterministic nature of k-means is due to its <strong>random selection of data points as initial centroids</strong>."</em></p>
+<p>And: <em>"<strong>Sensitive to initial centroid placement</strong> (can converge to poor solutions)."</em></p>
+<p>➤ <strong>This is very easy to turn into an option — the same data can give different results, because the starting centroids are random.</strong></p>
+<p><code>เกร็ดเสริม</code> The deck also notes <em>"K-means does not ensure the clusters will have the same size, but finds the clusters that are the <strong>best separated</strong>"</em> — <strong>equal group sizes are not guaranteed.</strong></p>
+<hr>
+<h2 id="22-wcss-and-the-elbow-method">22 WCSS and the Elbow method</h2>
+<p><strong>The question everyone asks: how many clusters?</strong></p>
+<h3 id="the-weaker-approach">The weaker approach</h3>
+<p>Use statistical or domain knowledge first — do some visualization, some EDA, guess there are about 5 groups, start at 5. <strong>He said himself: "that isn't a good answer, it's trial and error."</strong></p>
+<h3 id="the-elbow-method">The Elbow method</h3>
+<p><strong>The way to be confident</strong>:</p>
+<ol>
+<li><strong>Try k = 1, 2, 3, …</strong> and onward (to 10, say)</li>
+<li>For each k compute <strong>WCSS</strong> (the errors of all clusters added together)</li>
+<li><strong>Plot</strong> WCSS against k</li>
+<li><strong>Find where the error starts to flatten — where the slope goes level.</strong> That is the elbow</li>
+</ol>
+<p>The deck: <em>"By considering the Within Cluster Sum of Squares (WCSS), we can select the number of clusters where <strong>the change in WCSS begins to level off</strong> (called the elbow method)."</em></p>
+<p>In its worked example: <em>"a good number of clusters is <strong>3 at best or 4 if needed</strong>."</em></p>
+<p><code>เกร็ดเสริม</code> <strong>"Elbow" means the joint of the arm</strong> — remember it from the bend in the curve.</p>
+<p><code>เกร็ดเสริม</code> The deck also names <strong>Silhouette Score</strong> as an alternative, which he said is "not for now".</p>
+<h3 id="the-iris-example">The Iris example</h3>
+<ul>
+<li><strong>Iris</strong> — three species, measuring <strong>petal</strong> and <strong>sepal</strong> width and length</li>
+<li>Plotted in 2-D using only two variables (petal width and length), it <strong>almost separates cleanly already</strong></li>
+<li>The elbow plot for Iris points at <strong>k = 3</strong>, which <strong>matches reality</strong> (three species). k = 4 is not wrong either</li>
+</ul>
+<hr>
+<h2 id="23-k-modes-and-k-prototypes">23 K-modes and K-prototypes</h2>
+<h3 id="the-problem-k-means-cannot-handle-categorical-data">The problem: K-means cannot handle categorical data</h3>
+<p>The deck: <em>"<strong>Not suitable for non-numerical (categorical) data.</strong> Even if you encode categories numerically (like one-hot encoding), the <strong>Euclidean distance may become misleading</strong>."</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Algorithm</th><th>For</th><th>Measures dissimilarity by</th></tr></thead><tbody><tr><td><strong>K-means</strong></td><td><strong>numerical</strong></td><td><strong>Euclidean distance</strong> — uses the <strong>mean</strong></td></tr><tr><td><strong>K-modes</strong></td><td><strong>categorical / nominal</strong></td><td><strong>number of mismatches</strong> (like <strong>Hamming distance</strong>) — uses the <strong>mode</strong></td></tr><tr><td><strong>K-prototypes</strong></td><td><strong>mixed</strong></td><td>combines K-means and K-modes</td></tr></tbody></table></div>
+<h3 id="how-k-modes-works">How K-modes works</h3>
+<p><strong>Count whether things differ, and nothing more:</strong></p>
+<ul>
+<li>the same → <strong>mismatch = 0</strong></li>
+<li>different → <strong>mismatch = 1</strong></li>
+</ul>
+<p>His example, clustering on <code>city</code> and <code>gender</code>:</p>
+<ul>
+<li>New York vs New York → 0</li>
+<li>New York vs Chicago → 1</li>
+<li>both Female <strong>and</strong> both New York → total mismatch 0 → <strong>as close as it gets</strong></li>
+</ul>
+<p>➤ <strong>Fewer mismatches = closer · more mismatches = further apart.</strong></p>
+<p><code>เกร็ดเสริม</code> Gender (male/female) is <strong>nominal data</strong> and can be used for clustering — the difference is 0 or 1. He noted: <strong>"this is on the exam, the material we covered — ratio data, interval data, that sort of thing."</strong></p>
+<h3 id="k-prototypes">K-prototypes</h3>
+<p>The deck: <em>"Each cluster center is called a <strong>prototype</strong> because it represents the '<strong>typical</strong>' or most representative point of that cluster."</em></p>
+<p>The cost function it gives:</p>
+<pre><code>cost = (age₁ − age₂)² + (income₁ − income₂)² + (number of mismatches)
+</code></pre>
+<p>i.e. <strong>the numerical part (squared distance) plus the categorical part (mismatch count)</strong>.</p>
+<hr>
+<h2 id="24-hard-vs-soft-clustering">24 Hard vs soft clustering</h2>
+<p>The deck splits the ways of assigning a point in two:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>#</th><th>Name</th><th>Meaning</th><th>Example</th></tr></thead><tbody><tr><td><strong>1</strong></td><td><strong>Hard clustering</strong></td><td>a sample goes to <strong>exactly one cluster</strong></td><td><strong>K-means</strong></td></tr><tr><td><strong>2</strong></td><td><strong>Fuzzy / soft clustering</strong></td><td>a sample is <strong>distributed among several clusters</strong> by weight</td><td><strong>Fuzzy C-means (FCM)</strong></td></tr></tbody></table></div>
+<p><strong>The deck's apple example</strong>: an apple is red <strong>or</strong> green (hard) — but an apple can also be red <strong>and</strong> green (fuzzy), red to a degree and green to a degree.</p>
+<p>He added <em>(from the transcript)</em>: a point might be <strong>80%</strong> in one cluster and <strong>20%</strong> in another — blurred, not clear-cut.</p>
+<p><code>เกร็ดเสริม</code> <strong>Why C and not K?</strong> He said he wondered too — <strong>C stands for class / category</strong>, i.e. the number of centres. Same meaning as K.</p>
+<p><code>เกร็ดเสริม</code> He compared <strong>fuzzy logic</strong> with <strong>quantum</strong>: binary is 0 and 1, while quantum has something in between. Fuzzy logic goes the same way — values between 0 and 1.</p>
+<hr>
+<h2 id="25-the-deck-by-deck-exam-walkthrough">25 The deck-by-deck exam walkthrough</h2>
+<p>For the last twenty minutes he opened the Intro and EDA decks and went page by page saying what he will ask. <strong>This is the most valuable part of the whole session.</strong></p>
+<blockquote>
+<p>How he writes the paper: <strong>"when I set the exam I open it up and go through it page by page, and turn what comes up into four-option questions."</strong> — literally slide by slide.</p>
+</blockquote>
+<h3 id="from-intro-to-ds-engineering-and-ai">From Intro to DS, Engineering and AI</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Topic</th><th>What he said</th></tr></thead><tbody><tr><td><strong>Data scientist skills</strong></td><td>The deck has the phrase <strong>"Jack of all trades, master of …"</strong> — like a duck, does many things, none of them expertly. <strong>"The question will ask what skills a data scientist needs, what knowledge they need"</strong> (statistics, computing, domain knowledge)</td></tr><tr><td><strong>Data Scientist vs Data Engineer</strong></td><td><strong>"How do they differ — you must get this."</strong> DE is upstream: infrastructure, collecting and storing data</td></tr><tr><td><strong>Data Science Pipeline</strong></td><td>upstream, midstream, downstream — what is in each</td></tr><tr><td><strong>Data Lifecycle</strong></td><td>like the SDLC · <strong>"I ask about this one"</strong></td></tr><tr><td><strong>Team sizes</strong></td><td><strong>"data science versus data engineering — who has more, roughly how many"</strong> — go and look</td></tr><tr><td><strong>Data bias / human bias / algorithmic bias</strong></td><td><strong>"You have to remember these, go and look again."</strong> Bias is error, sometimes unintentional, coming from habit · <strong>"what is data bias, what types are there"</strong> · algorithmic bias comes from training · <strong>"and there are ways to reduce it — what do you do to reduce bias"</strong></td></tr><tr><td><strong>Overfitting / underfitting</strong></td><td><strong>"I do ask what overfitting is"</strong></td></tr><tr><td><strong>PDPA</strong> and <strong>AI Winter</strong></td><td>"you should know these by now"</td></tr><tr><td><strong>"Data is the new oil"</strong></td><td><strong>"what does it mean — go and look"</strong></td></tr><tr><td><strong>"AI is the new electricity"</strong></td><td><strong>"that's on it too, what does it mean"</strong></td></tr><tr><td><strong>Democratize AI</strong></td><td>NVIDIA's Jensen Huang uses the phrase — everyone should be able to reach AI, not just an elite</td></tr><tr><td><strong>Big Data — the V's</strong></td><td><strong>"big data is on it too … there are 5 V's, there are 7 V's"</strong></td></tr><tr><td><strong>Insight / actionable insight</strong></td><td><strong>"I ask about insight — go and find out what it is, what actionable insight is"</strong></td></tr><tr><td><strong>Data mining</strong></td><td><strong>"I ask about data mining"</strong> — the technique for finding patterns in big data / a data warehouse</td></tr><tr><td><strong>KDD</strong></td><td><strong>"I ask this one directly — go and find out what KDD is"</strong> (Knowledge Discovery in Databases)</td></tr><tr><td><strong>Orange</strong></td><td><strong>"there's one question on Orange — should be easy, a free mark"</strong></td></tr></tbody></table></div>
+<h3 id="from-eda--model-fitting">From EDA – Model Fitting</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Topic</th><th>What he said</th></tr></thead><tbody><tr><td><strong>Box plot</strong></td><td><strong>"I ask about the box plot directly"</strong> · <strong>"what is a box plot for, what is a scatter plot for — go and find out yourselves"</strong></td></tr><tr><td><strong>Scatter plot</strong></td><td><strong>"I ask about the scatter plot too"</strong> · <strong>"why do we plot at all … why not use something else? Go and find the answer"</strong></td></tr><tr><td><strong>EDA definition</strong></td><td><strong>"Of course I ask about EDA — you must be able to define it."</strong> Surveying the data first: is it good, is there enough, does it need more features, is there much bias — using visualization and statistics</td></tr><tr><td><strong>Predictive vs descriptive</strong></td><td><strong>"I might ask about the difference between predictive and descriptive — how do they differ. You have to be able to explain it"</strong></td></tr><tr><td><strong>Model fitting / data fitting / data modeling</strong></td><td><strong>"we have model fitting — but do you remember plain fitting? And how does data modeling differ?"</strong> · <strong>"you probably need to know the difference"</strong></td></tr><tr><td><strong>Model parameter vs hyperparameter</strong></td><td><strong>"what is a model parameter, what is a hyperparameter — go and read it again"</strong></td></tr><tr><td><strong>OLTP vs OLAP</strong></td><td><strong>"if I remember rightly I ask about these — go and look"</strong></td></tr><tr><td><strong>Data types</strong></td><td><strong>"This one matters, we talk about it constantly."</strong> <strong>qualitative (categorical)</strong> vs <strong>quantitative</strong> · <strong>nominal</strong> (something you merely observe, with no ordering — gender) · <strong>ordinal</strong> (from <em>order</em>) · <strong>interval</strong> · <strong>ratio</strong> · <strong>"you need to know what ratio is, what interval is — I will ask"</strong></td></tr><tr><td><strong>True zero</strong></td><td><strong>Celsius has no true zero</strong> (there is still thermal energy) · <strong>Kelvin does</strong> (no thermal energy at all) · 0 K ≈ −273 °C · he mentioned quantum computers being cooled to about 2 K</td></tr><tr><td><strong>Skewed distributions</strong></td><td>which way the mean leans · a perfect one has everything falling in the same place</td></tr><tr><td><strong>Mean / median / mode</strong></td><td>you should know these · <strong>median = the value that cuts through the middle</strong>, a word K-means and K-modes borrow</td></tr><tr><td><strong>Box plot in detail</strong></td><td><strong>"This you have to understand"</strong> — <strong>Q1, Q2, Q3, IQR</strong> · the <strong>fences</strong> are at <strong>1.5 × IQR</strong> (some use 3, but 1.5 is more common) added to and subtracted from the edges of the box · points <strong>outside the fence are outliers</strong> · <strong>min and max count only points inside the fence, never the outliers</strong> · the <strong>five-number summary</strong> is those five values</td></tr><tr><td><strong>Outliers</strong></td><td>dropped for the analysis — but <strong>you must find out why they happened</strong>, and analyse them as a separate group: "it may show you something"</td></tr><tr><td><strong>Correlation</strong></td><td><strong>no formula needed</strong> · runs <strong>−1 to 1</strong> · <strong>0 = no correlation</strong> · positive = same direction · negative = opposite · there is <strong>Pearson</strong> and <strong>Spearman</strong>; we use Pearson</td></tr><tr><td><strong>Linear regression</strong></td><td>predicts a <strong>numeric value</strong> (car prices, house prices) = a <strong>regression</strong> task, part of <strong>predictive</strong> work · <strong>regression translates as "receding"</strong> — the error recedes until it is as small as possible · of the hundreds of lines that could pass through the data, <strong>one has the least error</strong></td></tr><tr><td><strong>Why linear</strong></td><td>it is the simplest (degree 1) and enough for most work · harder problems use <strong>polynomial</strong> (degree 2 bends once, degree 3 bends back and forth) — <strong>but polynomial is not examined</strong></td></tr><tr><td><strong>Coefficients and stars</strong></td><td>he may ask <strong>"how do you read the output, how do you use the coefficients"</strong> · <strong>significance stars</strong>: 1 = usable · 2 = better · 3 = very good · <strong>none at all = not important enough to predict with</strong></td></tr><tr><td><strong>p-value, R²</strong></td><td><strong>not asked</strong></td></tr><tr><td><strong>Reinforcement learning</strong></td><td>there is a <strong>reward</strong> — do well, get a reward; do badly, lose points · in Gen AI that is the 👍👎 buttons, collected and fed back</td></tr><tr><td><strong>Where K-means sits</strong></td><td>K-means is <strong>off on its own</strong> (unsupervised), separate from classification and regression</td></tr></tbody></table></div>
+<hr>
+<h2 id="glossary">Glossary</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Term</th><th>Meaning</th></tr></thead><tbody><tr><td><strong>Supervised learning</strong></td><td>learning with a teacher — <strong>uses labels</strong> · Decision Trees belong here</td></tr><tr><td><strong>Unsupervised learning</strong></td><td>learning without a teacher — <strong>no labels</strong> · K-means belongs here</td></tr><tr><td><strong>Label / target / class label</strong></td><td>the answer attached to the data at training time · <strong>categorical</strong> in classification, <strong>numeric</strong> in regression</td></tr><tr><td><strong>Feature</strong></td><td>a variable/column used to predict (x₁, x₂, …)</td></tr><tr><td><strong>Data point</strong></td><td>one row of data</td></tr><tr><td><strong>Root node</strong></td><td>the tree's first node — the most important question</td></tr><tr><td><strong>Leaf node</strong></td><td>a terminal node · a label, not a question</td></tr><tr><td><strong>Entropy</strong></td><td>the messiness/impurity of a group · <strong>0 = pure, 1 = 50/50 mess</strong></td></tr><tr><td><strong>Information Gain (IG)</strong></td><td>Entropy(parent) − Weighted Entropy(children) · <strong>more is better</strong></td></tr><tr><td><strong>ID3</strong></td><td>the tree-building algorithm using IG, by <strong>R. Quinlan, 1986</strong> (name not examined)</td></tr><tr><td><strong>Stopping condition</strong></td><td>when to stop splitting — pure node, max depth, minimum samples</td></tr><tr><td><strong>Overfitting</strong></td><td>learning the training data too well · <strong>a suit cut for one person that fits nobody else</strong></td></tr><tr><td><strong>Underfitting</strong></td><td>learning too little · <strong>a suit that is too loose</strong></td></tr><tr><td><strong>Random Forest</strong></td><td>hundreds of trees taking a majority vote</td></tr><tr><td><strong>Rule-based</strong></td><td>works on if–then · both <strong>Decision Trees</strong> and <strong>Association Rules</strong> are rule-based</td></tr><tr><td><strong>Cluster</strong></td><td>a group of similar data points</td></tr><tr><td><strong>Clustering / cluster analysis</strong></td><td>grouping without knowing the labels in advance</td></tr><tr><td><strong>K (in K-means)</strong></td><td><strong>the number of clusters</strong> — a <strong>hyperparameter</strong> chosen by the user</td></tr><tr><td><strong>Hyperparameter</strong></td><td>a value <strong>the user/data scientist sets</strong>, not one the model learns</td></tr><tr><td><strong>Centroid</strong></td><td>a cluster's centre point · compare centre of gravity, centre of mass</td></tr><tr><td><strong>Euclidean distance</strong></td><td>Pythagorean distance, √[(x₁−x₂)² + (y₁−y₂)²]</td></tr><tr><td><strong>WCSS</strong></td><td>Within-Cluster Sum of Squares — the squared distances from every point to its centroid, added up</td></tr><tr><td><strong>Elbow method</strong></td><td>plot WCSS against k and take the point where the curve levels off</td></tr><tr><td><strong>Silhouette Score</strong></td><td>another way to choose k (not covered yet)</td></tr><tr><td><strong>Non-deterministic</strong></td><td>the same data can give different results — K-means picks its starting centroids at random</td></tr><tr><td><strong>K-modes</strong></td><td>the categorical version — measures <strong>mismatches</strong> (Hamming distance), uses the <strong>mode</strong></td></tr><tr><td><strong>K-prototypes</strong></td><td>K-means + K-modes for mixed data · its centre is called a <strong>prototype</strong></td></tr><tr><td><strong>Hard clustering</strong></td><td>one point, one cluster (K-means)</td></tr><tr><td><strong>Fuzzy / soft clustering</strong></td><td>one point across several clusters by weight (<strong>Fuzzy C-means</strong>)</td></tr><tr><td><strong>Normalization</strong></td><td>squeezing values into 0–1</td></tr><tr><td><strong>Standardization (Z-score)</strong></td><td>rescaling by the standard deviation</td></tr><tr><td><strong>Preprocessing</strong></td><td>whatever is done to the data <strong>before</strong> it goes into the model</td></tr></tbody></table></div>
+<hr>
+<h2 id="chapter-summary">Chapter summary</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Topic</th><th>The essential point</th></tr></thead><tbody><tr><td><strong>Exam 1</strong></td><td><strong>Friday</strong> · <strong>50 multiple-choice</strong>, single select, four options · <strong>2B pencil, bubble sheet</strong> · <strong>3 hours</strong> · closed book · no calculator needed</td></tr><tr><td><strong>Scope</strong></td><td><strong>Five sets</strong>: Intro · EDA-Model Fitting · Association Rules · Decision Trees · K-means · <strong>Classification and Metrics is not on it</strong></td></tr><tr><td><strong>Formulas</strong></td><td>Examined: <strong>Support</strong> (and confidence must be known) · <strong>Not examined</strong>: entropy, IG, correlation, p-value, R², polynomial</td></tr><tr><td><strong>Decision Tree</strong></td><td><strong>supervised</strong> · does <strong>both classification and regression</strong> · <strong>rule-based</strong></td></tr><tr><td><strong>The heart of a DT</strong></td><td>pick the feature with the <strong>highest IG</strong> as the root · <strong>short trees beat tall ones</strong> · never reuse an attribute on the same path</td></tr><tr><td><strong>Entropy</strong></td><td><strong>0 = pure</strong> · <strong>1 = maximum mess (50/50)</strong> · synonyms: disorder, messy, impure, randomness, uncertainty</td></tr><tr><td><strong>Information Gain</strong></td><td><strong>Entropy(parent) − Weighted Entropy(children)</strong></td></tr><tr><td><strong>PlayTennis</strong></td><td>9 Yes / 5 No out of 14 · <strong>entropy ≈ 0.94</strong> · <strong>IG(Outlook) = 0.247, the highest → root</strong> · Overcast is pure, so it is a leaf at once</td></tr><tr><td><strong>Ice cream</strong></td><td>12 people · Weather / DayOfWeek / HasMoney / CravingLevel · <strong>Weather has the highest IG → root</strong></td></tr><tr><td><strong>Overfitting</strong></td><td>the suit cut for one person — <strong>not general</strong></td></tr><tr><td><strong>K-means</strong></td><td><strong>unsupervised</strong>, because <strong>no label is used</strong> · <strong>K is a hyperparameter</strong> the user chooses</td></tr><tr><td><strong>The algorithm</strong></td><td>pick k centroids at random → assign each point to the nearest → recompute the centroids → reassign → <strong>repeat until nothing moves</strong></td></tr><tr><td><strong>Non-deterministic</strong></td><td>repeat runs differ, because the starting centroids are random · sensitive to initial placement</td></tr><tr><td><strong>Distance</strong></td><td><strong>Euclidean distance</strong> (Pythagoras) · squared to avoid the square root and keep it fast</td></tr><tr><td><strong>Choosing k</strong></td><td>the <strong>Elbow method</strong> — plot WCSS and take the point where it levels off</td></tr><tr><td><strong>Categorical data</strong></td><td>K-means cannot → <strong>K-modes</strong> (count mismatches) · mixed → <strong>K-prototypes</strong></td></tr><tr><td><strong>Hard vs soft</strong></td><td>K-means is hard (one point, one cluster) · <strong>Fuzzy C-means</strong> is soft (one point, several clusters by percentage)</td></tr><tr><td><strong>Normalization</strong></td><td>necessary because unequal scales make the model <strong>lean</strong> — which counts as <strong>data bias</strong></td></tr><tr><td><strong>What he said he will ask outright</strong></td><td>what a box plot is for · what a scatter plot is for · predictive vs descriptive · parameter vs hyperparameter · which category K-means is in · what overfitting is · what kinds of bias there are · one question on Orange</td></tr></tbody></table></div></article><nav class="pagination" aria-label="Previous and next notes"><a href="w04-association-rules.en.html"><small>← Previous</small>Association Rules — Market Basket Analysis, Apriori and Support/Confidence/Lift</a><a href="w06-classification-and-model-validation.en.html"><small>Next →</small>Classification and Model Validation</a></nav></main><aside class="toc-sidebar"><nav class="toc" aria-label="On this page"><strong>On this page</strong><a href="#agenda">Agenda</a><a href="#01-exam-1--everything-the-lecturer-announced">01 Exam 1 — everything the lecturer announced</a><a href="#02-the-scope--five-slide-sets">02 The scope — five slide sets</a><a href="#03-which-formulas-are-examined-and-which-are-not">03 Which formulas are examined and which are not</a><a href="#04-the-association-rules-refill">04 The Association Rules refill</a><a href="#05-decision-tree--what-it-is-where-it-sits">05 Decision Tree — what it is, where it sits</a><a href="#06-the-anatomy-of-a-tree">06 The anatomy of a tree</a><a href="#07-why-a-short-tree-beats-a-tall-one">07 Why a short tree beats a tall one</a><a href="#08-entropy--how-messy-a-group-is">08 Entropy — how messy a group is</a><a href="#09-information-gain--how-much-a-question-reduces-that-mess">09 Information Gain — how much a question reduces that mess</a><a href="#10-the-tree-building-steps-id3">10 The tree-building steps (ID3)</a><a href="#11-a-full-worked-example--playtennis">11 A full worked example — PlayTennis</a><a href="#12-stopping-conditions-and-overfitting">12 Stopping conditions and overfitting</a><a href="#13-the-exercise--12-people-and-ice-cream">13 The exercise — 12 people and ice cream</a><a href="#14-decision-trees-in-orange">14 Decision Trees in Orange</a><a href="#15-random-forest-mentioned-in-passing">15 Random Forest (mentioned in passing)</a><a href="#16-k-means--what-clustering-is">16 K-means — what clustering is</a><a href="#17-k-is-a-hyperparameter">17 K is a hyperparameter</a><a href="#18-centroid">18 Centroid</a><a href="#19-euclidean-distance">19 Euclidean distance</a><a href="#20-normalization-and-why-it-is-necessary">20 Normalization, and why it is necessary</a><a href="#21-the-k-means-algorithm">21 The K-means algorithm</a><a href="#22-wcss-and-the-elbow-method">22 WCSS and the Elbow method</a><a href="#23-k-modes-and-k-prototypes">23 K-modes and K-prototypes</a><a href="#24-hard-vs-soft-clustering">24 Hard vs soft clustering</a><a href="#25-the-deck-by-deck-exam-walkthrough">25 The deck-by-deck exam walkthrough</a><a href="#glossary">Glossary</a><a href="#chapter-summary">Chapter summary</a></nav></aside></div>
+<footer class="site-footer"><span>INT182 · Data Science & AI<br>Study summaries based on course materials</span><a href="https://github.com/Phakinza007/int182-study-notes">GitHub ↗</a></footer>
+<dialog id="search-dialog" aria-labelledby="search-title"><div class="dialog-heading"><h2 id="search-title">Search the notes</h2><button data-close-dialog aria-label="Close search">×</button></div><label for="search-input">Keyword, e.g. precision, PEAS, kNN</label><input id="search-input" type="search" autocomplete="off"><p id="search-status" role="status">Type a keyword to start</p><ul id="search-results"></ul></dialog>
+<dialog id="image-dialog" aria-labelledby="image-title"><div class="dialog-heading"><h2 id="image-title">Diagram</h2><button data-close-dialog aria-label="Close image">×</button></div><div class="image-controls"><button data-zoom="out" aria-label="Zoom out">−</button><button data-zoom="in" aria-label="Zoom in">+</button><button data-zoom="reset">Fit</button><a id="image-original" target="_blank" rel="noopener">Open original ↗</a></div><div class="image-stage"><img id="zoom-image" alt=""></div><p id="image-caption"></p></dialog>
+</body></html>

@@ -1,0 +1,991 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="INT182 Data Science and AI notes for weeks 1–9, with diagrams and key formulas"><meta name="theme-color" content="#f7f6f3"><title>Association Rules — Market Basket Analysis, Apriori and Support/Confidence/Lift · INT182</title><link rel="icon" href="../favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="../style.css"><script src="../app.js" defer></script></head>
+<body data-base="../" data-page="note"><a class="skip" href="#main">Skip to content</a>
+<header class="topbar"><div class="topbar-inner"><a class="brand" href="../en.html"><span class="brand-mark">182</span><span>INT182 <small>Study notes</small></span></a><nav aria-label="Main menu"><button class="search-trigger" data-search-open aria-haspopup="dialog">Search notes <kbd>/</kbd></button><a class="lang" href="w04-association-rules.html" lang="th">ภาษาไทย</a></nav></div></header>
+<div class="reader-layout"><aside class="reader-sidebar"><details class="week-menu" open><summary>All weeks</summary><nav aria-label="Choose a week"><a href="w01-course-intro.en.html" ><span class="week-no">01</span><span>Course Introduction and Project Structure</span></a><a href="w02-ds-ai-landscape-and-tools.en.html" ><span class="week-no">02</span><span>The DS/AI Landscape (continued) and the Orange Toolkit</span></a><a href="w03-eda-and-model-fitting.en.html" ><span class="week-no">03</span><span>EDA and Model Fitting — Box Plot, Correlation, Linear Regression</span></a><a href="w04-association-rules.en.html" aria-current="page"><span class="week-no">04</span><span>Association Rules — Market Basket Analysis, Apriori and Support/Confidence/Lift</span></a><a href="w05-decision-trees-and-k-means.en.html" ><span class="week-no">05</span><span>Decision Trees, K-means Clustering, and the Exam 1 scope review</span></a><a href="w06-classification-and-model-validation.en.html" ><span class="week-no">06</span><span>Classification and Model Validation</span></a><a href="w07-classification-performance-metrics.en.html" ><span class="week-no">07</span><span>Classification Performance Metrics and Evaluation Methods</span></a><a href="w08-introduction-to-ai-and-agents.en.html" ><span class="week-no">08</span><span>Introduction to AI, Rational Agents, and PEAS</span></a><a href="w09-introduction-to-ml-and-nearest-neighbors.en.html" ><span class="week-no">09</span><span>Introduction to Machine Learning, k-NN, and AI Search</span></a></nav></details></aside><main id="main" class="reader"><div class="note-meta">WEEK 04 <span>2026-08-26</span></div><h1>Association Rules — Market Basket Analysis, Apriori and Support/Confidence/Lift</h1><div class="reader-actions"><button data-read-week="4" aria-pressed="false">Mark as read</button><button data-print>Print this note</button></div><article class="prose"><blockquote>
+<p>Group 1 (Wednesday 9.30–12.30 @ LX 12/2) — built on the deck <code>Association rules.pdf</code> (19 slides, Assoc. Prof. Dr. Pornchai Mongkolnam), with additions from what the lecturers said in class (<code>INT182_G1_20260826.docx</code>)</p>
+<p>⚠️ <strong>A note about the groups: this file is summarised from the Group 1 transcript (Wednesday 26 Aug)</strong>, who are two days ahead of Group 2 (Friday 28 Aug). The syllabus places both in the same week, but the presentation order and the deadlines for Group 2 may differ — confirm them in your own session</p>
+<p>⚠️ The transcript comes from automatic speech recognition and is very poor in several stretches — anything drawn from the transcript alone is marked <em>(from the transcript)</em></p>
+<p>The session had two halves: the first was project idea presentations, 3–5 minutes per team, with feedback from the lecturers; the second opened deck 3, Association Rules — the class got roughly as far as slide 14 before time ran out, and will continue next week</p>
+</blockquote>
+<h2 id="agenda">Agenda</h2>
+<ol>
+<li>The format of the project idea presentations</li>
+<li>Lessons from the project presentation feedback</li>
+<li>Applying the feedback to SnoreSenseAI</li>
+<li>What association rules are</li>
+<li>Transactional data</li>
+<li>Items, itemsets and frequent itemsets</li>
+<li>The Apriori algorithm and the Apriori property</li>
+<li>Support</li>
+<li>Confidence</li>
+<li>Lift</li>
+<li>The three quick formulas</li>
+<li>A full worked example — a 3-transaction dataset</li>
+<li>Handling 3-itemsets</li>
+<li>Exercise — a 5-transaction dataset</li>
+<li>Work that was set and what to prepare</li>
+</ol>
+<h2 id="01-the-format-of-the-project-idea-presentations">01 The format of the project idea presentations</h2>
+<p><em>(this section comes entirely from the transcript)</em></p>
+<ul>
+<li><strong>3–5 minutes</strong> per team (5 minutes is the maximum). Dr. Chakarida set a phone alarm at <strong>4 minutes</strong> — a raised hand means start wrapping up</li>
+<li>Roughly <strong>9–10 teams</strong> in Group 1. A single representative may present, or the whole team may come up</li>
+<li>Both lecturers (Dr. Pornchai and Dr. Chakarida) commented on each team immediately after it finished</li>
+<li>Teams are <strong>4–5 people</strong>. Teams of 4 were asked to take in classmates who still had no team</li>
+<li><strong>Written feedback will be posted on Friday</strong> — if a lecturer says something is unclear, don't panic, take it and make it clearer</li>
+<li>This round carries no grade of its own; it is an idea pitch to collect feedback before building</li>
+<li><strong>The second presentation replaces the second exam</strong> (there will be no second exam)</li>
+<li>Between now and then, teams can consult either lecturer outside class. Keep updating your progress rather than leaving it until the presentation is close</li>
+</ul>
+<h2 id="02-lessons-from-the-project-presentation-feedback">02 Lessons from the project presentation feedback</h2>
+<p><em>(gathered from the transcript — written up as principles rather than team by team)</em></p>
+<h3 id="principle-1--the-title-must-be-specific-not-a-bare-technology-name">Principle 1 — the title must be specific, not a bare technology name</h3>
+<p>A project title that is just a technology name is too <mark>general</mark>. Narrow it down so the domain and the users show, e.g. instead of "Text to Speech", make it "Thai Text-to-Speech for people with speech disabilities".</p>
+<p>Another point the lecturers praised: the team that put the word <strong>"forecast" / "predict"</strong> in its title made it immediately clear to the panel that a model would have to be built. Teams that avoided that word often ended up presenting something that looked like a <mark>database filter</mark>.</p>
+<h3 id="principle-2--there-has-to-be-a-model-not-just-a-filter">Principle 2 — there has to be a model, not just a filter</h3>
+<p>This came up with several teams: if the system only does <strong>data collection + filtering</strong> (the user enters criteria, the system returns matching rows), that <strong>is not yet modeling in the data science or AI sense</strong>.</p>
+<p>The fixes suggested were to add a prediction component:</p>
+<ul>
+<li>from "search rental units by spec" → add a <strong>regression</strong> that predicts a fair rent, or predicts how many months a unit will take to let at a given price</li>
+<li>or, if not regression, use <strong>clustering</strong> to group units or customers instead — just have some modeling in there</li>
+<li>from "EDA of sales" → state clearly what will be predicted, e.g. what percentage of stock to hold per product category</li>
+</ul>
+<h3 id="principle-3--the-dataset-must-carry-a-label-or-a-score-or-you-cannot-predict">Principle 3 — the dataset must carry a label or a score, or you cannot predict</h3>
+<p><strong>This was the point the lecturers hammered hardest all session.</strong> If the data is only raw features with no target variable (y) attached, the model has nothing to learn.</p>
+<p>Examples from the session:</p>
+<ul>
+<li>A team predicting athlete fatigue and injury had only heart rate, HRV, step count and sleep as features. The question back was <strong>"the training data has to have a score saying whether this person counts as injured"</strong> — ten people who each lift for half an hour do not end up equally tired, so you need a <mark>fatigue index</mark> or an <mark>injury score</mark> from the start. The analogy given was the credit score a bank uses to decide on a loan</li>
+<li>A team detecting falls among the elderly needs both "fall" and "not a fall" data, because lying down on a mat to do yoga is not a fall — without the contrasting class the model cannot tell them apart</li>
+</ul>
+<blockquote>
+<p><strong>The key sentence:</strong> if that is all the data you have (no label, no level), the most you can do is <mark>association</mark> or <mark>clustering</mark></p>
+<p>That sentence connects straight into the second half of the session — association rules are an <strong>unsupervised</strong> method that works even without labels</p>
+</blockquote>
+<h3 id="principle-4--you-need-a-clear-data-science-pipeline">Principle 4 — you need a clear data science pipeline</h3>
+<p>The slides have to show, as a diagram, <strong>what goes in → what happens in the process → what comes out</strong>. Several teams showed only the end result, so the lecturers could not see what pattern the model was supposed to be learning.</p>
+<p>It should be visible end to end: what the input is, what feature engineering happens, which model is used (and whether it is compared against another, e.g. logistic regression vs decision tree), which metric validation uses (MAE / R²), and what the output looks like to the user.</p>
+<h3 id="principle-5--the-tech-stack-must-be-spelled-out-as-a-diagram">Principle 5 — the tech stack must be spelled out as a diagram</h3>
+<p>Don't spend the whole slot on the rationale for why the project should exist. For a <strong>pitch</strong> you need concrete detail on the tech stack: which AI component, which agent, which open-source tool — and it should be a <mark>diagram</mark> or a <mark>flow</mark> with icons showing which engine plugs in where.</p>
+<h3 id="principle-6--you-need-references">Principle 6 — you need references</h3>
+<p>References were asked for from nearly every team. The reasoning: <strong>when you pitch a project without references it lacks credibility, but with current references you pull a lot of confidence out of the audience.</strong></p>
+<p>Three kinds of reference belong in the deck:</p>
+<ol>
+<li><strong>Domain references</strong> — credible sources in the field, e.g. reputable finance sites if the project is about investing</li>
+<li><strong>AI technology references</strong> — links to the sites of the tools and models being used</li>
+<li><strong>Prior work</strong> — Kaggle notebooks you studied, Medium articles, published papers you found</li>
+</ol>
+<h3 id="principle-7--find-what-makes-you-different-you-dont-have-to-do-everything">Principle 7 — find what makes you different; you don't have to do everything</h3>
+<p>If the idea already exists (especially in Thailand), go look at what those products do and point out clearly <strong>where you will differ</strong>. The lecturers stressed: "<strong>you don't have to do everything</strong> — just have something nobody else has done, because our time is short."</p>
+<h3 id="principle-8--scope-belongs-in-the-requirements-from-day-one">Principle 8 — scope belongs in the requirements from day one</h3>
+<p>Constraints should not appear only on a "Limitations" slide at the end; they belong in the requirements from the start. Examples of scoping the lecturers suggested:</p>
+<ul>
+<li>accept English-language comments only, cap the number of comments per clip, cap comment length</li>
+<li>pick <strong>one hardware platform</strong> rather than supporting several brands (sensors from different brands are calibrated differently) — one hardware data source is enough for this course's scope</li>
+<li>work with ~30 items in the KMUTT bookshop instead of trying to cover thousands of items in a convenience store</li>
+</ul>
+<p>The reasoning: <strong>"this is only a small class project, not a commercial one — we are just testing the idea"</strong></p>
+<h3 id="principle-9--every-team-must-be-able-to-say-how-it-will-test">Principle 9 — every team must be able to say how it will test</h3>
+<p>The lecturers said <strong>"every team has to have thought about how it is going to tell us the thing works at 70% or 80%"</strong>. You need test cases and you need to know how you will split <mark>train/test</mark> (which Dr. Pornchai will be teaching in the data science part).</p>
+<p>A related tip: if the Kaggle dataset you picked belongs to a competition that is still live, it has a <mark>live scoreboard</mark> — you can submit a model and get accuracy back immediately, which speeds development up a lot. Check whether yours has one.</p>
+<h3 id="principle-10--data-collection-and-data-quality">Principle 10 — data collection and data quality</h3>
+<ul>
+<li><strong>Sample randomly, don't cherry-pick</strong> — if the real data has hundreds of thousands of rows and you need to shrink it, take a <mark>random sample</mark> rather than the top N, because randomness preserves the behaviour actually present in the data</li>
+<li><strong>Collect variety</strong> — image projects need many angles, many lighting conditions, many weather conditions (low morning sun, rain), and ideally some images from the Thai context rather than only foreign datasets</li>
+<li><strong>Research ethics</strong> — collecting a dataset that requires people to perform a real behaviour (falling, for instance) needs university <mark>IRB</mark> approval before recruiting volunteers. Without IRB approval, be extremely careful, or switch to a public dataset instead</li>
+<li><strong>PDPA</strong> — health data and biometric data count as <mark>sensitive data</mark> under PDPA and are therefore hard to collect. Plan for that</li>
+</ul>
+<h3 id="principle-11--think-about-real-world-conditions">Principle 11 — think about real-world conditions</h3>
+<ul>
+<li><strong>Predict early enough for someone to act</strong> — for the attrition prediction team, the point was that by law an employee gives at least 30 days' notice, so a model that fires once the letter is in has come too late. Design it to predict the risk <strong>two months</strong> ahead</li>
+<li><strong>Safety and redundancy</strong> — a device that reads traffic lights for a colour-blind driver would in reality need more than one unit, because a single unit going flat mid-journey becomes a hazard. Within this course's scope, treat it as a <mark>prototype</mark></li>
+<li><strong>Data that changes over time</strong> — a price-checking system has to know that the standard (UPC) price may not be the real price that day, since shops run week-long discounts. The scoped fix is to fix the prices for now</li>
+</ul>
+<h3 id="principle-12--slide-design">Principle 12 — slide design</h3>
+<ul>
+<li><strong>Larger</strong> text, <strong>fewer</strong> graphics, make the text or the diagram stand out, and use the slide area sensibly</li>
+<li><strong>Don't trust AI too much</strong> — AI-generated slides are usually too dense for anyone to read in time, which makes the presentation ineffective. Break them apart yourself (e.g. split data preprocessing onto its own slide, separate from modeling)</li>
+<li>Look at the <strong>sample project</strong> the lecturer posted (it is in English) — you can see how clearly it states the use case and the engines chosen</li>
+</ul>
+<h2 id="03-applying-the-feedback-to-snoresenseai">03 Applying the feedback to SnoreSenseAI</h2>
+<p>Comparing the twelve principles above against our own deck (<code>../project-phase1/SnoreSenseAI-Phase1-Pitch.pdf</code>), ready for the Friday session:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Principle</th><th>Where the current deck stands</th><th>What to prepare an answer for</th></tr></thead><tbody><tr><td>Specific title</td><td>The title names the domain clearly (snoring → sleep-disordered breathing)</td><td>Make the predictive/screening word (flag / screen) more prominent</td></tr><tr><td>A model, not a filter</td><td>There is already an AI components &#x26; tech stack slide</td><td>Explain clearly what pattern the model learns from the audio, rather than just a loudness threshold</td></tr><tr><td>Dataset must have a label</td><td>The biggest risk</td><td>Be ready to say where the label comes from — does the dataset ship with <mark>AHI</mark> or apnea event annotations? Without them supervised learning is off the table</td></tr><tr><td>Data science pipeline</td><td>There is a System architecture slide</td><td>Make input → feature → model → output read as one continuous line</td></tr><tr><td>Tech stack as a diagram</td><td>Present</td><td>Put the engine icons and names at the right points in the diagram</td></tr><tr><td>References</td><td>There is a References slide, citing Benjafield et al. (2019) and Young et al. (1997)</td><td>Already in line with the feedback; add AI technology references and the Kaggle notebooks studied</td></tr><tr><td>What makes us different</td><td>Not yet visible</td><td>Add a comparison against existing snore-tracking apps and say where we differ</td></tr><tr><td>Scope in the requirements</td><td>There is a Constraints &#x26; boundaries slide</td><td>Good — restate that this is screening, not diagnosis</td></tr><tr><td>Test plan</td><td>There is an Evaluation &#x26; roadmap slide</td><td>Give the train/test split and the metric as concrete numbers</td></tr><tr><td>Data collection and ethics</td><td>Needs adding</td><td>Sleep audio is health data → <mark>sensitive data under PDPA</mark>; it deserves a slide</td></tr><tr><td>Real-world conditions</td><td>Needs adding</td><td>Address false positives — a wrong flag alarms someone for no reason</td></tr><tr><td>Slides</td><td>Text is large, graphics are sparse</td><td>Watch the problem statement slide with its many figures; don't let it get too dense</td></tr></tbody></table></div>
+<h2 id="04-what-association-rules-are">04 What association rules are</h2>
+<p><mark>Association rules</mark> (also called <mark>association mining</mark>) means deriving <strong>relationship rules</strong> from data, written in <strong>if–then</strong> form:</p>
+<pre><code>X → Y     read as "if X is present, Y is likely to be present too"
+</code></pre>
+<ul>
+<li><strong>X</strong> is the <mark>antecedent</mark> (the left-hand side) — a set of one or more items</li>
+<li><strong>Y</strong> is the <mark>consequent</mark> (the right-hand side) — a set of one or more items</li>
+<li>X and Y must be <mark>disjoint</mark>, i.e. they share no items at all</li>
+</ul>
+<p>The shapes a rule can take (slide 16):</p>
+<pre><code>A ∧ B → C
+A ∧ C → B
+B → A ∧ C
+...
+</code></pre>
+<p><strong>Market Basket Analysis (MBA)</strong> is the data mining technique used to identify relationships between items frequently purchased together. The goal is to uncover hidden patterns in transactional data and express them as association rules.</p>
+<blockquote>
+<p><em>(from the transcript)</em> The lecturer's memory hook: MBA is the same acronym as the Master of Business Administration that Thai graduates used to flock to. In this course it stands for <strong>Market Basket Analysis</strong>.</p>
+</blockquote>
+<blockquote>
+<p><em>(from the transcript)</em> <strong>The beer &#x26; diapers story</strong> — American transaction data revealed that men shopping on a Friday evening who bought beer also tended to buy baby diapers. The reading is that these were married men with small children, picking things up for the child while grabbing beer for their own sports evening. The prior assumption had been that diapers were mostly bought by mothers. This is the classic example of a <strong>hidden and completely unexpected pattern</strong>, which is exactly what MBA is meant to dig up.</p>
+</blockquote>
+<h2 id="05-transactional-data">05 Transactional data</h2>
+<p><mark>Transactional data</mark> is information collected and recorded from individual transactions or events. Its key characteristic is that it <strong>captures the details of a specific, single occurrence</strong>.</p>
+<p>The example from slide 3 (which comes back later as the exercise):</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Transaction ID</th><th>Items Purchased</th></tr></thead><tbody><tr><td>1</td><td>Milk, Bread, Butter</td></tr><tr><td>2</td><td>Milk, Diapers</td></tr><tr><td>3</td><td>Bread, Butter, Diapers</td></tr><tr><td>4</td><td>Milk, Bread, Butter</td></tr><tr><td>5</td><td>Milk, Bread, Diapers</td></tr></tbody></table></div>
+<p>Total transactions: <strong>N = 5</strong></p>
+<p><em>(from the transcript)</em> The points the lecturer stressed:</p>
+<ul>
+<li>Real transaction data records more than this — who bought, what they bought, <strong>how many</strong>, how much they paid, <strong>where, and at what time</strong></li>
+<li><strong>The timestamp matters a great deal</strong>, because data mining over large volumes has to distinguish last year from last month from last week. Without a time stamp there is no way to separate them</li>
+<li><strong>But within MBA's scope we ignore the quantities.</strong> All that matters is what co-occurs with what</li>
+<li>Because each basket is stored as a <mark>set</mark>, <strong>items are never repeated</strong> — three cartons of milk still count as Milk once — and <strong>order does not matter</strong>, since sets are unordered</li>
+</ul>
+<h2 id="06-items-itemsets-and-frequent-itemsets">06 Items, itemsets and frequent itemsets</h2>
+<ul>
+<li>An <mark>item</mark> is one product type: Milk, Bread, Butter, Eggs, Diapers</li>
+<li>An <mark>itemset</mark> is a collection of one or more items appearing together in a single transaction
+<ul>
+<li>a <strong>1-itemset</strong> such as {Milk}</li>
+<li>a <strong>2-itemset</strong> such as {Milk, Bread}</li>
+<li>a <strong>3-itemset</strong> such as {Milk, Bread, Butter}</li>
+</ul>
+</li>
+<li>A <mark>frequent itemset</mark> is one that appears in the transaction database <strong>more than or equal to the user-defined <mark>minimum support threshold</mark></strong></li>
+</ul>
+<p><em>(from the transcript)</em> What the lecturer added:</p>
+<ul>
+<li><strong>A 1-itemset alone cannot produce a rule</strong>, because having a single product type says nothing about its relationship to another. You need at least a 2-itemset</li>
+<li>In practice <strong>3 or 4 itemsets is about right</strong>. Past 5 it gets confusing, patterns are hard to find, and it stops being useful. Most exam questions stop at 3 or 4 itemsets</li>
+<li><strong>Frequency</strong> is the raw count of how often an itemset appears, not divided by anything yet; <strong>support</strong> is that frequency divided by N</li>
+</ul>
+<h2 id="07-the-apriori-algorithm-and-the-apriori-property">07 The Apriori algorithm and the Apriori property</h2>
+<p>The <mark>Apriori algorithm</mark> was first presented by <strong>Rakesh Agrawal and Ramakrishnan Srikant in 1994</strong>. It finds frequently occurring itemsets and produces association rules.</p>
+<p><em>(from the transcript)</em> The name "Apriori" carries the sense of <strong>"what comes before"</strong> — the algorithm uses what it learned in the previous pass to decide what to do in the next. It gets pronounced several ways; don't worry about it.</p>
+<h3 id="the-apriori-property-has-two-parts">The Apriori property has two parts</h3>
+<p><strong>Part 1 — if an itemset is frequent, then all of its subsets must also be frequent</strong></p>
+<p>From the slide: if {Bread, Butter, Milk} is frequent (bought together often), then it logically follows that the subsets {Bread, Butter}, {Butter, Milk}, {Bread, Milk}, {Bread}, {Butter} and {Milk} must also be frequent.</p>
+<p><strong>Part 2 (the contrapositive) — if an itemset is infrequent, then all of its supersets must also be infrequent</strong></p>
+<p>From the slide: if the algorithm finds that a small itemset such as {Beer, Chips} is infrequent, it can immediately <mark>prune</mark> every larger itemset that contains it.</p>
+<p><em>(from the transcript)</em> The lecturer tied this back to Discrete Mathematics: part 2 is exactly the <mark>contrapositive</mark> of part 1.</p>
+<pre><code>p → q   is equivalent to   ¬q → ¬p
+</code></pre>
+<p>So there is almost nothing new to memorise — part 2 is part 1 with the sides swapped.</p>
+<h3 id="why-pruning-is-necessary">Why pruning is necessary</h3>
+<p><em>(from the transcript)</em> In reality a shop stocks thousands of product types. With n items, the total number of subsets (the power set) is <strong>2ⁿ</strong> — with n = 1,000 that is 2^1000, which is simply not computable.</p>
+<p>Apriori uses part 2 to cut it down: <strong>anything that is not frequent gets thrown away and is never expanded</strong>, which saves an enormous amount of computation.</p>
+<h3 id="the-steps">The steps</h3>
+<pre><code>1. Enumerate all 1-itemsets → compute support → discard everything below min support
+2. Pair up only the survivors into 2-itemsets → compute support → discard again
+3. Combine only the survivors into 3-itemsets → compute support → discard again
+4. Keep going until no itemset passes the threshold, then stop
+5. Take all the surviving frequent itemsets and generate association rules using confidence
+</code></pre>
+<h2 id="08-support">08 Support</h2>
+<p><mark>Support</mark> answers <strong>"how popular is this itemset?"</strong></p>
+<p>$$\text{Support}(X) = \frac{\text{Number of transactions containing } X}{\text{Total number of transactions}}$$</p>
+<ul>
+<li>It ranges from <strong>0% to 100%</strong></li>
+<li>The <mark>minimum support threshold</mark> is set by the user. Anything below it is infrequent and gets <strong>discarded</strong></li>
+</ul>
+<p>From the 5-transaction table above:</p>
+<ul>
+<li>Support({Milk}) = 4/5 = <strong>80%</strong> (it appears in T1, T2, T4, T5)</li>
+<li>Support({Milk, Diapers}) = 2/5 = <strong>40%</strong> (only T2 and T5)</li>
+</ul>
+<p><em>(from the transcript)</em> <strong>The lecturer stressed that the support and confidence formulas have to be memorised for the exam</strong> — the paper will not supply them, so you must be able to write them out yourself.</p>
+<h2 id="09-confidence">09 Confidence</h2>
+<p><mark>Confidence</mark> answers <strong>"if X is present, how often is Y also present?"</strong></p>
+<p>$$\text{Confidence}(X \rightarrow Y) = \frac{\text{Support}(X, Y)}{\text{Support}(X)}$$</p>
+<p>where Support(X, Y) means the support of the case where <strong>X and Y occur together</strong> (X ∧ Y).</p>
+<p><em>(from the transcript)</em> The lecturer's way of remembering it: confidence is a <strong>condition</strong> — "given X, will Y happen?" — so <strong>X has to happen first</strong>, which is why X is the denominator. The numerator is the case where both X and Y occur.</p>
+<p>The formula comes from <mark>conditional probability</mark>, already covered elsewhere:</p>
+<p>$$P(B|A) = \frac{P(A \cap B)}{P(A)}$$</p>
+<h3 id="an-important-catch--confidence-is-not-symmetric">An important catch — confidence is not symmetric</h3>
+<p><em>(from the transcript — the last point made before time ran out)</em></p>
+<p>$$\text{Confidence}(X \rightarrow Y) \neq \text{Confidence}(Y \rightarrow X)$$</p>
+<p>The reason: <strong>the numerators are identical but the denominators are not.</strong></p>
+<pre><code>Confidence(Milk → Bread) = Support(Milk ∧ Bread) / Support(Milk)
+Confidence(Bread → Milk) = Support(Milk ∧ Bread) / Support(Bread)
+                            ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^
+                            identical               different!
+</code></pre>
+<p>Support(X ∧ Y) and Support(Y ∧ X) are the same thing, since "and" commutes, but the denominators are different values, so the results need not match — <strong>"buying milk and then buying bread" is not the same statement as "buying bread and then buying milk"</strong>.</p>
+<h2 id="10-lift">10 Lift</h2>
+<p><mark>Lift</mark> answers <strong>"is this association stronger than random chance?"</strong></p>
+<p>$$\text{Lift}(X \rightarrow Y) = \frac{\text{Confidence}(X \rightarrow Y)}{\text{Support}(Y)} = \frac{\text{Support}(X, Y)}{\text{Support}(X) \times \text{Support}(Y)}$$</p>
+<ul>
+<li>Range of lift: <strong>[0, +∞)</strong></li>
+</ul>
+<h3 id="reading-a-lift-value">Reading a lift value</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Lift value</th><th>Meaning</th></tr></thead><tbody><tr><td><strong>Lift > 1</strong></td><td>X and Y occur together more often than would be expected if they were independent → <strong>a strong association</strong></td></tr><tr><td><strong>Lift = 1</strong></td><td>X and Y are independent → <strong>no association at all</strong></td></tr><tr><td><strong>Lift &#x3C; 1</strong></td><td>X and Y are negatively associated → the presence of one <strong>reduces</strong> the likelihood of the other</td></tr></tbody></table></div>
+<blockquote>
+<p>⚠️ <strong>Note — slide 6 has a typo.</strong> Its last bullet reads "Lift > 1: The items X and Y are negatively associated", which contradicts its own first bullet. It should be <strong>Lift &#x3C; 1</strong>, as in the table above.</p>
+</blockquote>
+<p><em>(from the transcript)</em> For this session the lecturer said to <strong>"just read through"</strong> lift, because piling on more would mean none of it sticks. Get support and confidence solid first, at minimum.</p>
+<h2 id="11-the-three-quick-formulas">11 The three quick formulas</h2>
+<p>Slide 7 restates all three in terms of <strong>frequency (raw counts)</strong> rather than support — more convenient for hand calculation, since the N cancels out.</p>
+<p>For a rule <strong>X ⟹ Y</strong>:</p>
+<p>$$\text{Support} = \frac{\text{Frequency}(X, Y)}{N}$$</p>
+<p>$$\text{Confidence} = \frac{\text{Frequency}(X, Y)}{\text{Frequency}(X)}$$</p>
+<p>$$\text{Lift} = \frac{\text{Support}}{\text{Support}(X) \times \text{Support}(Y)}$$</p>
+<p>where <strong>N = the total number of transactions</strong>.</p>
+<p><em>(from the transcript)</em> The lecturer recommended memorising the frequency version because it is easier to recall, and memorising just the <strong>top two (support, confidence)</strong> for now — lift can wait.</p>
+<h3 id="extending-it-to-three-items">Extending it to three items</h3>
+<p>If the rule goes from X → Y to X → Y ∧ Z, you simply <strong>add Z everywhere Y appears</strong>:</p>
+<p>$$\text{Confidence}(X \rightarrow Y, Z) = \frac{\text{Support}(X, Y, Z)}{\text{Support}(X)}$$</p>
+<p>and for A, B → C:</p>
+<p>$$\text{Confidence}(A, B \rightarrow C) = \frac{\text{Support}(A, B, C)}{\text{Support}(A, B)}$$</p>
+<h2 id="12-a-full-worked-example--a-3-transaction-dataset">12 A full worked example — a 3-transaction dataset</h2>
+<p>Slides 8–15 walk one example through from start to finish; all of it can be reproduced by hand.</p>
+<p><strong>The data:</strong></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Transaction ID</th><th>Items Purchased</th></tr></thead><tbody><tr><td>T1</td><td>Milk, Bread, Butter</td></tr><tr><td>T2</td><td>Milk, Bread, Eggs</td></tr><tr><td>T3</td><td>Milk, Eggs</td></tr></tbody></table></div>
+<p><strong>The thresholds set:</strong> minimum support = <strong>50%</strong> (i.e. it must appear in at least 2 of the 3 transactions) and minimum confidence = <strong>75%</strong>.</p>
+<h3 id="step-1a--count-the-1-itemsets">Step 1a — count the 1-itemsets</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>1-itemset</th><th>Appears in</th><th>Support</th><th>Verdict</th></tr></thead><tbody><tr><td>{Milk}</td><td>T1, T2, T3</td><td>3/3 = <strong>100%</strong></td><td>Frequent ✅</td></tr><tr><td>{Bread}</td><td>T1, T2</td><td>2/3 = <strong>67%</strong></td><td>Frequent ✅</td></tr><tr><td>{Butter}</td><td>T1</td><td>1/3 = <strong>33%</strong></td><td>Infrequent ❌ <strong>discard</strong></td></tr><tr><td>{Eggs}</td><td>T2, T3</td><td>2/3 = <strong>67%</strong></td><td>Frequent ✅</td></tr></tbody></table></div>
+<p><strong>Frequent 1-itemsets: {Milk}, {Bread}, {Eggs}</strong></p>
+<h3 id="step-1b--count-the-2-itemsets">Step 1b — count the 2-itemsets</h3>
+<p>Pair up only the survivors of the previous round. Butter is already gone, so no pair containing Butter needs counting — that is the second Apriori property doing its job.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>2-itemset</th><th>Appears in</th><th>Support</th><th>Verdict</th></tr></thead><tbody><tr><td>{Milk, Bread}</td><td>T1, T2</td><td>2/3 = <strong>67%</strong></td><td>Frequent ✅</td></tr><tr><td>{Milk, Eggs}</td><td>T2, T3</td><td>2/3 = <strong>67%</strong></td><td>Frequent ✅</td></tr><tr><td>{Bread, Eggs}</td><td>T2</td><td>1/3 = <strong>33%</strong></td><td>Infrequent ❌ <strong>discard</strong></td></tr></tbody></table></div>
+<p><strong>Frequent 2-itemsets: {Milk, Bread}, {Milk, Eggs}</strong></p>
+<h3 id="step-1c--stop-here">Step 1c — stop here</h3>
+<p>We have to stop because <strong>no 3-itemset can reach 50% support</strong> — {Milk, Bread, Eggs} appears in T2 only, i.e. 1/3 = <strong>33.33%</strong>, below the threshold.</p>
+<h3 id="step-2--generate-the-association-rules">Step 2 — generate the association rules</h3>
+<p>From the frequent itemsets, build if–then rules and check each confidence against the 75% threshold.</p>
+<p><strong>From {Milk, Bread}:</strong></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Rule</th><th>Calculation</th><th>Confidence</th><th>Verdict</th></tr></thead><tbody><tr><td><strong>Rule 1:</strong> {Milk} → {Bread}</td><td>Support({Milk, Bread}) / Support({Milk}) = (2/3) / (3/3) = 2/3</td><td><strong>67%</strong></td><td>weak ❌ <strong>discard</strong> (&#x3C; 75%)</td></tr><tr><td><strong>Rule 2:</strong> {Bread} → {Milk}</td><td>Support({Milk, Bread}) / Support({Bread}) = (2/3) / (2/3)</td><td><strong>100%</strong></td><td><strong>strong rule</strong> ✅</td></tr></tbody></table></div>
+<p>Rule 2 tells us that <strong>whenever someone buys bread, they also buy milk</strong>.</p>
+<p><strong>From {Milk, Eggs}:</strong></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Rule</th><th>Calculation</th><th>Confidence</th><th>Verdict</th></tr></thead><tbody><tr><td><strong>Rule 3:</strong> {Milk} → {Eggs}</td><td>Support({Milk, Eggs}) / Support({Milk}) = (2/3) / (3/3) = 2/3</td><td><strong>67%</strong></td><td>weak ❌ <strong>discard</strong></td></tr><tr><td><strong>Rule 4:</strong> {Eggs} → {Milk}</td><td>Support({Milk, Eggs}) / Support({Eggs}) = (2/3) / (2/3)</td><td><strong>100%</strong></td><td><strong>strong rule</strong> ✅</td></tr></tbody></table></div>
+<p>Rule 4 tells us that <strong>whenever someone buys eggs, they also buy milk</strong>.</p>
+<h3 id="the-final-strong-rules">The final strong rules</h3>
+<ol>
+<li><strong>{Bread} → {Milk}</strong> (Confidence = 100%)</li>
+<li><strong>{Eggs} → {Milk}</strong> (Confidence = 100%)</li>
+</ol>
+<p>This is useful to a store owner — they might place milk near the bread and eggs sections to encourage <mark>impulse purchases</mark>.</p>
+<h3 id="reading-it-with-lift--the-most-important-lesson-in-this-example">Reading it with lift — the most important lesson in this example</h3>
+<p>Both rules have 100% confidence, which looks excellent. But compute the lift:</p>
+<p>$$\text{Lift}({Eggs} \rightarrow {Milk}) = \frac{\text{Confidence}}{\text{Support}({Milk})} = \frac{100%}{100%} = \mathbf{1}$$</p>
+<p>$$\text{Lift}({Bread} \rightarrow {Milk}) = \frac{100%}{100%} = \mathbf{1}$$</p>
+<p><strong>A lift of exactly 1 means there is no association at all.</strong></p>
+<p>The reason: customers buy milk every time they buy eggs <strong>not because eggs and milk are related, but because they buy milk in every transaction regardless</strong> (Support({Milk}) = 100%). A high confidence can be deceiving.</p>
+<p>Had the support for milk been lower (say 50%) and the lift still come out above 1, that would have indicated a genuinely strong, non-coincidental relationship.</p>
+<blockquote>
+<p><strong>This is why lift is an important metric for discovering truly interesting patterns</strong> — support and confidence alone are not enough.</p>
+</blockquote>
+<h2 id="13-handling-3-itemsets">13 Handling 3-itemsets</h2>
+<p>Slides 16 and 18–19 cover this.</p>
+<h3 id="can-we-stop-at-2-itemsets">Can we stop at 2-itemsets?</h3>
+<p><strong>Yes.</strong> Stopping at 2-itemsets is perfectly valid even when larger itemsets exist — it just means you are choosing to extract only <mark>pairwise</mark> relationships. If you need more complex bundles, go on to the 3-itemsets.</p>
+<h3 id="the-hard-rule-for-generating-rules-from-a-3-itemset">The hard rule for generating rules from a 3-itemset</h3>
+<blockquote>
+<p><strong>Every rule must have the union of antecedent and consequent equal to exactly that itemset, and both sides must be non-empty. When generating rules from a specific frequent itemset, all items in that itemset must appear in the rule — either on the left or the right, and none is missing.</strong></p>
+</blockquote>
+<p>So if the frequent itemset is <strong>{Milk, Bread, Butter}</strong>, there are <strong>six possible rules</strong>:</p>
+<p><strong>1. Rules with a single item in the consequent (3 rules)</strong></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Rule</th><th>Confidence</th></tr></thead><tbody><tr><td><strong>Rule 1:</strong> {Milk, Bread} → {Butter}</td><td>Support(Milk, Bread, Butter) / Support(Milk, Bread)</td></tr><tr><td><strong>Rule 2:</strong> {Milk, Butter} → {Bread}</td><td>Support(Milk, Bread, Butter) / Support(Milk, Butter)</td></tr><tr><td><strong>Rule 3:</strong> {Bread, Butter} → {Milk}</td><td>Support(Milk, Bread, Butter) / Support(Bread, Butter)</td></tr></tbody></table></div>
+<p><strong>2. Rules with two items in the consequent (3 rules)</strong></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Rule</th><th>Confidence</th></tr></thead><tbody><tr><td><strong>Rule 4:</strong> {Milk} → {Bread, Butter}</td><td>Support(Milk, Bread, Butter) / Support(Milk)</td></tr><tr><td><strong>Rule 5:</strong> {Bread} → {Milk, Butter}</td><td>Support(Milk, Bread, Butter) / Support(Bread)</td></tr><tr><td><strong>Rule 6:</strong> {Butter} → {Milk, Bread}</td><td>Support(Milk, Bread, Butter) / Support(Butter)</td></tr></tbody></table></div>
+<p>Notice that <strong>the numerator is identical in all six</strong> — the support of the full 3-itemset. Only the denominator changes.</p>
+<blockquote>
+<p><strong>The common mistake:</strong> from the 3-itemset {Milk, Bread, Butter} we <strong>cannot</strong> write the rule {Milk} → {Bread}, because <strong>Butter is missing</strong>. That rule belongs to the 2-itemset {Milk, Bread}, not to this 3-itemset.</p>
+</blockquote>
+<h2 id="14-exercise--a-5-transaction-dataset">14 Exercise — a 5-transaction dataset</h2>
+<p>Slide 17 sets an exercise on the 5-transaction table from section 05 above. The task is simply <strong>"Find association rules"</strong>.</p>
+<p><em>(from the transcript)</em> For the in-class attempt the lecturer set <strong>min support = 60%</strong> and <strong>min confidence = 80%</strong> (a real exam question will always supply the thresholds; if it doesn't, the question is incomplete). Time ran out before the class finished it — what follows is the worked solution.</p>
+<p><strong>The data:</strong> T1 {Milk, Bread, Butter}, T2 {Milk, Diapers}, T3 {Bread, Butter, Diapers}, T4 {Milk, Bread, Butter}, T5 {Milk, Bread, Diapers} — <strong>N = 5</strong></p>
+<h3 id="step-1a--1-itemsets-min-support-60--at-least-3-of-5">Step 1a — 1-itemsets (min support 60% = at least 3 of 5)</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>1-itemset</th><th>Appears in</th><th>Support</th><th>Verdict</th></tr></thead><tbody><tr><td>{Milk}</td><td>T1, T2, T4, T5</td><td>4/5 = <strong>80%</strong></td><td>Frequent ✅</td></tr><tr><td>{Bread}</td><td>T1, T3, T4, T5</td><td>4/5 = <strong>80%</strong></td><td>Frequent ✅</td></tr><tr><td>{Butter}</td><td>T1, T3, T4</td><td>3/5 = <strong>60%</strong></td><td>Frequent ✅ (exactly at threshold)</td></tr><tr><td>{Diapers}</td><td>T2, T3, T5</td><td>3/5 = <strong>60%</strong></td><td>Frequent ✅ (exactly at threshold)</td></tr></tbody></table></div>
+<p>All four survive this round.</p>
+<h3 id="step-1b--2-itemsets">Step 1b — 2-itemsets</h3>
+<p>Pairing the four survivors gives six candidates.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>2-itemset</th><th>Appears in</th><th>Support</th><th>Verdict</th></tr></thead><tbody><tr><td>{Milk, Bread}</td><td>T1, T4, T5</td><td>3/5 = <strong>60%</strong></td><td>Frequent ✅</td></tr><tr><td>{Milk, Butter}</td><td>T1, T4</td><td>2/5 = <strong>40%</strong></td><td>❌ discard</td></tr><tr><td>{Milk, Diapers}</td><td>T2, T5</td><td>2/5 = <strong>40%</strong></td><td>❌ discard</td></tr><tr><td>{Bread, Butter}</td><td>T1, T3, T4</td><td>3/5 = <strong>60%</strong></td><td>Frequent ✅</td></tr><tr><td>{Bread, Diapers}</td><td>T3, T5</td><td>2/5 = <strong>40%</strong></td><td>❌ discard</td></tr><tr><td>{Butter, Diapers}</td><td>T3</td><td>1/5 = <strong>20%</strong></td><td>❌ discard</td></tr></tbody></table></div>
+<p><strong>Frequent 2-itemsets: {Milk, Bread}, {Bread, Butter}</strong></p>
+<h3 id="step-1c--3-itemsets-and-pruning">Step 1c — 3-itemsets and pruning</h3>
+<p>The only candidate that can be built from the surviving 2-itemsets is <strong>{Milk, Bread, Butter}</strong>, and the second Apriori property discards it immediately without any counting, because its subset <strong>{Milk, Butter} has only 40% support and is not frequent</strong>.</p>
+<p>(Counting it anyway gives 2/5 = 40%, confirming the prune was correct.) → <strong>there are no frequent 3-itemsets; we stop at the 2-itemsets</strong></p>
+<h3 id="step-2--generate-the-rules-min-confidence-80">Step 2 — generate the rules (min confidence 80%)</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Rule</th><th>Calculation</th><th>Confidence</th><th>Verdict</th></tr></thead><tbody><tr><td>{Milk} → {Bread}</td><td>60% / 80%</td><td><strong>75%</strong></td><td>❌ fails</td></tr><tr><td>{Bread} → {Milk}</td><td>60% / 80%</td><td><strong>75%</strong></td><td>❌ fails</td></tr><tr><td>{Bread} → {Butter}</td><td>60% / 80%</td><td><strong>75%</strong></td><td>❌ fails</td></tr><tr><td>{Butter} → {Bread}</td><td>60% / 60%</td><td><strong>100%</strong></td><td><strong>strong rule</strong> ✅</td></tr></tbody></table></div>
+<p><strong>The only rule that passes: {Butter} → {Bread} (Confidence = 100%)</strong></p>
+<p>Notice that {Bread} → {Butter} gives 75% while {Butter} → {Bread} gives 100%, from the very same itemset — <strong>a clean illustration of the asymmetry of confidence stressed in section 09</strong>.</p>
+<h3 id="checking-the-lift">Checking the lift</h3>
+<p>$$\text{Lift}({Butter} \rightarrow {Bread}) = \frac{\text{Confidence}}{\text{Support}({Bread})} = \frac{100%}{80%} = \mathbf{1.25}$$</p>
+<p><strong>Lift = 1.25 > 1</strong>, so this rule reflects a genuinely strong association rather than a coincidence — unlike the example in section 12, which came out at exactly 1.</p>
+<p>(Lift is symmetric, so Lift({Bread} → {Butter}) = 75% / 60% = 1.25 as well, even though the confidences differ.)</p>
+<h2 id="15-work-that-was-set-and-what-to-prepare">15 Work that was set and what to prepare</h2>
+<p><em>(from the transcript)</em></p>
+<ul>
+<li><strong>This week's homework:</strong> the lecturer will upload an advanced Association Rules example (a business case) to Microsoft Teams. Study it over the weekend so that next week goes faster</li>
+<li><strong>Next week:</strong> finish Association Rules, then <strong>work an example by hand and compare the answers against what Orange computes</strong>. The lecturer noted that last year's cohort did it and understood it well, and that without doing it by hand this year's cohort risks not understanding it</li>
+<li><strong>The slide 17 exercise:</strong> find the association rules for the 5-transaction dataset (solution in section 14)</li>
+<li><strong>Project:</strong> revise the deck according to the feedback received — the formal written feedback will be posted on Friday. Consult either lecturer outside class in the meantime; don't leave it until the second presentation is close</li>
+<li><strong>The second presentation replaces the second exam</strong> — there is no second exam</li>
+<li><strong>Midterm exam:</strong> the syllabus puts it in week 6, <strong>7–11 September 2026</strong> (worth 30%)</li>
+<li><strong>For Group 2:</strong> teams that did not present in Group 1 were told to present online later and may lose some marks — confirm your own group's arrangement in the Friday session</li>
+</ul>
+<blockquote>
+<p>📌 <strong>A note on the syllabus:</strong> the syllabus lists week 4 (26, 28 Aug) as <em>Statistical Analysis, EDA, Data Visualization</em>, but in practice that material was already finished in week 3, so this session moved ahead to Association Rules, which is out of the syllabus order (the syllabus does note that it "may change as appropriate").</p>
+</blockquote>
+<h2 id="glossary">Glossary</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Term</th><th>Short meaning</th></tr></thead><tbody><tr><td>Association rules</td><td>If–then rules stating that if X is present, Y is likely to be present too</td></tr><tr><td>Association mining</td><td>Another name for producing association rules; a branch of data mining</td></tr><tr><td>Market Basket Analysis (MBA)</td><td>The data mining technique for finding items frequently purchased together</td></tr><tr><td>Transactional data</td><td>Data capturing the details of a specific, single transaction or event</td></tr><tr><td>Transaction ID</td><td>The identifier of each individual transaction in the data table</td></tr><tr><td>Item</td><td>One product type or element within a transaction</td></tr><tr><td>Itemset</td><td>A collection of one or more items appearing together in a single transaction</td></tr><tr><td>k-itemset</td><td>An itemset with k members, e.g. the 2-itemset {Milk, Bread}</td></tr><tr><td>Frequent itemset</td><td>An itemset whose support is greater than or equal to the minimum support threshold</td></tr><tr><td>Frequency</td><td>The raw count of how often an itemset appears, before dividing by N</td></tr><tr><td>Support</td><td>The proportion of transactions containing an itemset; how popular the itemset is</td></tr><tr><td>Minimum support threshold</td><td>The user-defined support floor; anything below it counts as infrequent</td></tr><tr><td>Confidence</td><td>How often Y is present given X, computed as Support(X,Y) divided by Support(X)</td></tr><tr><td>Minimum confidence threshold</td><td>The confidence floor a rule must clear to count as a strong rule</td></tr><tr><td>Lift</td><td>The ratio saying whether an association beats chance; ranges from 0 to infinity</td></tr><tr><td>Strong rule</td><td>A rule whose confidence clears the minimum threshold set</td></tr><tr><td>Antecedent</td><td>The left-hand side of a rule, the "if" condition, written A or X</td></tr><tr><td>Consequent</td><td>The right-hand side of a rule, the "then" outcome, written C or Y</td></tr><tr><td>Disjoint</td><td>The condition that antecedent and consequent share no items at all</td></tr><tr><td>Apriori algorithm</td><td>The algorithm finding frequent itemsets and generating rules, by Agrawal and Srikant in 1994</td></tr><tr><td>Apriori property</td><td>The two-part rule that subsets of a frequent itemset are frequent and supersets of an infrequent one are infrequent</td></tr><tr><td>Contrapositive</td><td>The logical equivalence p→q ≡ ¬q→¬p, which explains the second Apriori property</td></tr><tr><td>Subset</td><td>A set all of whose members belong to the parent set</td></tr><tr><td>Superset</td><td>A larger set that contains the itemset under consideration</td></tr><tr><td>Power set</td><td>The set of all subsets, of size 2 to the n, which is why pruning is needed to keep the work feasible</td></tr><tr><td>Prune / discard</td><td>Cutting away an infrequent itemset so its supersets never have to be computed</td></tr><tr><td>Impulse purchase</td><td>An unplanned purchase, the reason shops arrange goods according to association rules</td></tr><tr><td>Conditional probability</td><td>P(B|A), the probability that gives rise to the confidence formula</td></tr><tr><td>Label</td><td>The target variable attached to the data; without it supervised learning is impossible</td></tr><tr><td>Data science pipeline</td><td>The diagram showing what goes in, what the process does, and what comes out</td></tr><tr><td>Live scoreboard</td><td>Kaggle's board where a submitted model gets its accuracy back immediately</td></tr><tr><td>IRB</td><td>The human research ethics board whose approval is needed before collecting data from volunteers</td></tr><tr><td>PDPA</td><td>The personal data protection law under which health and biometric data count as sensitive</td></tr></tbody></table></div>
+<h2 id="chapter-summary">Chapter summary</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Topic</th><th>What to remember</th></tr></thead><tbody><tr><td>What association rules are</td><td>If–then rules of the form X → Y derived from transaction data; also called association mining</td></tr><tr><td>MBA</td><td>Market Basket Analysis, finding items bought together; the classic example is beer &#x26; diapers</td></tr><tr><td>Transactional data</td><td>Records one single event; should carry a timestamp — but MBA ignores quantities and order</td></tr><tr><td>Itemsets</td><td>Being sets, they hold no duplicates and no order — a 1-itemset cannot make a rule, you need at least a 2-itemset</td></tr><tr><td>In practice</td><td>3–4 itemsets is about right; past 5 the patterns get hard to find and stop being useful</td></tr><tr><td>Apriori property, part 1</td><td>If an itemset is frequent → all of its subsets are frequent</td></tr><tr><td>Apriori property, part 2</td><td>If an itemset is infrequent → all of its supersets are infrequent (the contrapositive of part 1)</td></tr><tr><td>Why pruning matters</td><td>The power set has size 2ⁿ; with thousands of products it is uncomputable, so infrequent itemsets are cut immediately</td></tr><tr><td>The Apriori steps</td><td>1-itemsets → discard → 2-itemsets → discard → 3-itemsets → discard → stop when nothing survives</td></tr><tr><td><strong>The support formula</strong></td><td><strong>Support(X) = transactions containing X ÷ total transactions</strong></td></tr><tr><td><strong>The confidence formula</strong></td><td><strong>Confidence(X→Y) = Support(X,Y) ÷ Support(X)</strong> — derived from conditional probability</td></tr><tr><td>The lift formula</td><td>Lift(X→Y) = Confidence(X→Y) ÷ Support(Y) = Support(X,Y) ÷ [Support(X) × Support(Y)]</td></tr><tr><td>Guaranteed on the exam</td><td>The lecturer stressed that <strong>you must be able to write the support and confidence formulas yourself</strong>; the paper won't supply them. Lift can just be read through for now</td></tr><tr><td>Reading lift</td><td>> 1 strong association, = 1 independent, &#x3C; 1 negative association (slide 6 mistypes this as > 1)</td></tr><tr><td>The high-confidence trap</td><td>The slide example reaches 100% confidence but lift of exactly 1, because milk is in every transaction anyway — always check lift too</td></tr><tr><td>Confidence is not symmetric</td><td>Confidence(X→Y) ≠ Confidence(Y→X), because the numerators match but the denominators do not</td></tr><tr><td>Rules from a 3-itemset</td><td>Six rules (3 with a one-item consequent, 3 with a two-item consequent); every item must appear, none may be missing</td></tr><tr><td>Stopping at 2-itemsets</td><td>Valid and correct; it simply means extracting only pairwise relationships</td></tr><tr><td>The slide example's result</td><td>min sup 50%, min conf 75% → strong rules {Bread}→{Milk} and {Eggs}→{Milk}, both at 100% confidence</td></tr><tr><td>The 5-transaction exercise result</td><td>min sup 60%, min conf 80% → one strong rule, {Butter}→{Bread}, confidence 100%, lift 1.25</td></tr><tr><td>The most stressed project feedback</td><td>The dataset <strong>must carry a label or a score</strong>, otherwise nothing can be predicted — all that is left is association or clustering</td></tr><tr><td>The next most stressed</td><td>There must be modeling rather than a filter, a clear data science pipeline, references, and an answer for how you will test</td></tr><tr><td>What to do</td><td>Study the advanced example the lecturer uploads to Teams over the weekend, and next week compute by hand and compare against Orange</td></tr></tbody></table></div></article><nav class="pagination" aria-label="Previous and next notes"><a href="w03-eda-and-model-fitting.en.html"><small>← Previous</small>EDA and Model Fitting — Box Plot, Correlation, Linear Regression</a><a href="w05-decision-trees-and-k-means.en.html"><small>Next →</small>Decision Trees, K-means Clustering, and the Exam 1 scope review</a></nav></main><aside class="toc-sidebar"><nav class="toc" aria-label="On this page"><strong>On this page</strong><a href="#agenda">Agenda</a><a href="#01-the-format-of-the-project-idea-presentations">01 The format of the project idea presentations</a><a href="#02-lessons-from-the-project-presentation-feedback">02 Lessons from the project presentation feedback</a><a href="#03-applying-the-feedback-to-snoresenseai">03 Applying the feedback to SnoreSenseAI</a><a href="#04-what-association-rules-are">04 What association rules are</a><a href="#05-transactional-data">05 Transactional data</a><a href="#06-items-itemsets-and-frequent-itemsets">06 Items, itemsets and frequent itemsets</a><a href="#07-the-apriori-algorithm-and-the-apriori-property">07 The Apriori algorithm and the Apriori property</a><a href="#08-support">08 Support</a><a href="#09-confidence">09 Confidence</a><a href="#10-lift">10 Lift</a><a href="#11-the-three-quick-formulas">11 The three quick formulas</a><a href="#12-a-full-worked-example--a-3-transaction-dataset">12 A full worked example — a 3-transaction dataset</a><a href="#13-handling-3-itemsets">13 Handling 3-itemsets</a><a href="#14-exercise--a-5-transaction-dataset">14 Exercise — a 5-transaction dataset</a><a href="#15-work-that-was-set-and-what-to-prepare">15 Work that was set and what to prepare</a><a href="#glossary">Glossary</a><a href="#chapter-summary">Chapter summary</a></nav></aside></div>
+<footer class="site-footer"><span>INT182 · Data Science & AI<br>Study summaries based on course materials</span><a href="https://github.com/Phakinza007/int182-study-notes">GitHub ↗</a></footer>
+<dialog id="search-dialog" aria-labelledby="search-title"><div class="dialog-heading"><h2 id="search-title">Search the notes</h2><button data-close-dialog aria-label="Close search">×</button></div><label for="search-input">Keyword, e.g. precision, PEAS, kNN</label><input id="search-input" type="search" autocomplete="off"><p id="search-status" role="status">Type a keyword to start</p><ul id="search-results"></ul></dialog>
+<dialog id="image-dialog" aria-labelledby="image-title"><div class="dialog-heading"><h2 id="image-title">Diagram</h2><button data-close-dialog aria-label="Close image">×</button></div><div class="image-controls"><button data-zoom="out" aria-label="Zoom out">−</button><button data-zoom="in" aria-label="Zoom in">+</button><button data-zoom="reset">Fit</button><a id="image-original" target="_blank" rel="noopener">Open original ↗</a></div><div class="image-stage"><img id="zoom-image" alt=""></div><p id="image-caption"></p></dialog>
+</body></html>

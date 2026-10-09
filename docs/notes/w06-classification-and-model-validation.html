@@ -1,0 +1,243 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="สรุป INT182 Data Science และ AI สัปดาห์ 1–9 พร้อมไดอะแกรมและสูตรสำคัญ"><meta name="theme-color" content="#f7f6f3"><title>Classification และการตรวจสอบโมเดล · INT182</title><link rel="icon" href="../favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="../style.css"><script src="../app.js" defer></script></head>
+<body data-base="../" data-page="note"><a class="skip" href="#main">ข้ามไปเนื้อหา</a>
+<header class="topbar"><div class="topbar-inner"><a class="brand" href="../index.html"><span class="brand-mark">182</span><span>INT182 <small>Study notes</small></span></a><nav aria-label="เมนูหลัก"><button class="search-trigger" data-search-open aria-haspopup="dialog">ค้นหาเนื้อหา <kbd>/</kbd></button><a class="lang" href="w06-classification-and-model-validation.en.html" lang="en">English</a></nav></div></header>
+<div class="reader-layout"><aside class="reader-sidebar"><details class="week-menu" open><summary>ทุกสัปดาห์</summary><nav aria-label="เลือกสัปดาห์"><a href="w01-course-intro.html" ><span class="week-no">01</span><span>แนะนำวิชา + โครงสร้างโปรเจกต์</span></a><a href="w02-ds-ai-landscape-and-tools.html" ><span class="week-no">02</span><span>ภาพรวม DS/AI (ต่อ) + เครื่องมือ Orange</span></a><a href="w03-eda-and-model-fitting.html" ><span class="week-no">03</span><span>EDA และ Model Fitting — Box Plot, Correlation, Linear Regression</span></a><a href="w04-association-rules.html" ><span class="week-no">04</span><span>Association Rules — Market Basket Analysis, Apriori และ Support/Confidence/Lift</span></a><a href="w05-decision-trees-and-k-means.html" ><span class="week-no">05</span><span>Decision Trees, K-means Clustering และการทวนขอบเขต Exam 1</span></a><a href="w06-classification-and-model-validation.html" aria-current="page"><span class="week-no">06</span><span>Classification และการตรวจสอบโมเดล</span></a><a href="w07-classification-performance-metrics.html" ><span class="week-no">07</span><span>Classification Performance Metrics และการเลือกวิธีประเมิน</span></a><a href="w08-introduction-to-ai-and-agents.html" ><span class="week-no">08</span><span>พื้นฐาน AI, Rational Agents และ PEAS</span></a><a href="w09-introduction-to-ml-and-nearest-neighbors.html" ><span class="week-no">09</span><span>พื้นฐาน Machine Learning, k-NN และ AI Search</span></a></nav></details></aside><main id="main" class="reader"><div class="note-meta">WEEK 06 <span>2026-09-18</span></div><h1>Classification และการตรวจสอบโมเดล</h1><div class="reader-actions"><button data-read-week="6" aria-pressed="false">ทำเครื่องหมายว่าอ่านแล้ว</button><button data-print>พิมพ์บทนี้</button></div><article class="prose"><blockquote>
+<p>สรุปจากสไลด์ <code>Classification and Metrics.pdf</code> (71 หน้า) และบันทึกคาบ G2 วันที่ 18 ก.ย. 2026 สไลด์ชุดนี้ครอบคลุมทั้ง classifiers และ metrics; บทนี้เน้นโมเดลกับการแบ่งข้อมูล ส่วนการประเมินเชิงลึกอ่านต่อ W07 ข้อความที่เสริมจากเสียงระบุว่า <em>(จาก transcript)</em> ซึ่งมีการถอดเสียงชื่อเทคนิคคลาดเคลื่อน</p>
+</blockquote>
+<h2 id="01-ภาพรวม-ทำนายอะไร">01 ภาพรวม: ทำนายอะไร</h2>
+<p>Classification เรียนรู้จาก features และ <mark>class label</mark> ที่รู้คำตอบแล้ว เพื่อทำนายคลาสให้ตัวอย่างใหม่ ต่างจาก regression ซึ่ง target เป็นตัวเลข เช่น ราคาบ้าน (สไลด์ 4, 35)</p>
+<figure class="figure"><a href="../assets/w06-classification-and-model-validation/w6-classification.svg" target="_blank" rel="noopener" class="diagram-link" aria-label="ขยายภาพ: Classification รับ features แล้วให้ผลเป็น binary, multi-class หรือ multi-label"><img src="../assets/w06-classification-and-model-validation/w6-classification.svg" alt="Classification รับ features แล้วให้ผลเป็น binary, multi-class หรือ multi-label" loading="lazy" decoding="async"></a><figcaption>Classification รับ features แล้วให้ผลเป็น binary, multi-class หรือ multi-label<a href="../assets/w06-classification-and-model-validation/w6-classification.svg" target="_blank" rel="noopener" class="diagram-link figure-open">ขยายภาพ ↗</a></figcaption></figure>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>ประเภท</th><th>คำตอบต่อหนึ่งตัวอย่าง</th><th>ตัวอย่าง</th></tr></thead><tbody><tr><td>Binary</td><td>หนึ่งคลาสจากสองคลาส</td><td>Spam / Not spam</td></tr><tr><td>Multi-class</td><td>หนึ่งคลาสจากมากกว่าสองคลาส</td><td>ชนิดดอกไม้</td></tr><tr><td>Multi-label</td><td>ตั้งแต่ศูนย์ถึงหลาย label พร้อมกัน</td><td>รูปเดียวมีสุนัข แมว และนก</td></tr></tbody></table></div>
+<p><em>(จาก transcript)</em> อาจารย์เปรียบ multi-class กับข้อสอบหลายตัวเลือกที่เลือกคำตอบเดียว อย่าสับสนกับ multi-label ที่เลือกได้หลายคำตอบ</p>
+<h2 id="02-k-nearest-neighbors">02 k-Nearest Neighbors</h2>
+<p><mark>k-NN</mark> เก็บ training examples แล้วใช้ตัวอย่างที่ใกล้ query มากที่สุด k ตัว: classification ใช้เสียงข้างมาก ส่วน regression ใช้ค่าเฉลี่ย (สไลด์ 5, 58–67)</p>
+<ol>
+<li>เลือก k</li>
+<li>คำนวณระยะจาก query ถึง training examples</li>
+<li>เรียงระยะและเลือก k ตัวที่ใกล้ที่สุด</li>
+<li>รวม label ด้วย majority vote</li>
+</ol>
+<p>เป็น <strong>nonparametric</strong> และ <strong>lazy learning</strong>: ไม่สร้างสมการโมเดลสรุปข้อมูลไว้ล่วงหน้า งานส่วนใหญ่เกิดตอนทำนาย จุดแข็งคือแนวคิดง่าย; ข้อจำกัดคือคำนวณแพงเมื่อข้อมูลมากและผลขึ้นกับ k, scale และจำนวนมิติ อ่านไดอะแกรมเลือก k ต่อใน W09</p>
+<h2 id="03-ระยะห่างและชนิดข้อมูล">03 ระยะห่างและชนิดข้อมูล</h2>
+<p>สไลด์ 62–65 แยก distance สำหรับตัวเลขกับหมวดหมู่:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>Distance</th><th>หลักการ</th></tr></thead><tbody><tr><td>Euclidean</td><td><code>sqrt(sum((x_j - z_j)^2))</code> ระยะเส้นตรง</td></tr><tr><td>Manhattan / L1</td><td><code>sum(abs(x_j - z_j))</code> ผลรวมระยะตามแกน</td></tr><tr><td>Minkowski</td><td>รูปทั่วไป; p = 1 เป็น Manhattan, p = 2 เป็น Euclidean</td></tr><tr><td>Hamming</td><td>นับตำแหน่งของ categorical features ที่มีค่าไม่ตรงกัน</td></tr></tbody></table></div>
+<p>ต้องทำ normalization เมื่อ scale ทำให้บาง features ครอบงำระยะ ทั้ง Euclidean และ Manhattan ยังได้รับผลจาก scale จึงไม่ควรเลือก Manhattan แล้วคิดว่าปัญหาหน่วยวัดหายไปเอง</p>
+<h2 id="04-decision-tree-และ-gini-impurity">04 Decision Tree และ Gini impurity</h2>
+<p>Decision Tree ใช้คำถามแบ่งข้อมูลตาม features จนถึง leaf ที่ให้คำตอบ และใช้ได้ทั้ง classification กับ regression สัปดาห์นี้เพิ่ม <mark>Gini impurity</mark> นอกเหนือจาก Entropy/Information Gain ใน W05 (สไลด์ 9–17)</p>
+<p><code>Gini = 1 - sum(p_i^2)</code></p>
+<p>Gini = 0 หมายถึงกลุ่มบริสุทธิ์ ใน binary classification ค่าสูงสุดคือ 0.5 เมื่อสองคลาสมีสัดส่วนเท่ากัน เลือก split ที่ทำให้ <strong>weighted Gini ต่ำที่สุด</strong> จากตัวเลือกที่กำลังเปรียบเทียบ</p>
+<figure class="figure"><a href="../assets/w06-classification-and-model-validation/w6-gini.svg" target="_blank" rel="noopener" class="diagram-link" aria-label="ขยายภาพ: ตัวอย่างแบ่งบ้าน 10 หลังด้วย Neighborhood และคำนวณ weighted Gini"><img src="../assets/w06-classification-and-model-validation/w6-gini.svg" alt="ตัวอย่างแบ่งบ้าน 10 หลังด้วย Neighborhood และคำนวณ weighted Gini" loading="lazy" decoding="async"></a><figcaption>ตัวอย่างแบ่งบ้าน 10 หลังด้วย Neighborhood และคำนวณ weighted Gini<a href="../assets/w06-classification-and-model-validation/w6-gini.svg" target="_blank" rel="noopener" class="diagram-link figure-open">ขยายภาพ ↗</a></figcaption></figure>
+<p>ตัวอย่างบ้าน High 5 หลัง/Low 5 หลัง: ก่อนแบ่ง Gini = 0.5 หลังแบ่ง Neighborhood ได้กลุ่ม 4:1 และ 1:4 ซึ่งแต่ละกลุ่ม Gini = 0.32; weighted Gini = 0.32 จึงลดความปนกันลง ข้อนี้แสดงการประเมินหนึ่ง candidate split ยังไม่ได้พิสูจน์ว่าเป็น split ที่ดีที่สุดจนกว่าจะเทียบ features อื่น</p>
+<h2 id="05-naïve-bayes">05 Naïve Bayes</h2>
+<p><mark>Naïve Bayes</mark> ใช้ความน่าจะเป็นของคลาสเมื่อเห็น features โดยสมมุติว่า features เป็นอิสระต่อกัน <strong>เมื่อกำหนดคลาสแล้ว</strong> (สไลด์ 18–26)</p>
+<p><code>P(c | x) = P(x | c) × P(c) / P(x)</code></p>
+<ul>
+<li><code>P(c)</code> คือ prior ของคลาส</li>
+<li><code>P(x | c)</code> คือ likelihood ของ features ภายในคลาส</li>
+<li><code>P(c | x)</code> คือ posterior หลังเห็น features</li>
+</ul>
+<p>เมื่อตัดสินคลาสของ x เดียวกัน ตัวหาร <code>P(x)</code> เท่ากัน จึงเปรียบเทียบ <code>P(x | c) × P(c)</code> ได้ สไลด์ spam ให้ <code>0.1 × 0.2 × 0.2 × 0.3 × 0.4 = 0.00048</code> เป็นคะแนนฝั่ง Spam ของข้อความ “Dear friend free money” ยังต้องเทียบคะแนนฝั่ง Ham ก่อนเลือกคลาส ตัวเลขนี้ยังไม่ใช่ posterior ที่ normalize แล้ว</p>
+<p>ข้อดีคือเรียบง่ายและ train เร็ว; ข้อจำกัดสำคัญคือสมมุติฐาน independence อาจไม่ตรงกับข้อมูลจริง</p>
+<h2 id="06-logistic-regression">06 Logistic Regression</h2>
+<p>แม้มีคำว่า regression โมเดลนี้ใช้จำแนกคลาส โดยเปลี่ยน linear score ให้เป็นค่าระหว่าง 0–1 ด้วย <mark>sigmoid</mark> (สไลด์ 27–31)</p>
+<p><code>p = 1 / (1 + exp(-(β0 + β1 x1 + ...)))</code></p>
+<p>จากนั้นเทียบ p กับ threshold เพื่อเลือกคลาส สไลด์ใช้ 0.5 เป็นตัวอย่าง โดยยังต้องกำหนดว่าจะจัดกรณีเท่ากับ threshold ไว้ฝั่งไหน Categorical features ต้อง encode เป็นตัวเลข เช่น one-hot encoding</p>
+<p>ตัวอย่างสไลด์ถามว่าลูกค้าอยู่เว็บ 3.5 นาทีจะกด Buy หรือไม่ ต้องมีค่า β ที่เรียนรู้แล้วก่อนจึงคำนวณความน่าจะเป็นได้ เวลาบนเว็บเพียงอย่างเดียวยังไม่ให้คำตอบตัวเลข</p>
+<h2 id="07-support-vector-machine">07 Support Vector Machine</h2>
+<p><mark>SVM</mark> หา hyperplane ที่แยกคลาสด้วย margin กว้าง โดย <strong>support vectors</strong> คือจุดข้อมูลใกล้แนวแบ่งที่มีผลต่อแนวแบ่งนั้น (สไลด์ 32–34)</p>
+<ul>
+<li>ข้อมูลสองมิติเห็นแนวแบ่งเป็นเส้น; มิติสูงขึ้นใช้ hyperplane</li>
+<li>เมื่อแยกด้วยเส้นตรงใน representation เดิมไม่ได้ ใช้ <strong>kernel trick</strong> เพื่อจัดการความสัมพันธ์ที่ซับซ้อนขึ้น</li>
+<li>ผลขึ้นกับ kernel และการตั้งค่า และอาจคำนวณแพงเมื่อข้อมูลมาก</li>
+</ul>
+<p><em>(จาก transcript)</em> อาจารย์ยกตัวอย่างการรู้จำท่าทางด้วยตำแหน่ง joints เพื่อเชื่อม features จากข้อมูลจริงเข้ากับ classification</p>
+<h2 id="08-แปลงหลายคลาสเป็น-binary-problems">08 แปลงหลายคลาสเป็น binary problems</h2>
+<p>สไลด์ 36–38 เสนอวิธีประกอบ binary classifiers สำหรับ C คลาส:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>วิธี</th><th>จำนวน classifiers</th><th>ตัวอย่าง 4 สี</th></tr></thead><tbody><tr><td>One-vs-Rest (OvR)</td><td>C</td><td>Red vs สีอื่น, Green vs สีอื่น ฯลฯ รวม 4 ตัว</td></tr><tr><td>One-vs-One (OvO)</td><td>C(C−1)/2</td><td>เปรียบเทียบทุกคู่สี รวม 6 ตัว</td></tr></tbody></table></div>
+<p>OvR แยกทีละคลาสกับที่เหลือ ส่วน OvO แยกทีละคู่คลาส แล้วรวมผลเพื่อตัดสิน multi-class output</p>
+<h2 id="09-train-validation-และ-final-test">09 Train, validation และ final test</h2>
+<p>สไลด์ 41–45 แยกหน้าที่ข้อมูลเพื่อวัด <mark>generalization</mark> หรือความสามารถกับข้อมูลที่ไม่เคยเห็น:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>ชุดข้อมูล</th><th>ใช้ทำอะไร</th></tr></thead><tbody><tr><td>Training</td><td>เรียนรู้ parameters ของโมเดล</td></tr><tr><td>Validation / Dev</td><td>เปรียบเทียบโมเดลและเลือก hyperparameters</td></tr><tr><td>Test</td><td>ประเมินโมเดลสุดท้ายหลังเลือกทุกอย่างแล้ว</td></tr></tbody></table></div>
+<p>สัดส่วน 70:10:20 หรือ 80:20 เป็นตัวอย่าง ไม่ใช่ค่าบังคับ <em>(จาก transcript)</em> อาจารย์ย้ำว่าข้อมูลปริมาณมากอาจใช้ test เป็นเปอร์เซ็นต์น้อยลงได้</p>
+<p>ตัวอย่าง <strong>5-fold CV</strong>: กัน test 20% ไว้ก่อน แบ่งอีก 80% เป็น 5 folds; แต่ละรอบ train 4 folds และ validate 1 fold จนครบ หาคะแนนเฉลี่ยเพื่อเลือก hyperparameters แล้ว train ใหม่บน 80% ทั้งหมด สุดท้ายประเมินบน test 20% ที่กันไว้</p>
+<p>Underfitting มีทั้ง train/test error สูง ส่วน overfitting มี train error ต่ำแต่ test error สูง การตรวจหลาย folds ช่วยประเมินการเลือกโมเดล แต่ยังต้องรักษา final test ไว้</p>
+<h2 id="10-เริ่มอ่าน-confusion-matrix">10 เริ่มอ่าน Confusion Matrix</h2>
+<p>สไลด์ 46–57 แนะนำ TP, TN, FP และ FN รวมถึง Accuracy, Precision, Recall, F1, Specificity, ROC และ AUC โดย <strong>ต้องกำหนด positive class ก่อน</strong> และดูทิศของแถว/คอลัมน์ทุกครั้ง</p>
+<p><em>(จาก transcript)</em> ใช้อุปมาจับปลา: precision มองสิ่งที่จับมาแล้วว่ามีปลาที่ต้องการจริงเท่าไร; recall มองปลาที่ต้องการทั้งหมดในบ่อว่าเก็บมาได้เท่าไร สูตร ตัวอย่างคำนวณ และเหตุผลเลือก metric อยู่ใน W07</p>
+<h2 id="อภิธานศัพท์-glossary">อภิธานศัพท์ (Glossary)</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>คำ</th><th>ความหมาย</th></tr></thead><tbody><tr><td>Class label</td><td>คำตอบเชิงหมวดหมู่ที่ใช้ train classifier</td></tr><tr><td>k-NN</td><td>ทำนายจากเพื่อนบ้านใกล้ที่สุด k ตัว</td></tr><tr><td>Gini impurity</td><td>ค่าความปนกันของคลาส: 1 − sum(p_i²)</td></tr><tr><td>Naïve Bayes</td><td>classifier เชิงความน่าจะเป็นที่สมมุติ conditional independence</td></tr><tr><td>Sigmoid</td><td>ฟังก์ชันรูป S ที่เปลี่ยนคะแนนเป็นค่าระหว่าง 0–1</td></tr><tr><td>Support vector</td><td>จุดข้อมูลใกล้แนวแบ่งที่มีผลต่อ hyperplane ของ SVM</td></tr><tr><td>OvR</td><td>แยกหนึ่งคลาสกับคลาสอื่นทั้งหมด</td></tr><tr><td>OvO</td><td>แยกคลาสเป็นคู่ทั้งหมด</td></tr><tr><td>Validation set</td><td>ข้อมูลสำหรับเลือกโมเดลหรือ hyperparameters</td></tr><tr><td>Generalization</td><td>ความสามารถทำนายข้อมูลที่ไม่เคยเห็น</td></tr></tbody></table></div>
+<h2 id="สรุปท้ายบท">สรุปท้ายบท</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>หัวข้อ</th><th>สิ่งที่ต้องเข้าใจ</th></tr></thead><tbody><tr><td>Classification</td><td>categorical target; binary, multi-class, multi-label ต่างกัน</td></tr><tr><td>Classifiers</td><td>k-NN, Decision Tree, Naïve Bayes, Logistic Regression, SVM</td></tr><tr><td>Gini</td><td>เปรียบเทียบ weighted impurity ของ candidate splits</td></tr><tr><td>หลายคลาส</td><td>OvR = C, OvO = C(C−1)/2</td></tr><tr><td>การประเมิน</td><td>Train เพื่อเรียนรู้, validation เพื่อเลือก, test เพื่อประเมินสุดท้าย</td></tr></tbody></table></div></article><nav class="pagination" aria-label="บทก่อนหน้าและถัดไป"><a href="w05-decision-trees-and-k-means.html"><small>← บทก่อนหน้า</small>Decision Trees, K-means Clustering และการทวนขอบเขต Exam 1</a><a href="w07-classification-performance-metrics.html"><small>บทถัดไป →</small>Classification Performance Metrics และการเลือกวิธีประเมิน</a></nav></main><aside class="toc-sidebar"><nav class="toc" aria-label="สารบัญบทนี้"><strong>ในบทนี้</strong><a href="#01-ภาพรวม-ทำนายอะไร">01 ภาพรวม: ทำนายอะไร</a><a href="#02-k-nearest-neighbors">02 k-Nearest Neighbors</a><a href="#03-ระยะห่างและชนิดข้อมูล">03 ระยะห่างและชนิดข้อมูล</a><a href="#04-decision-tree-และ-gini-impurity">04 Decision Tree และ Gini impurity</a><a href="#05-naïve-bayes">05 Naïve Bayes</a><a href="#06-logistic-regression">06 Logistic Regression</a><a href="#07-support-vector-machine">07 Support Vector Machine</a><a href="#08-แปลงหลายคลาสเป็น-binary-problems">08 แปลงหลายคลาสเป็น binary problems</a><a href="#09-train-validation-และ-final-test">09 Train, validation และ final test</a><a href="#10-เริ่มอ่าน-confusion-matrix">10 เริ่มอ่าน Confusion Matrix</a><a href="#อภิธานศัพท์-glossary">อภิธานศัพท์ (Glossary)</a><a href="#สรุปท้ายบท">สรุปท้ายบท</a></nav></aside></div>
+<footer class="site-footer"><span>INT182 · Data Science & AI<br>สรุปเพื่อทบทวนจากเอกสารประกอบการเรียน</span><a href="https://github.com/Phakinza007/int182-study-notes">GitHub ↗</a></footer>
+<dialog id="search-dialog" aria-labelledby="search-title"><div class="dialog-heading"><h2 id="search-title">ค้นหาในสรุป</h2><button data-close-dialog aria-label="ปิดการค้นหา">×</button></div><label for="search-input">คำค้น เช่น precision, PEAS, kNN</label><input id="search-input" type="search" autocomplete="off"><p id="search-status" role="status">พิมพ์คำเพื่อเริ่มค้นหา</p><ul id="search-results"></ul></dialog>
+<dialog id="image-dialog" aria-labelledby="image-title"><div class="dialog-heading"><h2 id="image-title">ภาพประกอบ</h2><button data-close-dialog aria-label="ปิดภาพ">×</button></div><div class="image-controls"><button data-zoom="out" aria-label="ย่อภาพ">−</button><button data-zoom="in" aria-label="ขยายภาพ">+</button><button data-zoom="reset">พอดีจอ</button><a id="image-original" target="_blank" rel="noopener">เปิดภาพต้นฉบับ ↗</a></div><div class="image-stage"><img id="zoom-image" alt=""></div><p id="image-caption"></p></dialog>
+</body></html>

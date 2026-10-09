@@ -1,0 +1,1180 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="สรุป INT182 Data Science และ AI สัปดาห์ 1–9 พร้อมไดอะแกรมและสูตรสำคัญ"><meta name="theme-color" content="#f7f6f3"><title>EDA และ Model Fitting — Box Plot, Correlation, Linear Regression · INT182</title><link rel="icon" href="../favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="../style.css"><script src="../app.js" defer></script></head>
+<body data-base="../" data-page="note"><a class="skip" href="#main">ข้ามไปเนื้อหา</a>
+<header class="topbar"><div class="topbar-inner"><a class="brand" href="../index.html"><span class="brand-mark">182</span><span>INT182 <small>Study notes</small></span></a><nav aria-label="เมนูหลัก"><button class="search-trigger" data-search-open aria-haspopup="dialog">ค้นหาเนื้อหา <kbd>/</kbd></button><a class="lang" href="w03-eda-and-model-fitting.en.html" lang="en">English</a></nav></div></header>
+<div class="reader-layout"><aside class="reader-sidebar"><details class="week-menu" open><summary>ทุกสัปดาห์</summary><nav aria-label="เลือกสัปดาห์"><a href="w01-course-intro.html" ><span class="week-no">01</span><span>แนะนำวิชา + โครงสร้างโปรเจกต์</span></a><a href="w02-ds-ai-landscape-and-tools.html" ><span class="week-no">02</span><span>ภาพรวม DS/AI (ต่อ) + เครื่องมือ Orange</span></a><a href="w03-eda-and-model-fitting.html" aria-current="page"><span class="week-no">03</span><span>EDA และ Model Fitting — Box Plot, Correlation, Linear Regression</span></a><a href="w04-association-rules.html" ><span class="week-no">04</span><span>Association Rules — Market Basket Analysis, Apriori และ Support/Confidence/Lift</span></a><a href="w05-decision-trees-and-k-means.html" ><span class="week-no">05</span><span>Decision Trees, K-means Clustering และการทวนขอบเขต Exam 1</span></a><a href="w06-classification-and-model-validation.html" ><span class="week-no">06</span><span>Classification และการตรวจสอบโมเดล</span></a><a href="w07-classification-performance-metrics.html" ><span class="week-no">07</span><span>Classification Performance Metrics และการเลือกวิธีประเมิน</span></a><a href="w08-introduction-to-ai-and-agents.html" ><span class="week-no">08</span><span>พื้นฐาน AI, Rational Agents และ PEAS</span></a><a href="w09-introduction-to-ml-and-nearest-neighbors.html" ><span class="week-no">09</span><span>พื้นฐาน Machine Learning, k-NN และ AI Search</span></a></nav></details></aside><main id="main" class="reader"><div class="note-meta">WEEK 03 <span>2026-08-19</span></div><h1>EDA และ Model Fitting — Box Plot, Correlation, Linear Regression</h1><div class="reader-actions"><button data-read-week="3" aria-pressed="false">ทำเครื่องหมายว่าอ่านแล้ว</button><button data-print>พิมพ์บทนี้</button></div><article class="prose"><blockquote>
+<p>Group 1 (พุธ 9.30-12.30 @ LX 12/2) — สรุปจากสไลด์ <code>INT182_02_EDA-Model-Fitting.pdf</code> (40 หน้า, อ.พรชัย มงคลนาม) เป็นโครงหลัก เสริมด้วยสิ่งที่อาจารย์พูดเพิ่มจาก transcript ของคาบ (<code>INT182_G1_20260819.docx</code>) และโค้ดตัวอย่างที่แจกมาใน <code>../code/LinearReg_auto.R</code></p>
+<p>⚠️ transcript เป็นคำถอดเสียงอัตโนมัติ คุณภาพต่ำหลายช่วง — ส่วนที่มาจาก transcript อย่างเดียวจะระบุว่า <em>(จาก transcript)</em> ตัวเลขที่ถอดมาไม่ชัดจะกำกับไว้</p>
+<p>หมายเหตุเรื่องกลุ่ม: ไฟล์นี้เป็นคาบของ <strong>กลุ่ม 1 (พุธ)</strong> ซึ่งเรียนก่อนกลุ่ม 2 หนึ่งวัน เนื้อหาตามหลักสูตรเป็นสัปดาห์เดียวกัน แต่<strong>กำหนดส่งงานของกลุ่ม 2 อาจไม่ตรงกับที่ระบุในหัวข้อ 16</strong> ให้ยืนยันในคาบของตัวเองอีกครั้ง</p>
+<p>สไลด์ชุดนี้เริ่มเปิดไปแล้วประมาณ 16 หน้าแรกตั้งแต่ปลายคาบสัปดาห์ที่ 2 — ไฟล์นี้รวมทั้งชุดไว้ที่เดียว</p>
+</blockquote>
+<h2 id="agenda">Agenda</h2>
+<ol>
+<li>วิวัฒนาการของ DS: OLTP → OLAP → Big data</li>
+<li>EDA คืออะไร</li>
+<li>Modeling / Data Modeling / Data Fitting / Model Fitting</li>
+<li>Parameter กับ Hyperparameter</li>
+<li>Model bias — underfitting และ overfitting</li>
+<li>ภาพรวมวิธีการ ML ที่ใช้ใน DS</li>
+<li>ประเภทของข้อมูลและมาตรวัด</li>
+<li>การแจกแจงข้อมูล mean/median/mode</li>
+<li>Box plot</li>
+<li>Scatter plot และ Correlation</li>
+<li>Linear regression</li>
+<li>อ่านผลลัพธ์ของโมเดล</li>
+<li>ตัวแปรเชิงประเภทในสมการ</li>
+<li>ลงมือ: R และ RStudio</li>
+<li>เทียบผลกับ Orange</li>
+<li>งานที่สั่ง</li>
+</ol>
+<h2 id="01-วิวัฒนาการของ-data-science">01 วิวัฒนาการของ Data Science</h2>
+<p>หนึ่งในแง่มุมสำคัญที่สุดของ DS คือการ <strong>หา/รู้จำ (recognize) และประเมิน pattern</strong> — คำว่า recognize หมายถึง pattern ที่ไม่ได้คาดไว้ล่วงหน้า</p>
+<p>เส้นเวลา:</p>
+<p><strong>Relational databases (1970, ต่อมากลายเป็น DBMS)</strong> → <strong>OLTP</strong> → <strong>OLAP</strong> → <strong>Pattern recognition / recommendation systems</strong> → <strong>Big data</strong> (ที่ต้องการ DS, ML และ DL)</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>ตัวย่อ</th><th>ย่อมาจาก</th><th>ใช้ทำอะไร</th></tr></thead><tbody><tr><td><strong>OLTP</strong></td><td>Online <strong>T</strong>ransaction <strong>P</strong>rocessing</td><td>ช่วยตอบคำถามเชิงรายการ เช่น online banking</td></tr><tr><td><strong>OLAP</strong></td><td>Online <strong>A</strong>nalytical <strong>P</strong>rocessing</td><td>สำรวจและแสดงผลข้อมูล ใช้ multidimensional database เช่น data warehouse</td></tr></tbody></table></div>
+<p><em>(จาก transcript)</em> OLTP คือธุรกรรมที่เกิดขึ้นบ่อยและเร็วมาก เช่นถอนเงิน ฝากเงิน จ่ายเงิน หรือซื้อของที่ร้านสะดวกซื้อ — เป็นการแลกเปลี่ยนข้อมูลระหว่างสองฝ่ายที่เกิดถี่ ๆ ส่วน OLAP คือการเอา transaction ที่มี time stamp เหล่านั้นไปเก็บใน <mark>data warehouse</mark> แบ่งตามช่วงเวลา แล้วเอามาวิเคราะห์ย้อนหลัง</p>
+<p>ส่วน relational database ที่คุ้นเคยกัน (ใช้ SQL = Structured Query Language) เกิดขึ้นตั้งแต่ปี <mark>1970</mark> มี table และความสัมพันธ์แบบ one-to-many ฯลฯ</p>
+<figure class="figure"><a href="../assets/w03-eda-and-model-fitting/w3_fig_ds_evolution.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="ขยายภาพ: วิวัฒนาการของ data science — จาก OLTP สู่ OLAP และ big data (สไลด์หน้า 2)"><img src="../assets/w03-eda-and-model-fitting/w3_fig_ds_evolution.webp" alt="วิวัฒนาการของ data science — จาก OLTP สู่ OLAP และ big data (สไลด์หน้า 2)" loading="lazy" decoding="async"></a><figcaption>วิวัฒนาการของ data science — จาก OLTP สู่ OLAP และ big data (สไลด์หน้า 2)<a href="../assets/w03-eda-and-model-fitting/w3_fig_ds_evolution.webp" target="_blank" rel="noopener" class="diagram-link figure-open">ขยายภาพ ↗</a></figcaption></figure>
+<h2 id="02-eda-คืออะไร">02 EDA คืออะไร</h2>
+<p><strong>Exploratory Data Analysis (EDA)</strong> คือเทคนิควิเคราะห์ข้อมูลที่ช่วยให้เข้าใจข้อมูล โดยสรุปคุณลักษณะหลักของมันออกมา มักใช้กราฟทางสถิติและวิธี data visualization อื่น ๆ</p>
+<p><strong>EDA เป็นวิธีแบบ <mark>non-parametric</mark></strong> — ไม่ตั้งสมมติฐานใด ๆ เกี่ยวกับการแจกแจงที่แท้จริงของข้อมูล</p>
+<p>จุดที่ต้องแยกให้ออก (สไลด์เน้นไว้ตรง ๆ):</p>
+<ul>
+<li><strong><mark>Box plot</mark> เป็น EDA chart</strong></li>
+<li><strong><mark>Linear regression</mark> ไม่ใช่ EDA</strong> — มันคือ <strong>data modeling</strong> ชนิดหนึ่ง</li>
+<li>แต่ EDA ใช้หา pattern และแนวโน้มในข้อมูล ซึ่งเอาไปสร้างโมเดล linear regression ต่อได้</li>
+</ul>
+<p>EDA ประกอบด้วย <strong>data visualization + <mark>statistical summaries</mark> + hypothesis testing</strong></p>
+<p><em>(จาก transcript)</em> วัตถุประสงค์หลักคือเข้าใจคุณลักษณะสำคัญของ data ก่อนเอาไปวิเคราะห์ต่อ เช่นดู dataset รถยนต์ว่าแต่ละ feature เป็นอะไร ช่วงค่าเป็นอย่างไร มี missing data เยอะไหม จาก 26 คอลัมน์จะใช้หมดหรือเปล่า — ถ้าดูจากตารางตัวหนังสืออย่างเดียวจะเข้าใจยาก จึงต้อง plot และเป็น <strong>กระบวนการที่ทำซ้ำได้ (iterative)</strong> ไม่ใช่ทำครั้งเดียวจบ เทียบได้กับการทำ prototype หยาบ ๆ ในงานซอฟต์แวร์ เพื่อเช็คบางอย่างก่อนที่จะลงแรงจริง</p>
+<h3 id="จำนวนตัวแปรที่วิเคราะห์พร้อมกัน">จำนวนตัวแปรที่วิเคราะห์พร้อมกัน</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>คำ</th><th>จำนวนตัวแปร</th><th>ตัวอย่าง</th></tr></thead><tbody><tr><td><strong>Univariate</strong></td><td>1</td><td>box plot (มีแกนเดียว)</td></tr><tr><td><strong>Bivariate</strong></td><td>2</td><td>scatter plot (แกน x และ y)</td></tr><tr><td><strong>Multivariate</strong></td><td>3 ขึ้นไป</td><td>ทำนาย price จาก horsepower + engine size + brand</td></tr></tbody></table></div>
+<h2 id="03-modeling--data-modeling--data-fitting--model-fitting">03 Modeling / Data Modeling / Data Fitting / Model Fitting</h2>
+<p>สี่คำนี้สับสนกันง่ายมาก สไลด์แยกไว้ชัด</p>
+<h3 id="modeling-กว้างที่สุด">Modeling (กว้างที่สุด)</h3>
+<p>การสร้าง <strong>ตัวแทนอย่างง่าย (simplified representation)</strong> ของระบบหรือกระบวนการ ทำได้หลายวิธี เช่นสมการคณิตศาสตร์, computer simulation หรือ physical model</p>
+<p><strong>Model fitting เป็นกระบวนการที่ต้อง<mark>ทำวนซ้ำ</mark></strong> เพราะโดยทั่วไปมีหลายวิธีที่ใช้กับงานเดียวกันได้ และแม้ใช้วิธีเดียวกันก็ยังมี parameter ให้ตั้งได้หลายค่า ทำให้ได้ configuration ที่ต่างกัน</p>
+<p><em>(จาก transcript)</em> ตัวอย่างที่ยกในคาบ: การโมเดลทิศทางและความเร็วของพายุว่าจะเข้าจังหวัดไหนเมื่อไหร่ ต้องเก็บข้อมูลจากเซ็นเซอร์ (ความเร็วลม ความชื้น ความดันอากาศ) มาวิเคราะห์ หรือโมเดลเครื่องบินขนาดเล็กในอุโมงค์ลมก่อนผลิตจริง</p>
+<h3 id="data-modeling">Data Modeling</h3>
+<p><strong>กว้างกว่า <mark>data fitting</mark></strong> — คือการสร้าง <strong>ตัวแทนเชิงแนวคิด (conceptual representation)</strong> ของข้อมูล ใช้เพื่อ</p>
+<ul>
+<li>เข้าใจข้อมูล</li>
+<li>สื่อสารข้อมูลให้คนอื่นเข้าใจ</li>
+<li>สร้างระบบที่ใช้ข้อมูลนั้น</li>
+</ul>
+<p>สร้างได้หลายแบบ ทั้ง mathematical model, statistical model และ conceptual model เช่น <strong>ERD</strong> (data entities and relationships), <strong>DFD</strong>, <strong>UML</strong> <em>(จาก transcript: คือสิ่งที่เรียนในวิชา <mark>System Analysis and Design</mark> นั่นเอง)</em></p>
+<h3 id="data-fitting">Data Fitting</h3>
+<p>เจาะจงที่การ <strong>หาฟังก์ชันคณิตศาสตร์ที่อธิบายข้อมูลที่มีอยู่ได้ดีที่สุด</strong></p>
+<ul>
+<li>ใช้ interpolate/extrapolate จุดข้อมูลใน dataset</li>
+<li>เทคนิคตัวอย่าง: <strong><mark>least squares regression</mark>, polynomial fitting, spline interpolation</strong></li>
+</ul>
+<h3 id="model-fitting">Model Fitting</h3>
+<p><strong>เน้นที่ตัวโมเดล</strong> — ปรับ parameter ของโมเดลที่เลือกไว้ล่วงหน้า (ซึ่งแทนความสัมพันธ์หรือสมมติฐานเชิงทฤษฎี) ให้อธิบายหรือทำนายข้อมูลที่สังเกตได้ดีที่สุด</p>
+<ul>
+<li>ใช้ในสถิติ, machine learning และ econometrics โดยโมเดลอาจเป็น linear regression, neural network หรือ decision tree</li>
+<li><strong>เน้นที่ <mark>generalization</mark></strong> — ไม่ใช่แค่ fit ข้อมูล training ได้ดี แต่ต้องทำงานได้ดีกับข้อมูลใหม่ที่ไม่เคยเห็นด้วย</li>
+<li>เทคนิคตัวอย่าง: <strong><mark>gradient descent</mark>, maximum likelihood estimation</strong> และ optimization algorithm อื่น ๆ</li>
+</ul>
+<p><em>(จาก transcript)</em> สรุปความสัมพันธ์: <strong>Modeling</strong> เป็นคำกว้างที่สุด → ข้างในมี <strong>Data modeling</strong> → และใต้ลงไปมี <strong>Data fitting</strong> กับ <strong>Model fitting</strong> โดย data fitting เป็นส่วนหนึ่งของการทำ model fitting</p>
+<h2 id="04-model-parameter-กับ-hyperparameter">04 Model Parameter กับ Hyperparameter</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th></th><th>ใครกำหนด</th><th>ตัวอย่าง</th></tr></thead><tbody><tr><td><strong>Model parameter</strong></td><td><strong>อัลกอริทึมประมาณค่าจากข้อมูลให้อัตโนมัติ</strong></td><td>weight, coefficient (สัมประสิทธิ์)</td></tr><tr><td><strong>Model hyperparameter</strong></td><td><strong>คนตั้งเอง</strong> ใช้ช่วยในกระบวนการประมาณค่า parameter</td><td>k ใน KNN, learning rate, จำนวน layer ใน NN, จำนวน epoch, loss function</td></tr></tbody></table></div>
+<p><em>(จาก transcript)</em> ทำไม weight ถึงเก็บ "ความรู้" ได้ — ถ้าเป็นเส้นตรง สิ่งที่ต้องเก็บก็แค่ <strong>slope</strong> กับ <strong>y-intercept</strong> พอรู้สองค่านี้ก็ตั้งสมการ y = mx + c ได้ ลองนึกภาพว่าโมเดลสมัยใหม่มี parameter เป็น<mark>พันล้านถึงล้านล้าน</mark>ตัว นั่นคือที่มาของคำว่า <strong>open weight model</strong> ที่ได้ยินกันในวงการ Gen AI ตอนนี้</p>
+<p>ส่วนคำว่า <strong>hyper</strong> ตั้งให้ต่างจาก model parameter ทั่วไป สื่อว่าเป็นอะไรที่อยู่ <em>นอกเหนือ</em> ออกไป ถูกใส่เข้ามาจากข้างนอก ไม่ได้เกิดขึ้นเองจากข้างใน</p>
+<h2 id="05-model-bias--underfitting-และ-overfitting">05 Model bias — Underfitting และ Overfitting</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th></th><th>ความหมาย</th></tr></thead><tbody><tr><td><strong>Underfitting</strong></td><td>โมเดลง่ายเกินไป จับ pattern ที่แท้จริงในข้อมูลไม่ได้ <em>(จาก transcript: หรือ data point น้อยเกินไป เทรนน้อยเกินไป)</em></td></tr><tr><td><strong>Overfitting</strong></td><td>โมเดลซับซ้อนเกินไปจน <strong>เรียนรู้ noise ไปด้วย</strong> ทำได้ดีมากกับข้อมูล training แต่พอเจอข้อมูลใหม่กลับทำได้ไม่ดี</td></tr></tbody></table></div>
+<p><em>(จาก transcript)</em> <strong>noise</strong> คือส่วนของข้อมูลที่แทรกเข้ามาโดยเราไม่ต้องการและไม่ก่อประโยชน์ แต่โมเดลดันไปเรียนรู้มันด้วย — วิธีแก้ <mark>overfitting</mark> คือการทำ <strong>validation</strong> (จะพูดถึงกันภายหลัง)</p>
+<h2 id="06-ภาพรวมวิธีการ-ml-ที่ใช้ใน-ds">06 ภาพรวมวิธีการ ML ที่ใช้ใน DS</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>กลุ่ม</th><th>ประเภทงาน</th><th>วิธีการ</th></tr></thead><tbody><tr><td><strong>Supervised Learning</strong></td><td><strong>Classification</strong> (predictive)</td><td>Naïve Bayes, K-nearest neighbors (k-NN), Support vector machine (SVM), Decision trees, Random forest, Logistic regression</td></tr><tr><td><strong>Supervised Learning</strong></td><td><strong>Regression</strong> (predictive)</td><td><strong>Linear regression</strong></td></tr><tr><td><strong>Unsupervised Learning</strong></td><td><strong>Clustering</strong> (descriptive)</td><td>DBSCAN, <strong>K-means</strong>, BIRCH</td></tr><tr><td><strong>Unsupervised Learning</strong></td><td><strong>Association rules</strong> (descriptive)</td><td>Apriori เช่น market basket analysis</td></tr><tr><td><strong>Unsupervised Learning</strong></td><td><strong>Anomaly detection</strong> / outlier detection (descriptive)</td><td></td></tr><tr><td>—</td><td><strong>Visualization</strong> (descriptive analytics)</td><td>box plot, scatter plot ฯลฯ</td></tr><tr><td><strong>Reinforcement Learning</strong></td><td>เรียนรู้จากการลองผิดลองถูก</td><td></td></tr></tbody></table></div>
+<figure class="figure"><a href="../assets/w03-eda-and-model-fitting/w3_fig_ml_methods.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="ขยายภาพ: วิธีการ ML ที่ใช้ใน DS — supervised, unsupervised และ visualization (สไลด์หน้า 10)"><img src="../assets/w03-eda-and-model-fitting/w3_fig_ml_methods.webp" alt="วิธีการ ML ที่ใช้ใน DS — supervised, unsupervised และ visualization (สไลด์หน้า 10)" loading="lazy" decoding="async"></a><figcaption>วิธีการ ML ที่ใช้ใน DS — supervised, unsupervised และ visualization (สไลด์หน้า 10)<a href="../assets/w03-eda-and-model-fitting/w3_fig_ml_methods.webp" target="_blank" rel="noopener" class="diagram-link figure-open">ขยายภาพ ↗</a></figcaption></figure>
+<figure class="figure"><a href="../assets/w03-eda-and-model-fitting/w3_fig_ml_algorithms.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="ขยายภาพ: ผังอัลกอริทึม ML อีกมุมหนึ่ง — แตกตาม supervised/unsupervised/reinforcement (สไลด์หน้า 11)"><img src="../assets/w03-eda-and-model-fitting/w3_fig_ml_algorithms.webp" alt="ผังอัลกอริทึม ML อีกมุมหนึ่ง — แตกตาม supervised/unsupervised/reinforcement (สไลด์หน้า 11)" loading="lazy" decoding="async"></a><figcaption>ผังอัลกอริทึม ML อีกมุมหนึ่ง — แตกตาม supervised/unsupervised/reinforcement (สไลด์หน้า 11)<a href="../assets/w03-eda-and-model-fitting/w3_fig_ml_algorithms.webp" target="_blank" rel="noopener" class="diagram-link figure-open">ขยายภาพ ↗</a></figcaption></figure>
+<h3 id="supervised-vs-unsupervised-vs-reinforcement-จาก-transcript">Supervised vs Unsupervised vs Reinforcement <em>(จาก transcript)</em></h3>
+<ul>
+<li><strong>Supervised</strong> = การเรียนรู้แบบ<mark>มีผู้สอน</mark> คือมีการใส่ <strong>label</strong> ให้ เช่นบอกว่าดอกที่มีกลีบกว้างยาวประมาณนี้คือสายพันธุ์ A — ต้องมีตัวแปร y</li>
+<li><strong>Unsupervised</strong> = ไม่ใส่ label ไม่มีตัวแปร y ปล่อยให้เรียนรู้เอง เช่นการจัดกลุ่ม (clustering) ตัวอย่างที่ง่ายที่สุดคือ <strong>k-means</strong> โดย k คือ<mark>จำนวนกลุ่ม</mark> (เป็น <mark>hyperparameter</mark>) และ mean คือ <strong>centroid</strong> หรือจุดศูนย์กลางของแต่ละกลุ่ม — เปรียบเทียบกับให้นักศึกษาทั้งห้องจับกลุ่มกันเองโดยดูจากลักษณะที่ใกล้เคียงกัน ไม่มีใครบอกว่าใครควรอยู่กลุ่มไหน</li>
+<li>ใน clustering <strong>ไม่มีเกณฑ์ตายตัวว่าอะไรผิดอะไรถูก</strong> จะได้ 3 กลุ่มหรือ 4 กลุ่มก็ไม่ผิด ดูแค่ว่าอันไหนดีกว่ากันเท่านั้น</li>
+<li><strong>Reinforcement learning</strong> = เรียนรู้จากการลองผิดลองถูก มี <strong>reward</strong> เมื่อทำได้ดีและมีการลงโทษเมื่อทำผิด พร้อม feedback ตัวอย่างคือการเล่นเกมหมากรุก เกมโกะ หรือหุ่นยนต์ที่เรียนรู้การเดินหลบสิ่งกีดขวาง</li>
+</ul>
+<h3 id="gen-ai-ใช้ทั้งสามแบบผสมกัน-จาก-transcript">Gen AI ใช้ทั้งสามแบบผสมกัน <em>(จาก transcript)</em></h3>
+<ol>
+<li><strong>Pre-training แบบ <mark>unsupervised</mark></strong> — เก็บข้อมูลมหาศาลทั้งตำรา บทความ โค้ด จากทั่วโลกมาเทรน</li>
+<li><strong>Supervised</strong> — ป้อนคู่คำถาม-คำตอบเข้าไปให้โมเดลเรียนรู้</li>
+<li><strong>Reinforcement</strong> — ใช้หลายโมเดลพร้อมกันแล้วให้ feedback ว่าโมเดลไหนตอบดีกว่า ให้คะแนนมากกว่า แล้วโมเดลเอาไปเรียนรู้ต่อ</li>
+</ol>
+<h3 id="predictive-vs-descriptive-model">Predictive vs Descriptive model</h3>
+<p>โมเดลที่ได้จากขั้น <mark>data mining</mark> แบ่งเป็นสองประเภท</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>ประเภท</th><th>เป้าหมาย</th></tr></thead><tbody><tr><td><strong>Predictive model</strong></td><td>ทำนายค่าของตัวแปรหนึ่งจากตัวแปรที่เหลือ — ตัวที่จะทำนายเรียก <strong>dependent / target variable</strong> ตัวที่ใช้ทำนายเรียก <strong>independent / predictor variable</strong></td></tr><tr><td><strong>Descriptive model</strong></td><td>ระบุความสัมพันธ์ระหว่างตัวแปร เพื่อเรียนรู้โครงสร้างของข้อมูลให้มากขึ้น</td></tr></tbody></table></div>
+<p><em>(จาก transcript)</em> ตัวอย่าง predictive: รถยี่ห้อนี้ เป็นซีดาน แรงม้าเท่านี้ สีดำ ราคาน่าจะประมาณเท่าไหร่ / คอนโดชั้น 20 เขตนี้ ขนาดกี่ตารางเมตร ราคาเท่าไหร่ ส่วน descriptive คือแค่แสดงให้เห็นว่าเจออะไร</p>
+<h2 id="07-ประเภทของข้อมูลและมาตรวัด">07 ประเภทของข้อมูลและมาตรวัด</h2>
+<h3 id="ประเภทของตัวแปร">ประเภทของตัวแปร</h3>
+<pre><code>                    ตัวแปร
+        ┌──────────────┴──────────────┐
+   Categorical                    Numerical
+  (Qualitative)                 (Quantitative)
+    ┌────┴────┐                  ┌────┴────┐
+ Nominal   Ordinal            Discrete  Continuous
+</code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>ประเภท</th><th>ลักษณะ</th><th>ตัวอย่าง</th></tr></thead><tbody><tr><td><strong>Discrete</strong></td><td>ตัวเลขที่แยกกันชัดเจน มี step size</td><td>จำนวนประชากร, จำนวนเหรียญในกระเป๋า</td></tr><tr><td><strong>Continuous</strong></td><td>ไม่จำกัดด้วย step ไม่จำกัดจำนวนตำแหน่งทศนิยม (แต่มักปัดที่ตำแหน่งใดตำแหน่งหนึ่ง)</td><td>ปริมาณน้ำในแก้ว, ค่าจริงจาก 0 ถึง 1, น้ำหนัก, ส่วนสูง</td></tr><tr><td><strong>Nominal</strong></td><td>บอกคุณลักษณะ ใส่ตัวเลขแทนได้แต่เอามาเปรียบเทียบเชิงคณิตศาสตร์ไม่ได้</td><td>เพศ, เชื้อชาติ, เมือง, ยี่ห้อสินค้า</td></tr><tr><td><strong>Ordinal</strong></td><td>กึ่งตัวเลขกึ่งประเภท เปรียบเทียบได้แต่ไม่ตรงไปตรงมา ต้องมี data point เยอะถึงจะเทียบได้อย่างมีความหมาย</td><td>ดาวรีวิวโรงแรม 1–5 ดาว, ระดับการศึกษา, เกรด A B C D F</td></tr></tbody></table></div>
+<p><em>(จาก transcript)</em> ตัวอย่างที่น่าสนใจ: <strong>เบอร์เสื้อนักกีฬา</strong> เช่นเบอร์ 8, 10, 23 — เป็นตัวเลขก็จริง แต่เป็นแค่ <strong>สัญลักษณ์</strong> ไม่ได้บอกว่าใครดีกว่าใคร จึงเป็น <strong>nominal</strong> ไม่ใช่ตัวเลข → ถ้าเห็นตัวเลขอย่าเพิ่งด่วนสรุป ต้องดูวัตถุประสงค์และบริบทของการใช้งานด้วย</p>
+<figure class="figure"><a href="../assets/w03-eda-and-model-fitting/w3_fig_data_types.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="ขยายภาพ: ประเภทของตัวแปร — categorical (nominal/ordinal) และ numerical (discrete/continuous) (สไลด์หน้า 13)"><img src="../assets/w03-eda-and-model-fitting/w3_fig_data_types.webp" alt="ประเภทของตัวแปร — categorical (nominal/ordinal) และ numerical (discrete/continuous) (สไลด์หน้า 13)" loading="lazy" decoding="async"></a><figcaption>ประเภทของตัวแปร — categorical (nominal/ordinal) และ numerical (discrete/continuous) (สไลด์หน้า 13)<a href="../assets/w03-eda-and-model-fitting/w3_fig_data_types.webp" target="_blank" rel="noopener" class="diagram-link figure-open">ขยายภาพ ↗</a></figcaption></figure>
+<h3 id="scales-of-measurement">Scales of measurement</h3>
+<p>มองข้อมูลตัวเลขในอีกมุมหนึ่ง คือมุมของ <strong>การวัด</strong></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>Scale</th><th>คุณสมบัติ</th><th>ตัวอย่าง</th></tr></thead><tbody><tr><td><strong>Nominal</strong></td><td>แค่ระบุประเภท</td><td>blood type, zip/area code, gender, race, eye color, political party</td></tr><tr><td><strong>Ordinal</strong></td><td>มีลำดับ</td><td>socio-economic status (low/middle/high income), education level (high school, BS, MS, PhD), satisfaction rating</td></tr><tr><td><strong>Interval</strong></td><td><strong>ไม่มีศูนย์แท้จริง</strong> หาผลต่างได้ ผลต่างเท่ากันหมายถึงระยะเท่ากัน</td><td>temperature (°F, °C), pH, TOEFL score (310-677), standardized exam score, ปี ค.ศ., ปี พ.ศ.</td></tr><tr><td><strong>Ratio</strong></td><td><strong>มีศูนย์แท้จริง (true zero)</strong> หาอัตราส่วน "กี่เท่า" ได้</td><td>dose amount, flow rate, concentration, pulse, weight, length, temperature ในหน่วย <strong>Kelvin</strong> (0.0 K = ไม่มีความร้อนเลย = −273.15 °C)</td></tr></tbody></table></div>
+<p><em>(จาก transcript)</em> วิธีจำ</p>
+<ul>
+<li><strong>True zero</strong> แปลว่าถ้าค่าเป็นศูนย์คือ <strong>ไม่มีค่านั้นอยู่เลยจริง ๆ</strong> — 0 กิโลกรัมคือไม่มีน้ำหนัก, 0 บาทคือไม่มีเงิน, <mark>0 Kelvin</mark> คือไม่มีพลังงานความร้อน</li>
+<li><mark>0 °C</mark> <strong>ไม่ใช่</strong> ศูนย์แท้จริง เพราะยังมีพลังงานความร้อนอยู่ เป็นแค่ตัวเลขที่มนุษย์สมมติขึ้น</li>
+<li>ผลที่ตามมา: <strong>50 °C ไม่ได้ร้อนเป็น 2 เท่าของ 25 °C</strong> แต่ <strong>100 K ร้อนเป็น 2 เท่าของ 50 K</strong> ได้ เพราะมีฐานเดียวกันคือ<mark>ศูนย์แท้จริง</mark></li>
+<li>ปี ค.ศ./พ.ศ. ไม่มีศูนย์แท้จริง (เป็นจุดที่ตกลงกันว่าจะเริ่มนับ) → ปี 2000 ไม่ได้ "เป็น 2 เท่า" ของปี 1000</li>
+<li>คะแนนสอบมาตรฐานอย่าง <mark>TOEFL</mark> ไม่มีศูนย์แท้จริง เพราะถึงทำผิดหมดก็ยังมีคะแนนตั้งต้นให้</li>
+<li><strong>Interval</strong> เน้นที่ <strong>ผลต่าง</strong> ถ้าผลต่างเป็นเลขเท่ากันก็ต้องหมายถึงระยะเท่ากัน เช่น pH 7.8 กับ 9.8 ห่างกัน 2 หน่วย เท่ากับ pH 0.9 กับ 2.9 ที่ห่างกัน 2 หน่วยเหมือนกัน</li>
+</ul>
+<figure class="figure"><a href="../assets/w03-eda-and-model-fitting/w3_fig_scales.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="ขยายภาพ: มาตรวัดสี่ระดับ — nominal, ordinal, interval, ratio (สไลด์หน้า 15)"><img src="../assets/w03-eda-and-model-fitting/w3_fig_scales.webp" alt="มาตรวัดสี่ระดับ — nominal, ordinal, interval, ratio (สไลด์หน้า 15)" loading="lazy" decoding="async"></a><figcaption>มาตรวัดสี่ระดับ — nominal, ordinal, interval, ratio (สไลด์หน้า 15)<a href="../assets/w03-eda-and-model-fitting/w3_fig_scales.webp" target="_blank" rel="noopener" class="diagram-link figure-open">ขยายภาพ ↗</a></figcaption></figure>
+<h2 id="08-การแจกแจงข้อมูล-และค่ากลางสามตัว">08 การแจกแจงข้อมูล และค่ากลางสามตัว</h2>
+<h3 id="สามค่ากลาง">สามค่ากลาง</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>ค่า</th><th>ความหมาย</th><th>ข้อดี/ข้อเสีย</th><th>ตัวอย่างการใช้</th></tr></thead><tbody><tr><td><strong>Mean</strong> (ค่าเฉลี่ย)</td><td>ค่าเฉลี่ยที่เรารู้จักกัน</td><td>เข้าใจง่าย <strong>คิดจากข้อมูลทุกตัว</strong> แต่ <strong>ถูก outlier ดึง</strong></td><td>คะแนนสอบของห้อง, เวลาขับรถกลับบ้านโดยเฉลี่ย</td></tr><tr><td><strong>Median</strong> (มัธยฐาน)</td><td>ค่าตรงกลางหลังเรียงลำดับแล้ว</td><td>ไม่บอกอะไรมากเกี่ยวกับข้อมูลส่วนที่เหลือ</td><td>รายได้ครัวเรือนของประเทศ</td></tr><tr><td><strong>Mode</strong> (ฐานนิยม)</td><td>ค่าที่พบบ่อยที่สุด = <strong>จุดยอดของ histogram</strong></td><td>ไม่บอกอะไรมากเกี่ยวกับข้อมูลส่วนที่เหลือ</td><td>รายได้ของพนักงานในบริษัท</td></tr></tbody></table></div>
+<p>สไลด์เน้นว่า <strong>ไม่มีตัวไหนดีที่สุด แต่การใช้<mark>แค่ตัวเดียว</mark>เป็นความคิดที่ไม่ดี</strong></p>
+<h3 id="รูปทรงการแจกแจง-จาก-transcript">รูปทรงการแจกแจง <em>(จาก transcript)</em></h3>
+<ul>
+<li><strong>Normal distribution</strong> — สมมาตร (symmetric) ซ้ายขวาเท่ากัน รูปทรงเหมือน <strong>ระฆังคว่ำ (bell shape)</strong> ในกรณีนี้ mean, median และ mode มาอยู่<mark>จุดเดียวกัน</mark></li>
+<li>แกน y ของ histogram คือ <strong>ความถี่ (frequency)</strong> = จำนวนครั้งที่เกิด ดังนั้นจุดยอดคือ <strong><mark>mode</mark> เสมอ</strong></li>
+<li><strong>Skew (เบ้)</strong> — ถ้ามีค่า <strong>extreme</strong> ทางขวา ค่าจะถูกดึงไปทางขวา เรียก <strong>positive skew</strong>; ถ้าเบ้ซ้ายเรียก <strong>negative skew</strong></li>
+<li><strong>Mean ถูกดึงไปทาง<mark>หาง</mark>เสมอ</strong> ส่วน median อยู่ระหว่าง mode กับ mean</li>
+<li>ตัวอย่างการดึง: คนทั่วไปสูงราว 1.7–1.8 เมตร ถ้ามีบางคนสูง 2 เมตรกว่า ก็จะดึงค่าเฉลี่ยไปทางขวา / คนที่มีรายได้สูงมาก ๆ ดึงรายได้เฉลี่ยของทั้งกลุ่มขึ้นไป</li>
+</ul>
+<figure class="figure"><a href="../assets/w03-eda-and-model-fitting/w3_fig_three_averages.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="ขยายภาพ: ตำแหน่งของ mean/median/mode เมื่อการแจกแจงเบ้ซ้าย ปกติ และเบ้ขวา (สไลด์หน้า 17)"><img src="../assets/w03-eda-and-model-fitting/w3_fig_three_averages.webp" alt="ตำแหน่งของ mean/median/mode เมื่อการแจกแจงเบ้ซ้าย ปกติ และเบ้ขวา (สไลด์หน้า 17)" loading="lazy" decoding="async"></a><figcaption>ตำแหน่งของ mean/median/mode เมื่อการแจกแจงเบ้ซ้าย ปกติ และเบ้ขวา (สไลด์หน้า 17)<a href="../assets/w03-eda-and-model-fitting/w3_fig_three_averages.webp" target="_blank" rel="noopener" class="diagram-link figure-open">ขยายภาพ ↗</a></figcaption></figure>
+<h3 id="statistical-summary--aggregate-data">Statistical summary / aggregate data</h3>
+<p>ค่าสรุปทางสถิติ เช่น min, max, mean, median, mode — <em>(จาก transcript)</em> บางทีเรียก <strong>aggregate data</strong> เพราะเป็นค่าที่ผ่านการรวบรวมและ process มาแล้ว (เช่นต้องบวกกันก่อนแล้วหารด้วยจำนวน)</p>
+<h2 id="09-box-plot-box-and-whisker-plot">09 Box plot (Box and Whisker Plot)</h2>
+<p>Box plot บอกอะไรได้บ้าง</p>
+<ul>
+<li><strong>การกระจายตัว (dispersion / variability / scatter / spread)</strong> ของข้อมูล</li>
+<li><strong>ความเบ้ (skewness)</strong> ถ้ามี</li>
+<li><strong>quartiles</strong></li>
+<li><strong>outliers</strong> ถ้ามี</li>
+<li>ใช้ <strong>เปรียบเทียบระหว่างกลุ่ม</strong> ได้</li>
+</ul>
+<figure class="figure"><a href="../assets/w03-eda-and-model-fitting/w3_fig_boxplot.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="ขยายภาพ: ส่วนประกอบของ box plot — quartile, median, whisker และ IQR (สไลด์หน้า 19)"><img src="../assets/w03-eda-and-model-fitting/w3_fig_boxplot.webp" alt="ส่วนประกอบของ box plot — quartile, median, whisker และ IQR (สไลด์หน้า 19)" loading="lazy" decoding="async"></a><figcaption>ส่วนประกอบของ box plot — quartile, median, whisker และ IQR (สไลด์หน้า 19)<a href="../assets/w03-eda-and-model-fitting/w3_fig_boxplot.webp" target="_blank" rel="noopener" class="diagram-link figure-open">ขยายภาพ ↗</a></figcaption></figure>
+<h3 id="five-number-summary">Five-number summary</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>สัญลักษณ์</th><th>ความหมาย</th></tr></thead><tbody><tr><td>min</td><td>ค่าน้อยสุดที่อยู่ในรั้ว</td></tr><tr><td><strong>Q1</strong></td><td>เปอร์เซ็นไทล์ที่ 25</td></tr><tr><td><strong>Q2</strong></td><td>เปอร์เซ็นไทล์ที่ 50 = <strong>median</strong></td></tr><tr><td><strong>Q3</strong></td><td>เปอร์เซ็นไทล์ที่ 75</td></tr><tr><td>max</td><td>ค่ามากสุดที่อยู่ในรั้ว</td></tr></tbody></table></div>
+<p><em>(จาก transcript)</em> Q ย่อมาจาก <mark>quartile</mark> — รู้ <mark>5 ค่า</mark>นี้ก็วาดกล่องได้เลย</p>
+<h3 id="iqr-และรั้ว-fences">IQR และรั้ว (fences)</h3>
+<pre><code>IQR   = Q3 − Q1                  ← ความยาวของกล่อง
+รั้วล่าง = Q1 − 1.5 × IQR
+รั้วบน  = Q3 + 1.5 × IQR
+</code></pre>
+<ul>
+<li><strong>whisker (หนวด)</strong> ต้องจบที่ <strong>จุดข้อมูลจริง</strong> เสมอ — ลากไปถึงจุดที่ไกลจากกล่องที่สุดแต่ยัง <strong>อยู่ในรั้ว</strong> ไม่ใช่ลากไปถึงตัวรั้ว ดังนั้น <strong>ความยาวหนวดสองข้างไม่จำเป็นต้อง<mark>เท่ากัน</mark></strong></li>
+<li><strong>จุดที่อยู่นอกรั้ว = <mark>outlier</mark></strong> ค่า min/max ที่นับในกล่องจะไม่รวม outlier</li>
+<li><strong><mark>Q2</mark> อยู่ในกล่องแต่ไม่จำเป็นต้องอยู่ตรงกลาง</strong> เพราะข้อมูลอาจเบ้ซ้ายหรือขวา</li>
+<li>แต่ละช่วงของ box plot แทนข้อมูล <strong>25%</strong> เท่ากันหมด (4 ช่วง)</li>
+<li>วาดแนวตั้งหรือแนวนอนก็ได้ ไม่ต่างกัน แค่เปลี่ยนมุมมอง</li>
+<li>ค่า <mark>1.5</mark> ใน Orange เป็น <strong>default ที่ปรับได้</strong></li>
+</ul>
+<p><em>(จาก transcript)</em> วิธีจัดการ outlier: จะทิ้งก็ได้ <strong>แต่ต้องหาเหตุผลว่าทำไมมันสุดโต่ง</strong> อาจแยกวิเคราะห์กลุ่มที่ extreme ออกจากกลุ่มทั่วไป เพราะถ้าไม่ทำ ภาพรวมของข้อมูลจะเสีย — เช่นในห้องมีเพื่อนสูง 2 เมตรกว่าอยู่ 2-3 คน ก็แยกวิเคราะห์ต่างหาก</p>
+<p><strong>ข้อดีที่เหนือกว่า histogram</strong> <em>(จาก transcript)</em> — เห็นการแจกแจงได้โดยไม่ต้อง plot ทั้ง distribution และ <strong>เปรียบเทียบหลายกลุ่มพร้อมกันได้ทันที</strong></p>
+<figure class="figure"><a href="../assets/w03-eda-and-model-fitting/w3_fig_boxplot_fences.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="ขยายภาพ: รั้ว (fences) ที่ Q1−1.5×IQR และ Q3+1.5×IQR กับจุดที่ถือเป็น outlier (สไลด์หน้า 21)"><img src="../assets/w03-eda-and-model-fitting/w3_fig_boxplot_fences.webp" alt="รั้ว (fences) ที่ Q1−1.5×IQR และ Q3+1.5×IQR กับจุดที่ถือเป็น outlier (สไลด์หน้า 21)" loading="lazy" decoding="async"></a><figcaption>รั้ว (fences) ที่ Q1−1.5×IQR และ Q3+1.5×IQR กับจุดที่ถือเป็น outlier (สไลด์หน้า 21)<a href="../assets/w03-eda-and-model-fitting/w3_fig_boxplot_fences.webp" target="_blank" rel="noopener" class="diagram-link figure-open">ขยายภาพ ↗</a></figcaption></figure>
+<h3 id="ตัวอย่างใน-orange-iris">ตัวอย่างใน Orange: Iris</h3>
+<p>พล็อต box plot ของความกว้างกลีบดอก (petal width) แยกตามสายพันธุ์ (setosa / versicolor / virginica) แล้วเห็นชัดว่า <strong>สามสายพันธุ์ต่างกันชัดเจน</strong> จึงสรุปได้ว่า feature นี้เอาไปใช้ classify สายพันธุ์ได้ — นี่คือตัวอย่างของการทำ EDA ก่อนวิเคราะห์ขั้นถัดไป</p>
+<h2 id="10-scatter-plot-และ-correlation">10 Scatter plot และ Correlation</h2>
+<h3 id="scatter-plot">Scatter plot</h3>
+<ul>
+<li>แสดง <strong>ทุก data point</strong></li>
+<li>แสดงว่าข้อมูล <strong>หนาแน่นหรือเบาบาง</strong> แค่ไหน</li>
+<li>แสดง <strong>correlation</strong> และ <strong>trend</strong> ถ้ามี</li>
+</ul>
+<p><em>(จาก transcript)</em> คำว่า scatter แปลว่ากระจัดกระจาย เหมือนการหว่านเมล็ดพืช — trend คือแนวโน้มขาขึ้นหรือขาลง เช่นถ้ารถคันใหญ่ขึ้นราคาก็แพงขึ้น</p>
+<figure class="figure"><a href="../assets/w03-eda-and-model-fitting/w3_fig_scatter_correlation.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="ขยายภาพ: scatter plot กับตัวอย่างความสัมพันธ์แบบบวก ลบ และไม่มีความสัมพันธ์ (สไลด์หน้า 22)"><img src="../assets/w03-eda-and-model-fitting/w3_fig_scatter_correlation.webp" alt="scatter plot กับตัวอย่างความสัมพันธ์แบบบวก ลบ และไม่มีความสัมพันธ์ (สไลด์หน้า 22)" loading="lazy" decoding="async"></a><figcaption>scatter plot กับตัวอย่างความสัมพันธ์แบบบวก ลบ และไม่มีความสัมพันธ์ (สไลด์หน้า 22)<a href="../assets/w03-eda-and-model-fitting/w3_fig_scatter_correlation.webp" target="_blank" rel="noopener" class="diagram-link figure-open">ขยายภาพ ↗</a></figcaption></figure>
+<h3 id="correlation-สหสัมพันธ์">Correlation (สหสัมพันธ์)</h3>
+<pre><code>-1 ≤ r ≤ 1
+</code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>ค่า r</th><th>ความหมาย</th></tr></thead><tbody><tr><td><strong>+1</strong></td><td>สัมพันธ์เชิงบวกแบบสมบูรณ์ จุดเรียงเป็นเส้นตรงขึ้น</td></tr><tr><td><strong>0</strong></td><td>ไม่มีความสัมพันธ์ จุดกระจายทั่ว</td></tr><tr><td><strong>−1</strong></td><td>สัมพันธ์เชิงลบแบบสมบูรณ์ จุดเรียงเป็นเส้นตรงลง</td></tr></tbody></table></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>วิธี</th><th>ใช้กับ</th><th>เงื่อนไข</th></tr></thead><tbody><tr><td><strong>Pearson correlation</strong></td><td>ข้อมูล <strong>numerical</strong></td><td>เฉพาะความสัมพันธ์ <strong>เชิงเส้น (linear)</strong> เท่านั้น</td></tr><tr><td><strong>Spearman correlation</strong></td><td>ข้อมูล <strong>ordinal scale</strong> (ลำดับ)</td><td>ความสัมพันธ์แบบ monotonic/linear</td></tr></tbody></table></div>
+<p><em>(จาก transcript)</em> สูตรคำนวณอยู่บนพื้นฐานของการเอาค่าแต่ละตัวลบด้วยค่าเฉลี่ยของแกนตัวเอง (x̄, ȳ) แล้วคูณกัน — <strong>ตัวเศษเป็นบวกหรือลบก็ได้ แต่ตัวส่วนมี<mark>รากที่สอง</mark>จึงเป็นบวกเสมอ</strong> ผลลัพธ์จึงอยู่ในช่วง <mark>−1 ถึง 1</mark> (อาจารย์บอกว่าไม่ต้องท่องสูตร)</p>
+<figure class="figure"><a href="../assets/w03-eda-and-model-fitting/w3_fig_correlation.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="ขยายภาพ: ค่า r ตั้งแต่ +1 ถึง −1 พร้อมสูตรสัมประสิทธิ์สหสัมพันธ์ (สไลด์หน้า 23)"><img src="../assets/w03-eda-and-model-fitting/w3_fig_correlation.webp" alt="ค่า r ตั้งแต่ +1 ถึง −1 พร้อมสูตรสัมประสิทธิ์สหสัมพันธ์ (สไลด์หน้า 23)" loading="lazy" decoding="async"></a><figcaption>ค่า r ตั้งแต่ +1 ถึง −1 พร้อมสูตรสัมประสิทธิ์สหสัมพันธ์ (สไลด์หน้า 23)<a href="../assets/w03-eda-and-model-fitting/w3_fig_correlation.webp" target="_blank" rel="noopener" class="diagram-link figure-open">ขยายภาพ ↗</a></figcaption></figure>
+<h2 id="11-linear-regression">11 Linear Regression</h2>
+<h3 id="linear-modeling-ตอบคำถามอะไร">Linear modeling ตอบคำถามอะไร</h3>
+<p><strong>“x มีอิทธิพลต่อ y หรือไม่”</strong> เช่น</p>
+<ul>
+<li>ราคาบ้านได้รับอิทธิพลจากรายได้หรือเปล่า</li>
+<li>การเปลี่ยนถ่ายน้ำมันเครื่องบ่อยขึ้นเป็นเรื่องดีไหม ประหยัดเงินในระยะยาวหรือเปล่า</li>
+</ul>
+<blockquote>
+<p>⚠️ คำเตือนคลาสสิกของนักสถิติที่สไลด์ยกมา: <strong>“Correlation does not mean causation.”</strong></p>
+</blockquote>
+<h3 id="เงื่อนไขของตัวแปร">เงื่อนไขของตัวแปร</h3>
+<ul>
+<li><strong>target variable ต้องเป็น<mark>ตัวเลข</mark>เสมอ</strong> เช่นปริมาณน้ำฝนของวัน, ราคารถ</li>
+<li><strong>predictor variable เป็นได้ทั้ง <mark>numerical, categorical หรือ ordinal</mark></strong></li>
+<li>ถ้า target เป็น categorical (เช่นพยากรณ์อากาศ sunny/cloudy/rain/snow) ก็ยังใช้ threshold มาแบ่ง (<mark>quantization</mark>) เพื่อ classify ได้ แต่โดยทั่วไป <strong>logistic regression</strong> (ที่อยู่บนพื้นฐานของความน่าจะเป็น) เหมาะกว่า</li>
+</ul>
+<h3 id="สมการ">สมการ</h3>
+<p>โมเดลเชิงเส้น: <code>y = f(X, w)</code> โดย x คือตัวแปรต้น y คือ target, f() คือฟังก์ชันเชิงเส้น และ w คือชุด parameter</p>
+<p><strong>Simple linear regression</strong> (การวิเคราะห์การถดถอยเชิงเส้น) — 1 ตัวแปรต้น</p>
+<pre><code>y = w₀ + w₁x + ε
+</code></pre>
+<p>โดย w₀ = <mark>intercept</mark>, w₁ = <mark>slope</mark>, ε = error หรือ residual</p>
+<p><em>(จาก transcript)</em> คำว่า <strong>linear</strong> หมายถึงดีกรี (เลขยกกำลัง) มีแค่ <strong>0 กับ 1</strong> เท่านั้น ถ้าดีกรี 2 ขึ้นไปจะเรียก <strong>polynomial</strong> (ดีกรี 2 = <mark>quadratic</mark>, ดีกรี 3 = cubic) เช่น <code>w₀ + w₁x₁ + w₂x₂² + w₃x₃³ + …</code> — วิชานี้ใช้แค่แบบ linear</p>
+<figure class="figure"><a href="../assets/w03-eda-and-model-fitting/w3_fig_simple_regression.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="ขยายภาพ: เส้นถดถอยที่ fit กับข้อมูลจริง และสมการ y = ax + b (สไลด์หน้า 27)"><img src="../assets/w03-eda-and-model-fitting/w3_fig_simple_regression.webp" alt="เส้นถดถอยที่ fit กับข้อมูลจริง และสมการ y = ax + b (สไลด์หน้า 27)" loading="lazy" decoding="async"></a><figcaption>เส้นถดถอยที่ fit กับข้อมูลจริง และสมการ y = ax + b (สไลด์หน้า 27)<a href="../assets/w03-eda-and-model-fitting/w3_fig_simple_regression.webp" target="_blank" rel="noopener" class="diagram-link figure-open">ขยายภาพ ↗</a></figcaption></figure>
+<h3 id="ทำไมชื่อ-regression-การถดถอย-จาก-transcript">ทำไมชื่อ "regression" (การถดถอย) <em>(จาก transcript)</em></h3>
+<p>มีเส้นตรงที่ลากผ่านข้อมูลได้เป็นล้านเส้น อัลกอริทึมจะถามไปทีละเส้นว่าเส้นนี้ดีพอไหม แล้วเลือกเส้นที่ <strong>error น้อยที่สุด</strong> เส้นเดียว — "การถดถอย" ในที่นี้คือ <strong>error ถดถอยลงเรื่อย ๆ</strong> จนได้เส้นที่ดีที่สุด</p>
+<h3 id="loss-function-และการหาค่า-w">Loss function และการหาค่า w</h3>
+<ul>
+<li><strong>error</strong> นิยามเป็น <strong>ระยะห่างระหว่าง data point กับเส้น</strong> ยกกำลังสอง (squared distance) แล้วบวกรวมกันทุกจุด</li>
+<li>loss function ที่นิยมที่สุดสำหรับ regression คือ <strong><mark>least squares</mark> method</strong></li>
+<li>วิธีหา w ที่ดีที่สุด: <strong>หาอนุพันธ์ (<mark>derivative</mark>) ของ loss function แล้วตั้งให้เท่ากับศูนย์ แล้วแก้สมการ</strong></li>
+<li>ฟังก์ชันเป้าหมายเรียก <strong>cost function</strong> หรือ objective function ที่ตั้ง goal ว่าจะ <strong>minimize</strong> มัน — คำตอบคือ <strong>argmin</strong> = อาร์กิวเมนต์ที่ทำให้ฟังก์ชันเป้าหมายมีค่าน้อยที่สุด</li>
+</ul>
+<p><em>(จาก transcript)</em> หลักการนี้เป็นหลักการเดียวกับที่ deep learning และ machine learning ใช้ — หา error ที่น้อยที่สุดเพื่อให้ได้ค่า weight ที่ดีที่สุด ต่างกันแค่ของเรามี weight 2 ตัว ส่วนของ Gen AI มีเป็นล้าน ๆ ตัว</p>
+<h3 id="สองขั้นตอนของการใช้โมเดล">สองขั้นตอนของการใช้โมเดล</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>ขั้น</th><th>ทำอะไร</th></tr></thead><tbody><tr><td><strong>Model Fitting</strong></td><td>มี dataset ที่มีตัวแปร x₁…x_m และ y แล้วคำนวณหา <strong>w</strong> ที่ดีที่สุดตามเกณฑ์ที่กำหนด</td></tr><tr><td><strong>Model Prediction</strong></td><td>มี predictor x₁…x_m และ w แล้วคำนวณค่า <strong>y</strong> ออกมา</td></tr></tbody></table></div>
+<h3 id="simple-vs-multiple">Simple vs Multiple</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th></th><th>จำนวนตัวแปรต้น</th></tr></thead><tbody><tr><td><strong>Simple linear regression</strong></td><td>1 ตัว</td></tr><tr><td><strong>Multivariate / Multiple linear regression</strong></td><td>มากกว่า 1 ตัว</td></tr></tbody></table></div>
+<p>Multiple linear regression ใช้ดูว่าตัวแปรต้นหลายตัวส่งผลต่อ target อย่างไร โดย <strong>สังเกตผลของการเปลี่ยนตัวแปรต้นตัวหนึ่งขณะที่คุมค่าตัวอื่นไว้</strong></p>
+<p><em>(จาก transcript)</em> ใส่ตัวแปรต้นเพิ่มได้เรื่อย ๆ <strong>แต่เยอะเกินไปก็ไม่ดี</strong> ประมาณ <mark>4–5 ตัว</mark>ก็เริ่มวุ่นวายแล้ว ปกติใช้ 2–3 ตัวก็พอเห็นความสัมพันธ์ที่ใช้ได้จริง</p>
+<h2 id="12-อ่านผลลัพธ์ของโมเดล">12 อ่านผลลัพธ์ของโมเดล</h2>
+<p>ผลลัพธ์จาก <code>lm()</code> ใน R (lm = <strong>l</strong>inear <strong>m</strong>odel) มีสิ่งที่ต้องอ่านให้เป็น</p>
+<h3 id="coefficients">Coefficients</h3>
+<p>แต่ละบรรทัดคือ <strong>weight</strong> ของตัวแปรนั้น ๆ โดยบรรทัด <code>(Intercept)</code> คือ <strong>w₀</strong></p>
+<h3 id="ดาว-significance-codes--จาก-t-test">ดาว (significance codes) — จาก t-test</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>ดาว</th><th>ระดับ p-value</th></tr></thead><tbody><tr><td><code>***</code></td><td>0.001 (0.1%)</td></tr><tr><td><code>**</code></td><td>0.01 (1%)</td></tr><tr><td><code>*</code></td><td>0.05 (5%)</td></tr></tbody></table></div>
+<ul>
+<li><strong>t-test</strong> บอกว่า <strong>ตัวแปรเดี่ยว ๆ</strong> ตัวนั้นมีนัยสำคัญทางสถิติหรือไม่</li>
+<li><strong>F-test</strong> บอกว่า <strong>กลุ่มตัวแปรร่วมกัน</strong> มีนัยสำคัญหรือไม่ (ยิ่งค่ามากยิ่งดี) และดู <strong>p-value</strong> ประกอบเพื่อเห็นภาพรวม</li>
+<li>กฎง่าย ๆ: <code>Pr(>|t|)</code> หรือ p-value <strong>น้อยกว่า <mark>0.05</mark></strong> ถือว่ามีนัยสำคัญทางสถิติ</li>
+</ul>
+<p><em>(จาก transcript)</em> ยิ่ง error น้อยยิ่งดี — <mark>3 ดาว</mark>ดีที่สุด มีตั้งแต่ 1 ดาวขึ้นไปถือว่าใช้ได้ ถ้าไม่มีดาวเลยแปลว่าตัวแปรนั้นใช้ทำนายได้ไม่ดี ไม่ต้องเอามาใช้ ในงานที่ไม่ใช่เรื่องเป็นเรื่องตาย error 5% ยอมรับได้</p>
+<h3 id="r-r-และ-adjusted-r">R, R² และ Adjusted R²</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>ค่า</th><th>ความหมาย</th></tr></thead><tbody><tr><td><strong>R</strong></td><td>correlation</td></tr><tr><td><strong>R²</strong></td><td><strong>coefficient of determination (CD)</strong> — บอกว่าข้อมูลฟิตกับเส้น/เส้นโค้งได้ดีแค่ไหน มีค่า 0 ถึง 1 ถ้าเป็น 1.0 แปลว่าชุดตัวแปร X ทำนาย Y ได้อย่างสมบูรณ์แบบ</td></tr><tr><td><strong>Adjusted R²</strong></td><td>ปรับโทษการเพิ่มตัวแปรมั่ว ๆ — <strong>ถ้าเพิ่มตัวแปรที่ไม่มีประโยชน์ adjusted R² จะลดลง ถ้าเพิ่มตัวแปรที่มีประโยชน์จะเพิ่มขึ้น</strong> และ <strong>adjusted R² ≤ R² เสมอ</strong></td></tr></tbody></table></div>
+<p><em>(จาก transcript)</em> เกณฑ์คร่าว ๆ ที่อาจารย์ให้: <strong>R² ตั้งแต่ <mark>0.6</mark> ขึ้นไปถือว่าดี</strong> (0.5 ก็พอได้) ส่วน R ควรมากกว่า <mark>0.8</mark> ขึ้นไป (0.8² ≈ 0.64) — เหตุผลที่ต้องใช้ adjusted R² คือ <strong>R มีแนวโน้มเพิ่มขึ้นเรื่อย ๆ เมื่อใส่ตัวแปรต้นเพิ่ม</strong> ทำให้ปั้นค่าสูง ๆ ขึ้นมาได้แบบไม่จริง เวลาเปรียบเทียบโมเดลที่ซับซ้อนไม่เท่ากันจึงต้องดู adjusted R²</p>
+<h2 id="13-ตัวแปรเชิงประเภทในสมการ">13 ตัวแปรเชิงประเภทในสมการ</h2>
+<p>ตัวอย่างจากสไลด์ (multivariate ล้วนตัวเลข):</p>
+<pre><code>Price = 58.35 × Horsepower + 110.13 × Length + 101.45 × EngineSize − 24,836.65
+</code></pre>
+<p>ตัวอย่างที่มีตัวแปรเชิงประเภท (ยี่ห้อรถ) — สไลด์ยกกรณี BMW:</p>
+<pre><code>Price = 64.38 × Horsepower + 57.07 × EngineSize + 1.0 × 8,062.71 − 408.06
+</code></pre>
+<p><strong>กติกา</strong> — ใช้ยี่ห้อเดียวต่อการทำนายหนึ่งครั้ง โดย <strong>คูณ <mark>1.0</mark> กับสัมประสิทธิ์ของยี่ห้อที่เลือก และคูณ <mark>0.0</mark> กับยี่ห้ออื่นทั้งหมด</strong> (ที่คูณ 0 ก็คือไม่ต้องเอามารวมนั่นเอง)</p>
+<p>ในโค้ดตัวอย่าง <code>LinearReg_auto.R</code> ใช้หลักเดียวกันกับ Porsche และ Mitsubishi:</p>
+<pre><code class="language-r"># Porsche: hp=150, es=100, bd="porsche", intercept = -408.062
+pred_price = 64.381*150 + 57.068*100 + 1.0*9054.119 - 408.062
+
+# Mitsubishi: hp=150, es=100, bd="mitsubishi"
+pred_price = 64.381*150 + 57.068*100 + 1.0*(-3804.304) - 408.062
+</code></pre>
+<p><em>(จาก transcript)</em> ย้ำอีกครั้งว่า <strong>y ต้องเป็น<mark>ตัวเลข</mark>เสมอ</strong> ไม่ว่าจะ simple หรือ multiple ส่วน x ผสมกันได้ทั้งตัวเลข (แรงม้า) และประเภท (ยี่ห้อ ซึ่งเป็น <strong>nominal</strong> ไม่ใช่ ordinal เพราะเทียบไม่ได้ว่ายี่ห้อไหนอยู่เหนือใคร) — และเวลาดูผลจะเห็นว่าบางยี่ห้อได้ 3 ดาว บางยี่ห้อไม่ได้ดาวเลย (เช่นยี่ห้อที่มีข้อมูลน้อย) แปลว่ายี่ห้อนั้นใช้ทำนายได้ไม่ค่อยดี</p>
+<h2 id="14-ลงมือ-r-และ-rstudio">14 ลงมือ: R และ RStudio</h2>
+<p>ต้องลง <strong>R (compiler/interpreter)</strong> ก่อน แล้วค่อยลง <strong>RStudio</strong> จากนั้นตั้ง <strong>working directory</strong> ให้ตรงกับที่เก็บไฟล์ — ใน RStudio วาง cursor ไว้ที่บรรทัดแล้วกด Run จะรันทีละ statement หรือเลือกหลายบรรทัดรันพร้อมกันก็ได้</p>
+<p>โค้ดทั้งหมดอยู่ที่ <code>../code/LinearReg_auto.R</code> และข้อมูลที่ <code>../code/imports-85.data</code></p>
+<h3 id="อ่านข้อมูลและสำรวจโครงสร้าง">อ่านข้อมูลและสำรวจโครงสร้าง</h3>
+<pre><code class="language-r"># dataset นี้ไม่มี header และบางระบบแปลง char เป็น factor อัตโนมัติ จึงต้องปิดไว้
+auto &#x3C;- read.csv("data/imports-85.data", header = FALSE, stringsAsFactors = FALSE)
+
+dim(auto)     # จำนวน row และ column → 205 x 26
+str(auto)     # โครงสร้าง: แต่ละคอลัมน์เป็นชนิดอะไร
+names(auto)   # ชื่อคอลัมน์ (default เป็น V1, V2, ...)
+</code></pre>
+<h3 id="ตั้งชื่อคอลัมน์">ตั้งชื่อคอลัมน์</h3>
+<pre><code class="language-r"># ตั้งชื่อทุกคอลัมน์พร้อมกันด้วยฟังก์ชัน c() (combine)
+names(auto) &#x3C;- c("symbol","nloss","make","fuel","aspiration",
+                 "doors","body","wheels","engineloc","wheelbase",
+                 "length","width","height","weight","enginetype",
+                 "cylinders","enginesize","fuelsys","bore",
+                 "stroke","compressratio","horsepower","rpm",
+                 "citympg","hwmpg","price")
+
+# หรือเปลี่ยนทีละตัวด้วย index
+names(auto)[22] &#x3C;- "Horsepower"
+names(auto)[26] &#x3C;- "Price"
+names(auto)[3]  &#x3C;- "Brand"
+names(auto)[7]  &#x3C;- "BodyStyle"
+names(auto)[17] &#x3C;- "EngineSize"
+</code></pre>
+<h3 id="จัดการ-missing-data">จัดการ missing data</h3>
+<pre><code class="language-r"># dataset นี้แทน missing ด้วย '?'
+which(auto$Horsepower == '?')
+which(auto$Price == '?')
+
+sort(auto$Horsepower)   # ยังไม่เรียงถูก เพราะยังเป็น character
+
+# แปลงเป็นตัวเลข — '?' จะถูก coerce เป็น NA
+auto$Horsepower &#x3C;- as.numeric(auto$Horsepower)
+sort(auto$Horsepower, decreasing = TRUE)   # NA จะไม่แสดง
+which(is.na(auto$Horsepower))              # หา index ของ NA
+
+auto &#x3C;- na.omit(auto)   # ตัดแถวที่มี NA ทิ้ง
+</code></pre>
+<p><em>(จาก transcript)</em> <strong>ข้อสังเกตสำคัญ</strong> — ตอนที่ <code>Horsepower</code> ยังเป็น string การ <code>sort()</code> จะเรียงตาม<mark>ตัวอักษร</mark> ทำให้ <code>"100"</code> มาก่อน <code>"62"</code> ต้องแปลงเป็นตัวเลขก่อนถึงจะเรียงถูก และ <code>$</code> คือวิธีเข้าถึงคอลัมน์ใน data frame (<code>ชื่อ_data_frame$ชื่อคอลัมน์</code>)</p>
+<h3 id="สถิติเบื้องต้น">สถิติเบื้องต้น</h3>
+<pre><code class="language-r">min(auto$Horsepower, na.rm = TRUE)     # na.rm = TRUE คือไม่นับ NA
+max(auto$Horsepower, na.rm = TRUE)
+range(auto$Horsepower, na.rm = TRUE)
+mean(auto$Horsepower, na.rm = TRUE)
+median(auto$Horsepower, na.rm = TRUE)
+
+summary(auto$Horsepower)   # ให้ min, Q1, median, mean, Q3, max ในคำสั่งเดียว
+
+# R ไม่มีฟังก์ชัน mode ในตัว — ใช้ตารางความถี่แทน
+table(auto$Horsepower)
+sort(table(auto$Horsepower))
+</code></pre>
+<p><em>(จาก transcript)</em> <code>summary()</code> ให้ 5 ค่าคล้าย box plot <strong>บวก mean มาให้ด้วย</strong> แต่ไม่ใช่ box plot ส่วน <code>table()</code> ทำให้เห็น <strong>mode</strong> — ในคาบพบว่าแรงม้า <strong>68 เกิดขึ้นบ่อยที่สุดคือ <mark>19 ครั้ง</mark></strong> ส่วนแรงม้า 48 มีแค่ค่าเดียว</p>
+<h3 id="visualization">Visualization</h3>
+<pre><code class="language-r"># Histogram
+hist(auto$Horsepower, col = "lightgray")
+hist(auto$Horsepower, xlab = "Horsepower", breaks = seq(0,300,10),
+     col = "yellow", main = "Histogram of horsepower (205 cars)")
+
+# Box plot แนวตั้ง / แนวนอน
+boxplot(auto$Horsepower, main = "205 Cars from the 1985 Automobile Dataset",
+        ylab = "Horsepower", col = "orange")
+boxplot(auto$Horsepower, horizontal = TRUE, xlab = "Horsepower", col = "lightyellow")
+
+# Box plot แยกตามกลุ่มย่อย — สังเกตเครื่องหมาย ~
+boxplot(auto$Horsepower ~ auto$BodyStyle, col = "lightgreen",
+        ylab = "HP", xlab = "Body Style", main = "Horsepower vs. Body Styles")
+
+# เพิ่มจุดค่าเฉลี่ยของแต่ละกลุ่มลงบน box plot
+means &#x3C;- tapply(auto$Horsepower, auto$BodyStyle, mean)
+points(means, pch = 19, cex = 1.2, col = 'red')   # pch = plot character, cex = scale
+
+# Scatter plot
+plot(auto$Horsepower, auto$Price, xlab = "Horsepower", ylab = "Price ($)",
+     main = "205 Cars from the 1985 Ward's Automotive Yearbook", col = "blue")
+</code></pre>
+<p><em>(จาก transcript)</em> จาก box plot ของ horsepower เห็น <strong>outlier <mark>4 จุด</mark></strong> ที่สุดโต่ง และ box plot แยกตาม body style ทำให้เปรียบเทียบกลุ่มย่อยได้ทันที เช่นเห็นว่า wagon ค่อนข้างปกติ ส่วน convertible กับ hardtop ดูเพี้ยนไป (Q1 กับ Q2 ชิดกันมาก) — histogram แบบ default อาจดูไม่สวย ต้องปรับ <code>breaks</code> เพื่อกำหนดขนาดของ <strong>bin (ตะกร้า)</strong> ว่าช่วงค่านี้มีข้อมูลตกลงมากี่ครั้ง</p>
+<h3 id="pairs-plot--ดูหลายคู่พร้อมกัน">Pairs plot — ดูหลายคู่พร้อมกัน</h3>
+<pre><code class="language-r">pairs(data = auto, ~ auto$Price + auto$Horsepower + auto$EngineSize,
+      col = "blue", main = "Automobile dataset")
+
+# แบบใส่เส้น regression ให้ทุกคู่
+panel.lm &#x3C;- function(x, y){
+  points(x, y, col = "blue")
+  abline(lm(y ~ x), col = 'red')
+}
+pairs(data = auto, ~ Price + Horsepower + EngineSize + height + citympg,
+      panel = panel.lm, main = "Pairs function of some chosen variables")
+</code></pre>
+<p><em>(จาก transcript)</em> <strong>เวลาอ่าน pairs plot ต้องดูให้ดีว่าแกนไหนเป็นแกนไหน</strong> เพราะช่องที่อยู่ตรงข้ามกันจะ<mark>สลับแกน x กับ y</mark> กัน ข้อดีคือเห็นความสัมพันธ์ของทุกคู่พร้อมกันทีเดียว</p>
+<h3 id="simple-linear-regression">Simple linear regression</h3>
+<pre><code class="language-r">modelAuto &#x3C;- lm(auto$Price ~ auto$Horsepower)   # รูปแบบคือ lm(Y ~ X)
+coef(modelAuto)        # ดูสัมประสิทธิ์
+summary(modelAuto)     # ดูผลเต็ม พร้อม t-test, R², adjusted R²
+
+# correlation แบบ Pearson โดยไม่นับ NA
+cr &#x3C;- cor(auto$Horsepower, auto$Price, method = "pearson", use = "complete.obs")
+cat("Correlation =", cr)
+
+# เพิ่มเส้น regression ลงบน scatter plot ที่พล็อตไว้ก่อนหน้า
+abline(modelAuto, col = "red")
+</code></pre>
+<p><strong>ผลที่ได้ในคาบ</strong> — สมการที่อาจารย์เขียนออกมาคือ</p>
+<pre><code>Price = -4562.175 + 172.206 × Horsepower
+</code></pre>
+<p>(ยืนยันแล้วโดยคำนวณซ้ำจาก <code>imports-85.data</code> เอง: 199 แถวที่มีทั้ง horsepower และ price → intercept −4562.175, slope 172.206, <strong>r = 0.8105</strong>, <strong>R² = <mark>0.657</mark></strong> ซึ่งตรงกับค่า r = 0.81 ที่ Orange แสดงในคาบสัปดาห์ที่แล้ว)</p>
+<h3 id="prediction">Prediction</h3>
+<pre><code class="language-r"># ตั้งชื่อตัวแปรใหม่แล้วสร้างโมเดลอีกครั้ง
+pr &#x3C;- auto$Price
+hp &#x3C;- auto$Horsepower
+modelPr &#x3C;- lm(pr ~ hp)
+
+# data frame ที่ใส่ค่าทดสอบ ต้องใช้ "ชื่อตัวแปรเดียวกัน" กับตอน train
+predData &#x3C;- data.frame(hp = c(0, 200, 100, 250))
+predict(modelPr, predData)
+</code></pre>
+<h3 id="multiple-linear-regression">Multiple linear regression</h3>
+<pre><code class="language-r">multivModel &#x3C;- lm(auto$Price ~ auto$Horsepower + auto$EngineSize)
+coef(multivModel)
+summary(multivModel)
+
+# หลาย plot ในภาพเดียว
+par(mfrow = c(1,2))   # c(nrows, ncolumns)
+# ... plot ...
+par(mfrow = c(1,1))   # reset
+</code></pre>
+<h3 id="เพิ่มตัวแปรเชิงประเภท">เพิ่มตัวแปรเชิงประเภท</h3>
+<pre><code class="language-r"># ต้องแปลง character เป็น factor ของ R ก่อน
+auto$Brand &#x3C;- as.factor(auto$Brand)
+str(auto)   # เช็คว่าเปลี่ยนแล้ว
+
+multivModel &#x3C;- lm(auto$Price ~ auto$Horsepower + auto$EngineSize + auto$Brand)
+summary(multivModel)
+
+# ทำนายโดยใส่ค่าเชิงประเภทเข้าไปตรง ๆ
+pr &#x3C;- auto$Price; hp &#x3C;- auto$Horsepower
+es &#x3C;- auto$EngineSize; bd &#x3C;- auto$Brand
+modelPr &#x3C;- lm(pr ~ hp + es + bd)
+
+predData &#x3C;- data.frame(hp = c(150,150), es = c(100,100),
+                       bd = c("porsche","mitsubishi"))
+predict(modelPr, predData)
+</code></pre>
+<h2 id="15-เทียบผลระหว่าง-orange-กับ-r">15 เทียบผลระหว่าง Orange กับ R</h2>
+<p>ในคาบเปิด Orange workspace <code>Linear Regression (Imports-1985 dataset).ows</code> ทำโมเดลเดียวกัน (target = price, feature = horsepower + brand + body style) แล้วเทียบสัมประสิทธิ์กับที่ได้จาก R</p>
+<p><strong>ผลคือใกล้เคียงกันแต่ไม่เท่ากันเป๊ะ</strong> — สัมประสิทธิ์ของ horsepower ได้ราว 105 ใน Orange เทียบกับ 109.64 ใน R อาจารย์อธิบายว่าน่าจะเกิดจาก <strong>default ของการ <mark>preprocess/scaling</mark> ที่ต่างกันระหว่างสองซอฟต์แวร์</strong> สรุปคือ <strong>ใช้ Orange เป็นตัวตรวจทานผลของ R ได้</strong></p>
+<p><em>(ตัวเลขในหัวข้อนี้ถอดมาจาก transcript ที่คุณภาพต่ำ อาจคลาดเคลื่อน — ให้ยึดค่าที่รันได้จริงในเครื่องตัวเอง)</em></p>
+<p>ใน Orange ต้องทำ <strong>Edit Domain</strong> ตั้งชื่อคอลัมน์ก่อน แล้ว <strong>Select Columns</strong> เลือก feature กับ target — สังเกตว่า <strong>index ของ Orange เริ่มที่ <mark>x0</mark> ส่วนของ R เริ่มที่ <mark>V1</mark></strong> ดังนั้นคอลัมน์เดียวกันจะเป็น 25 ใน Orange แต่เป็น 26 ใน R</p>
+<h2 id="16-งานที่สั่ง">16 งานที่สั่ง</h2>
+<h3 id="exercise-2--multiple-linear-regression-บน-imports-85">Exercise 2 — Multiple linear regression บน imports-85</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>หัวข้อ</th><th>รายละเอียด</th></tr></thead><tbody><tr><td>ทำใน</td><td><strong>ทั้ง R (RStudio) และ Orange</strong> เปรียบเทียบผลกัน</td></tr><tr><td>Dataset</td><td><code>imports-85</code> (Automobile) ชุดเดียวกับที่ใช้ในคาบ</td></tr><tr><td>Target (y)</td><td><strong>Price</strong></td></tr><tr><td>Predictor (x)</td><td><strong>3 ตัว</strong> — Horsepower, BodyStyle, Brand (make)</td></tr><tr><td>ต้องส่ง</td><td><strong>สมการ + ค่าสัมประสิทธิ์</strong> เป็นอย่างน้อย, capture โค้ดส่วนสำคัญ, ผลการ predict</td></tr><tr><td>Test case</td><td>สร้างเอง 2–3 เคส เช่น Brand = Honda, BodyStyle = sedan, Horsepower = ค่าหนึ่ง แล้ว <strong>แทนค่าลงสมการด้วยมือ</strong> เทียบกับผลจาก <code>predict()</code></td></tr><tr><td>รูปแบบไฟล์</td><td>capture ภาพ → paste ลง Word → <strong>save เป็น PDF</strong></td></tr><tr><td>ทำกับเพื่อนได้</td><td>คุยกับเพื่อนและแชร์กันได้ (เพราะบางคนไม่ได้เอาคอมมา) แต่ <strong>แยกส่งเป็นรายคน</strong></td></tr><tr><td>คะแนน</td><td>เป็น <strong>คะแนนเก็บ</strong></td></tr><tr><td>กำหนดส่ง</td><td><strong>18.00 น. ของวันเดียวกัน (พุธ 19 ส.ค.)</strong> — คนที่ต้องกลับไปทำที่บ้านขยายได้ถึงเที่ยงคืน <em>(กำหนดนี้เป็นของกลุ่ม 1 — กลุ่ม 2 ต้องยืนยันในคาบตัวเอง)</em></td></tr></tbody></table></div>
+<p><em>(จาก transcript)</em> อาจารย์บอกว่าไม่ต้องพล็อตกราฟส่งก็ได้ เพราะตัวแปรเชิงประเภทอย่าง body style พล็อตเทียบตรง ๆ ไม่ได้ (เกิน <mark>2 มิติ</mark>) — ขอแค่<strong>สมการกับสัมประสิทธิ์</strong> ส่วนวิธีทำ prediction ถ้าไม่แน่ใจ ให้ดูตัวอย่างในไฟล์ decision tree ที่ส่งไว้ หรือค้น YouTube หรือถาม AI ได้</p>
+<h3 id="to-do-ที่ฝากไว้ในไฟล์โค้ด">To-do ที่ฝากไว้ในไฟล์โค้ด</h3>
+<p>ท้ายไฟล์ <code>LinearReg_auto.R</code> มีโจทย์เขียนไว้ตรงกัน:</p>
+<blockquote>
+<p>Use this Automobile dataset and try to work out on finding some more useful correlation, boxplots, and linear regression, using one more additional variable, which is: <strong>body-style</strong> (hardtop, wagon, sedan, hatchback, convertible)</p>
+</blockquote>
+<h3 id="งานที่สไลด์หน้าสุดท้ายกำหนดไว้">งานที่สไลด์หน้าสุดท้ายกำหนดไว้</h3>
+<p>สไลด์หน้า 40 เขียนโจทย์ไว้อีกชุดหนึ่ง (ยังไม่ได้สั่งเป็นการบ้านในคาบนี้)</p>
+<blockquote>
+<p>ใช้ <strong>smartwatch's heart rate dataset</strong> ที่แจกในคลาส (หรือเลือก dataset สาธารณะชุดไหนก็ได้) แล้วทำ box plot, histogram (หรือ distribution), scatter plot, หา linear regression (ค่า intercept และ coefficient), หา correlation (r), R-squared และ adjusted R-squared</p>
+</blockquote>
+<h3 id="นำเสนอไอเดียโปรเจกต์--สัปดาห์หน้า-สัปดาห์ที่-4">นำเสนอไอเดียโปรเจกต์ — สัปดาห์หน้า (สัปดาห์ที่ 4)</h3>
+<p>ทีมละ <strong>3–4 นาที</strong> ประมาณ <strong>3 สไลด์</strong> บอกว่าจะทำอะไร ข้อมูลมาจากไหน คาดว่าจะได้อะไร — <strong>อ.ชาคริดา</strong> จะมาร่วมฟังและให้ comment ด้วย ทีม 4–5 คน (แนะนำ 4 คน)</p>
+<h2 id="อภิธานศัพท์-glossary">อภิธานศัพท์ (Glossary)</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>คำศัพท์</th><th>ความหมายโดยย่อ</th></tr></thead><tbody><tr><td>OLTP</td><td>Online Transaction Processing การประมวลผลธุรกรรมที่เกิดถี่และเร็ว เช่นระบบธนาคารหรือร้านสะดวกซื้อ</td></tr><tr><td>OLAP</td><td>Online Analytical Processing การสำรวจและวิเคราะห์ข้อมูลย้อนหลังจากคลังข้อมูลแบบหลายมิติ</td></tr><tr><td>EDA</td><td>Exploratory Data Analysis การสำรวจข้อมูลเบื้องต้นเพื่อสรุปคุณลักษณะหลักด้วยกราฟและสถิติ เป็นวิธีแบบ non-parametric</td></tr><tr><td>Univariate</td><td>การวิเคราะห์ที่ใช้ตัวแปรเดียว เช่น box plot</td></tr><tr><td>Bivariate</td><td>การวิเคราะห์ที่ใช้สองตัวแปร เช่น scatter plot</td></tr><tr><td>Multivariate</td><td>การวิเคราะห์ที่ใช้ตั้งแต่สามตัวแปรขึ้นไป</td></tr><tr><td>Modeling</td><td>การสร้างตัวแทนอย่างง่ายของระบบหรือกระบวนการ เป็นคำที่กว้างที่สุดในกลุ่มนี้</td></tr><tr><td>Data modeling</td><td>การสร้างตัวแทนเชิงแนวคิดของข้อมูล เช่น ERD, DFD, UML</td></tr><tr><td>Data fitting</td><td>การหาฟังก์ชันคณิตศาสตร์ที่อธิบายข้อมูลที่มีอยู่ได้ดีที่สุด เช่น least squares, polynomial fitting</td></tr><tr><td>Model fitting</td><td>การปรับ parameter ของโมเดลที่เลือกไว้ให้อธิบายหรือทำนายข้อมูลได้ดีที่สุด โดยเน้นที่ generalization</td></tr><tr><td>Model parameter</td><td>ค่าที่อัลกอริทึมประมาณจากข้อมูลให้เอง เช่น weight หรือสัมประสิทธิ์</td></tr><tr><td>Hyperparameter</td><td>ค่าที่คนตั้งเองก่อนเทรน เช่น k ใน KNN, learning rate, จำนวน layer, จำนวน epoch</td></tr><tr><td>Underfitting</td><td>โมเดลง่ายเกินไปจนจับ pattern ที่แท้จริงไม่ได้</td></tr><tr><td>Overfitting</td><td>โมเดลซับซ้อนเกินไปจนเรียนรู้ noise ทำได้ดีกับข้อมูลเทรนแต่แย่กับข้อมูลใหม่</td></tr><tr><td>Noise</td><td>ส่วนของข้อมูลที่แทรกเข้ามาโดยไม่ต้องการและไม่ก่อประโยชน์</td></tr><tr><td>Supervised learning</td><td>การเรียนรู้แบบมีผู้สอน คือมีการใส่ label หรือมีตัวแปร y ให้</td></tr><tr><td>Unsupervised learning</td><td>การเรียนรู้แบบไม่มีผู้สอน ไม่มี label และไม่มีตัวแปร y เช่นการทำ clustering</td></tr><tr><td>Reinforcement learning</td><td>การเรียนรู้จากการลองผิดลองถูกโดยมี reward และการลงโทษเป็น feedback</td></tr><tr><td>Centroid</td><td>จุดศูนย์กลางของแต่ละกลุ่มในการทำ k-means</td></tr><tr><td>Predictive model</td><td>โมเดลที่ทำนายค่าของ target variable จาก predictor variable</td></tr><tr><td>Descriptive model</td><td>โมเดลที่ระบุความสัมพันธ์ระหว่างตัวแปรเพื่อเข้าใจโครงสร้างของข้อมูล</td></tr><tr><td>Nominal</td><td>ข้อมูลเชิงประเภทที่บอกแค่ชนิด เปรียบเทียบลำดับไม่ได้ เช่นเพศหรือยี่ห้อ</td></tr><tr><td>Ordinal</td><td>ข้อมูลเชิงประเภทที่มีลำดับ เช่นดาวรีวิวหรือเกรด</td></tr><tr><td>Interval</td><td>มาตรวัดที่ผลต่างมีความหมาย แต่ไม่มีศูนย์แท้จริง เช่นองศาเซลเซียส ปี ค.ศ. หรือ pH</td></tr><tr><td>Ratio</td><td>มาตรวัดที่มีศูนย์แท้จริงจึงหาอัตราส่วนกี่เท่าได้ เช่นน้ำหนัก ส่วนสูง หรือองศาเคลวิน</td></tr><tr><td>True zero</td><td>จุดศูนย์ที่หมายถึงไม่มีปริมาณนั้นอยู่จริง เป็นเกณฑ์แยก ratio ออกจาก interval</td></tr><tr><td>Mean</td><td>ค่าเฉลี่ยที่คิดจากข้อมูลทุกตัว จึงถูก outlier ดึงได้ง่าย</td></tr><tr><td>Median</td><td>ค่าตรงกลางหลังเรียงลำดับ ตรงกับ Q2 หรือเปอร์เซ็นไทล์ที่ 50</td></tr><tr><td>Mode</td><td>ค่าที่พบบ่อยที่สุด ตรงกับจุดยอดของ histogram</td></tr><tr><td>Skewness</td><td>ความเบ้ของการแจกแจง เบ้ขวาเรียก positive skew เบ้ซ้ายเรียก negative skew</td></tr><tr><td>Box plot</td><td>กราฟกล่องที่แสดงการกระจาย ความเบ้ quartile และ outlier จากค่าห้าตัว</td></tr><tr><td>Quartile</td><td>ค่าที่แบ่งข้อมูลเป็นสี่ส่วนเท่า ๆ กัน ได้แก่ Q1, Q2 และ Q3</td></tr><tr><td>IQR</td><td>Interquartile Range เท่ากับ Q3 ลบ Q1 คือความยาวของกล่อง</td></tr><tr><td>Fence</td><td>รั้วที่คำนวณจาก Q1 ลบ 1.5 เท่าของ IQR และ Q3 บวก 1.5 เท่าของ IQR</td></tr><tr><td>Whisker</td><td>หนวดของ box plot ที่ลากไปถึงจุดข้อมูลจริงที่ไกลที่สุดแต่ยังอยู่ในรั้ว</td></tr><tr><td>Outlier</td><td>จุดข้อมูลที่อยู่นอกรั้ว ถือเป็นค่าสุดโต่งที่มักไม่นำมาใช้</td></tr><tr><td>Scatter plot</td><td>กราฟกระจายที่แสดงทุก data point ทำให้เห็นความหนาแน่น correlation และ trend</td></tr><tr><td>Correlation</td><td>สหสัมพันธ์ระหว่างสองตัวแปร มีค่าตั้งแต่ลบหนึ่งถึงหนึ่ง</td></tr><tr><td>Pearson correlation</td><td>วิธีหา correlation สำหรับข้อมูลตัวเลขและความสัมพันธ์เชิงเส้นเท่านั้น</td></tr><tr><td>Spearman correlation</td><td>วิธีหา correlation สำหรับข้อมูลเชิงลำดับและความสัมพันธ์แบบ monotonic</td></tr><tr><td>Linear regression</td><td>การถดถอยเชิงเส้น หาเส้นตรงที่แทนความสัมพันธ์ระหว่างตัวแปรต้นกับตัวแปรตามได้ดีที่สุด</td></tr><tr><td>Least squares</td><td>วิธีหาเส้นที่ดีที่สุดโดยทำให้ผลรวมของระยะห่างยกกำลังสองน้อยที่สุด</td></tr><tr><td>Residual</td><td>ค่าความคลาดเคลื่อนระหว่างค่าจริงกับค่าที่โมเดลทำนาย</td></tr><tr><td>Intercept</td><td>จุดที่เส้นตรงตัดแกน y คือค่า w ศูนย์ ในสมการ</td></tr><tr><td>Coefficient</td><td>สัมประสิทธิ์หรือ weight ที่คูณอยู่กับตัวแปรต้นแต่ละตัว</td></tr><tr><td>Simple linear regression</td><td>การถดถอยเชิงเส้นที่ใช้ตัวแปรต้นเพียงตัวเดียว</td></tr><tr><td>Multiple linear regression</td><td>การถดถอยเชิงเส้นที่ใช้ตัวแปรต้นมากกว่าหนึ่งตัว</td></tr><tr><td>Polynomial</td><td>สมการที่มีดีกรีตั้งแต่สองขึ้นไป ต่างจาก linear ที่มีดีกรีแค่ศูนย์กับหนึ่ง</td></tr><tr><td>Cost function</td><td>ฟังก์ชันเป้าหมายที่ตั้งไว้ให้ทำให้มีค่าน้อยที่สุด คำตอบคือ argmin</td></tr><tr><td>t-test</td><td>การทดสอบว่าตัวแปรเดี่ยวตัวหนึ่งมีนัยสำคัญทางสถิติหรือไม่</td></tr><tr><td>F-test</td><td>การทดสอบว่ากลุ่มตัวแปรร่วมกันมีนัยสำคัญหรือไม่ ยิ่งค่ามากยิ่งดี</td></tr><tr><td>p-value</td><td>ค่าที่ถ้าน้อยกว่า 0.05 ถือว่าผลมีนัยสำคัญทางสถิติ</td></tr><tr><td>R-squared</td><td>coefficient of determination บอกว่าข้อมูลฟิตกับเส้นได้ดีแค่ไหน มีค่า 0 ถึง 1</td></tr><tr><td>Adjusted R-squared</td><td>R-squared ที่ปรับโทษการเพิ่มตัวแปรที่ไม่มีประโยชน์ มีค่าน้อยกว่าหรือเท่ากับ R-squared เสมอ</td></tr><tr><td>lm()</td><td>ฟังก์ชันสร้าง linear model ใน R เขียนในรูป lm(Y ~ X)</td></tr><tr><td>NA</td><td>ค่าที่ R ใช้แทนข้อมูลที่หายไป ย่อมาจาก not available</td></tr></tbody></table></div>
+<h2 id="สรุปท้ายบท">สรุปท้ายบท</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>ประเด็น</th><th>สิ่งที่ต้องจำ</th></tr></thead><tbody><tr><td>เส้นเวลาของ DS</td><td>Relational DB (1970) → OLTP → OLAP → pattern recognition → big data</td></tr><tr><td>EDA คืออะไร</td><td>สำรวจข้อมูลเบื้องต้นแบบ non-parametric ด้วย visualization + statistical summary + hypothesis testing และทำซ้ำได้</td></tr><tr><td>กับดักที่ออกสอบได้</td><td><strong>box plot เป็น EDA แต่ linear regression ไม่ใช่ EDA</strong> มันคือ data modeling</td></tr><tr><td>ลำดับของศัพท์</td><td>Modeling กว้างสุด → Data modeling → ข้างในมี Data fitting กับ Model fitting</td></tr><tr><td>Parameter vs Hyperparameter</td><td>parameter อัลกอริทึมหาให้เอง (weight) ส่วน hyperparameter คนตั้งเอง (k, learning rate, จำนวน layer)</td></tr><tr><td>Bias ของโมเดล</td><td>underfitting = ง่ายเกินไป, overfitting = ซับซ้อนเกินจนเรียน noise แก้ด้วย validation</td></tr><tr><td>ประเภทข้อมูล</td><td>Categorical (nominal, ordinal) กับ Numerical (discrete, continuous) — เลขบนเสื้อนักกีฬาเป็น nominal</td></tr><tr><td>มาตรวัด</td><td>จำเกณฑ์ true zero: ratio มี (น้ำหนัก, Kelvin), interval ไม่มี (°C, ปี ค.ศ., pH)</td></tr><tr><td>ค่ากลาง</td><td>mean ถูก outlier ดึง, median คือ Q2, mode คือจุดยอดของ histogram — อย่าใช้แค่ตัวเดียว</td></tr><tr><td>Box plot</td><td>จำ 5 ค่า (min, Q1, Q2, Q3, max), IQR = Q3 − Q1, รั้ว = ±1.5 × IQR, หนวดจบที่ data point จริง, นอกรั้วคือ outlier</td></tr><tr><td>Correlation</td><td>−1 ≤ r ≤ 1 — Pearson สำหรับตัวเลขและเชิงเส้น, Spearman สำหรับ ordinal</td></tr><tr><td>Regression</td><td>เลือกเส้นที่ error (ระยะห่างยกกำลังสอง) รวมน้อยที่สุด ด้วย least squares — “correlation does not mean causation”</td></tr><tr><td>ข้อบังคับของตัวแปร</td><td><strong>y ต้องเป็นตัวเลขเสมอ</strong> ส่วน x ผสมตัวเลขกับ categorical ได้</td></tr><tr><td>ตัวแปรเชิงประเภท</td><td>คูณ 1.0 กับสัมประสิทธิ์ของค่าที่เลือก และคูณ 0.0 กับค่าที่เหลือทั้งหมด</td></tr><tr><td>อ่านผลโมเดล</td><td>ดาวมาจาก t-test (ยิ่งมากยิ่งดี, p &#x3C; 0.05 ถือว่ามีนัยสำคัญ), R² ≥ 0.6 ถือว่าดี, เทียบโมเดลต่างความซับซ้อนต้องใช้ adjusted R²</td></tr><tr><td>ผลที่ได้ในคาบ</td><td>Price = −4562.175 + 172.206 × Horsepower โดย r = 0.81</td></tr><tr><td>คำสั่ง R ที่ต้องจำ</td><td><code>read.csv</code>, <code>dim</code>, <code>str</code>, <code>names</code>, <code>as.numeric</code>, <code>is.na</code>, <code>na.omit</code>, <code>summary</code>, <code>table</code>, <code>hist</code>, <code>boxplot</code>, <code>plot</code>, <code>abline</code>, <code>pairs</code>, <code>lm</code>, <code>coef</code>, <code>cor</code>, <code>predict</code></td></tr><tr><td>งานที่ต้องส่ง</td><td>Exercise 2 — multiple regression (y = price, x = horsepower + body style + brand) ทำทั้ง R และ Orange ส่งเป็น PDF</td></tr></tbody></table></div></article><nav class="pagination" aria-label="บทก่อนหน้าและถัดไป"><a href="w02-ds-ai-landscape-and-tools.html"><small>← บทก่อนหน้า</small>ภาพรวม DS/AI (ต่อ) + เครื่องมือ Orange</a><a href="w04-association-rules.html"><small>บทถัดไป →</small>Association Rules — Market Basket Analysis, Apriori และ Support/Confidence/Lift</a></nav></main><aside class="toc-sidebar"><nav class="toc" aria-label="สารบัญบทนี้"><strong>ในบทนี้</strong><a href="#agenda">Agenda</a><a href="#01-วิวัฒนาการของ-data-science">01 วิวัฒนาการของ Data Science</a><a href="#02-eda-คืออะไร">02 EDA คืออะไร</a><a href="#03-modeling--data-modeling--data-fitting--model-fitting">03 Modeling / Data Modeling / Data Fitting / Model Fitting</a><a href="#04-model-parameter-กับ-hyperparameter">04 Model Parameter กับ Hyperparameter</a><a href="#05-model-bias--underfitting-และ-overfitting">05 Model bias — Underfitting และ Overfitting</a><a href="#06-ภาพรวมวิธีการ-ml-ที่ใช้ใน-ds">06 ภาพรวมวิธีการ ML ที่ใช้ใน DS</a><a href="#07-ประเภทของข้อมูลและมาตรวัด">07 ประเภทของข้อมูลและมาตรวัด</a><a href="#08-การแจกแจงข้อมูล-และค่ากลางสามตัว">08 การแจกแจงข้อมูล และค่ากลางสามตัว</a><a href="#09-box-plot-box-and-whisker-plot">09 Box plot (Box and Whisker Plot)</a><a href="#10-scatter-plot-และ-correlation">10 Scatter plot และ Correlation</a><a href="#11-linear-regression">11 Linear Regression</a><a href="#12-อ่านผลลัพธ์ของโมเดล">12 อ่านผลลัพธ์ของโมเดล</a><a href="#13-ตัวแปรเชิงประเภทในสมการ">13 ตัวแปรเชิงประเภทในสมการ</a><a href="#14-ลงมือ-r-และ-rstudio">14 ลงมือ: R และ RStudio</a><a href="#15-เทียบผลระหว่าง-orange-กับ-r">15 เทียบผลระหว่าง Orange กับ R</a><a href="#16-งานที่สั่ง">16 งานที่สั่ง</a><a href="#อภิธานศัพท์-glossary">อภิธานศัพท์ (Glossary)</a><a href="#สรุปท้ายบท">สรุปท้ายบท</a></nav></aside></div>
+<footer class="site-footer"><span>INT182 · Data Science & AI<br>สรุปเพื่อทบทวนจากเอกสารประกอบการเรียน</span><a href="https://github.com/Phakinza007/int182-study-notes">GitHub ↗</a></footer>
+<dialog id="search-dialog" aria-labelledby="search-title"><div class="dialog-heading"><h2 id="search-title">ค้นหาในสรุป</h2><button data-close-dialog aria-label="ปิดการค้นหา">×</button></div><label for="search-input">คำค้น เช่น precision, PEAS, kNN</label><input id="search-input" type="search" autocomplete="off"><p id="search-status" role="status">พิมพ์คำเพื่อเริ่มค้นหา</p><ul id="search-results"></ul></dialog>
+<dialog id="image-dialog" aria-labelledby="image-title"><div class="dialog-heading"><h2 id="image-title">ภาพประกอบ</h2><button data-close-dialog aria-label="ปิดภาพ">×</button></div><div class="image-controls"><button data-zoom="out" aria-label="ย่อภาพ">−</button><button data-zoom="in" aria-label="ขยายภาพ">+</button><button data-zoom="reset">พอดีจอ</button><a id="image-original" target="_blank" rel="noopener">เปิดภาพต้นฉบับ ↗</a></div><div class="image-stage"><img id="zoom-image" alt=""></div><p id="image-caption"></p></dialog>
+</body></html>

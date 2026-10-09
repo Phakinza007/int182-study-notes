@@ -1,0 +1,334 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="INT182 Data Science and AI notes for weeks 1–9, with diagrams and key formulas"><meta name="theme-color" content="#f7f6f3"><title>Classification Performance Metrics and Evaluation Methods · INT182</title><link rel="icon" href="../favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="../style.css"><script src="../app.js" defer></script></head>
+<body data-base="../" data-page="note"><a class="skip" href="#main">Skip to content</a>
+<header class="topbar"><div class="topbar-inner"><a class="brand" href="../en.html"><span class="brand-mark">182</span><span>INT182 <small>Study notes</small></span></a><nav aria-label="Main menu"><button class="search-trigger" data-search-open aria-haspopup="dialog">Search notes <kbd>/</kbd></button><a class="lang" href="w07-classification-performance-metrics.html" lang="th">ภาษาไทย</a></nav></div></header>
+<div class="reader-layout"><aside class="reader-sidebar"><details class="week-menu" open><summary>All weeks</summary><nav aria-label="Choose a week"><a href="w01-course-intro.en.html" ><span class="week-no">01</span><span>Course Introduction and Project Structure</span></a><a href="w02-ds-ai-landscape-and-tools.en.html" ><span class="week-no">02</span><span>The DS/AI Landscape (continued) and the Orange Toolkit</span></a><a href="w03-eda-and-model-fitting.en.html" ><span class="week-no">03</span><span>EDA and Model Fitting — Box Plot, Correlation, Linear Regression</span></a><a href="w04-association-rules.en.html" ><span class="week-no">04</span><span>Association Rules — Market Basket Analysis, Apriori and Support/Confidence/Lift</span></a><a href="w05-decision-trees-and-k-means.en.html" ><span class="week-no">05</span><span>Decision Trees, K-means Clustering, and the Exam 1 scope review</span></a><a href="w06-classification-and-model-validation.en.html" ><span class="week-no">06</span><span>Classification and Model Validation</span></a><a href="w07-classification-performance-metrics.en.html" aria-current="page"><span class="week-no">07</span><span>Classification Performance Metrics and Evaluation Methods</span></a><a href="w08-introduction-to-ai-and-agents.en.html" ><span class="week-no">08</span><span>Introduction to AI, Rational Agents, and PEAS</span></a><a href="w09-introduction-to-ml-and-nearest-neighbors.en.html" ><span class="week-no">09</span><span>Introduction to Machine Learning, k-NN, and AI Search</span></a></nav></details></aside><main id="main" class="reader"><div class="note-meta">WEEK 07 <span>2026-09-25</span></div><h1>Classification Performance Metrics and Evaluation Methods</h1><div class="reader-actions"><button data-read-week="7" aria-pressed="false">Mark as read</button><button data-print>Print this note</button></div><article class="prose"><blockquote>
+<p>Based on <code>INT182_Lecture7_Classification-ModelEvaluation_V4.pdf</code> (48 pages) and the G2 transcript dated 25 September 2026. References use PDF page numbers because embedded slide numbers from several sources are discontinuous. Worked results below are calculated from the slide data.</p>
+</blockquote>
+<h2 id="01-classification-and-unseen-data">01 Classification and unseen data</h2>
+<p>The training set contains attributes and known classes. A learning algorithm builds a model (<strong>induction</strong>) and applies it to new examples (<strong>deduction</strong>). The goal is accurate prediction for unseen records (PDF pp. 5–16).</p>
+<p>The Refund → Marital Status → Taxable Income example shows that several tree structures can fit the same data. For <code>Refund = No, Married, Income = 80K</code>, the tree reaches Married → <strong>Cheat = No</strong> without consulting Income.</p>
+<p>Evaluation asks three questions: which metric to use, how to estimate it reliably, and how to compare models. <em>(From the transcript)</em> The lecturer also connects these questions with time, compute budgets, and practical use.</p>
+<h2 id="02-underfitting-overfitting-and-occams-razor">02 Underfitting, overfitting, and Occam’s Razor</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Condition</th><th>Training error</th><th>Test error</th><th>Meaning</th></tr></thead><tbody><tr><td>Underfitting</td><td>High</td><td>High</td><td>Too simple to capture important patterns</td></tr><tr><td>Good generalization</td><td>Appropriately low</td><td>Close to training</td><td>Captures patterns useful for new data</td></tr><tr><td>Overfitting</td><td>Very low</td><td>Much higher than training</td><td>Fits noise or training-specific details</td></tr></tbody></table></div>
+<p>PDF pp. 20–23 illustrate overfitting from noise and insufficient examples in parts of the input space. <strong>Occam’s Razor</strong> prefers the simpler model when generalization errors are similar, since complexity increases the chance of fitting accidents in the data. Missing values and classification costs are also practical issues on p. 18.</p>
+<h2 id="03-confusion-matrix-actual-versus-predicted">03 Confusion matrix: actual versus predicted</h2>
+<p>First define the Positive class of interest. Then distinguish correct and incorrect predictions (PDF pp. 26–28).</p>
+<figure class="figure"><a href="../assets/w07-classification-performance-metrics/w7-confusion.svg" target="_blank" rel="noopener" class="diagram-link" aria-label="Enlarge image: Confusion matrix with actual rows, predicted columns, and metric denominators"><img src="../assets/w07-classification-performance-metrics/w7-confusion.svg" alt="Confusion matrix with actual rows, predicted columns, and metric denominators" loading="lazy" decoding="async"></a><figcaption>Confusion matrix with actual rows, predicted columns, and metric denominators<a href="../assets/w07-classification-performance-metrics/w7-confusion.svg" target="_blank" rel="noopener" class="diagram-link figure-open">Enlarge ↗</a></figcaption></figure>
+<ul>
+<li><mark>True Positive (TP)</mark>: actually positive, predicted positive.</li>
+<li><mark>True Negative (TN)</mark>: actually negative, predicted negative.</li>
+<li><mark>False Positive (FP)</mark>: actually negative, predicted positive — false alarm.</li>
+<li><mark>False Negative (FN)</mark>: actually positive, predicted negative — missed case.</li>
+</ul>
+<p>The 12-record exercise on p. 29 gives TP = 4, TN = 4, FP = 2, FN = 2. Accuracy, Precision, and Recall are all <strong>66.67%</strong>: 8/12 or 4/6. Their equality follows from this example's counts, not from a general rule.</p>
+<h2 id="04-interpret-the-formulas">04 Interpret the formulas</h2>
+<p>Let <code>N = TP + TN + FP + FN</code> (PDF pp. 27–28, 33–34).</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Metric</th><th>Formula</th><th>Question</th></tr></thead><tbody><tr><td>Accuracy</td><td><code>(TP + TN) / N</code></td><td>What fraction of all predictions is correct?</td></tr><tr><td>Error rate</td><td><code>(FP + FN) / N</code></td><td>What fraction is incorrect?</td></tr><tr><td>Precision</td><td><code>TP / (TP + FP)</code></td><td>Of predicted positives, how many are truly positive?</td></tr><tr><td>Recall / Sensitivity / TPR</td><td><code>TP / (TP + FN)</code></td><td>Of actual positives, how many were found?</td></tr><tr><td>Specificity / TNR</td><td><code>TN / (TN + FP)</code></td><td>Of actual negatives, how many were correctly rejected?</td></tr><tr><td>FPR</td><td><code>FP / (FP + TN)</code></td><td>Of actual negatives, how many caused false alarms?</td></tr><tr><td>FNR</td><td><code>FN / (FN + TP)</code></td><td>Of actual positives, how many were missed?</td></tr><tr><td>F1</td><td><code>2PR / (P + R)</code> or <code>2TP / (2TP + FP + FN)</code></td><td>Balance precision and recall</td></tr></tbody></table></div>
+<p><mark>F1</mark> is a harmonic mean and does not directly use TN. It therefore cannot answer every evaluation question. If a denominator is zero, report the tool's handling convention rather than treating the ratio as an ordinary value.</p>
+<h2 id="05-why-high-accuracy-can-still-hide-failure">05 Why high accuracy can still hide failure</h2>
+<p>PDF p. 30 gives 9,990 Class 0 examples and 10 Class 1 examples. Predicting Class 0 for every example achieves <strong>99.9%</strong> accuracy but finds none of Class 1. Inspect <mark>class imbalance</mark> and the types of errors.</p>
+<p>The exercise on p. 36 has TP = 90, FN = 210, FP = 140, TN = 9,560: 10,000 examples in total.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Metric</th><th>Calculation</th><th>Result</th></tr></thead><tbody><tr><td>Accuracy</td><td>9650/10000</td><td>96.50%</td></tr><tr><td>Error rate</td><td>350/10000</td><td>3.50%</td></tr><tr><td>Precision</td><td>90/230</td><td>39.13%</td></tr><tr><td>Recall / Sensitivity</td><td>90/300</td><td>30.00%</td></tr><tr><td>Specificity</td><td>9560/9700</td><td>98.56%</td></tr><tr><td>F1</td><td>180/530</td><td>33.96%</td></tr></tbody></table></div>
+<p>Accuracy looks high because negatives dominate. Recall reveals that 210 of 300 actual positives were missed. Multiple metrics expose problems hidden by a single score.</p>
+<h2 id="06-costs-and-business-goals">06 Costs and business goals</h2>
+<p>A cost matrix defines <code>C(i | j)</code> as the cost of predicting i when the actual class is j (PDF pp. 31–35). On p. 32 the costs are TP = −1, FN = 100, FP = 1, TN = 0:</p>
+<ul>
+<li>M1: TP 150, FN 40, FP 60, TN 250 → Accuracy 80%; Cost = <code>−150 + 4000 + 60 = 3910</code>.</li>
+<li>M2: TP 250, FN 45, FP 5, TN 200 → Accuracy 90%; Cost = <code>−250 + 4500 + 5 = 4255</code>.</li>
+</ul>
+<p>M2 has better overall accuracy but a higher cost under this matrix.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Concern</th><th>Useful metric</th></tr></thead><tbody><tr><td>False alarms / FP</td><td>Precision</td></tr><tr><td>Missed cases / FN</td><td>Recall</td></tr><tr><td>Balance FP and FN</td><td>F1, with Precision and Recall reported separately</td></tr><tr><td>Ranking across thresholds</td><td>ROC-AUC</td></tr><tr><td>Probability quality</td><td>Log loss — mentioned without a calculation formula</td></tr></tbody></table></div>
+<p><em>(From the transcript)</em> Customer churn and lending examples show why false alarms and missed customers need not have equal costs.</p>
+<h2 id="07-obtain-a-reliable-performance-estimate">07 Obtain a reliable performance estimate</h2>
+<p>PDF pp. 38–42 separate Training for fitting, Validation for selection, and Test for final evaluation. Results also depend on class distribution, misclassification cost, and dataset sizes.</p>
+<figure class="figure"><a href="../assets/w07-classification-performance-metrics/w7-cross-validation.svg" target="_blank" rel="noopener" class="diagram-link" aria-label="Enlarge image: Rotate a validation fold for three rounds while reserving the final test"><img src="../assets/w07-classification-performance-metrics/w7-cross-validation.svg" alt="Rotate a validation fold for three rounds while reserving the final test" loading="lazy" decoding="async"></a><figcaption>Rotate a validation fold for three rounds while reserving the final test<a href="../assets/w07-classification-performance-metrics/w7-cross-validation.svg" target="_blank" rel="noopener" class="diagram-link figure-open">Enlarge ↗</a></figcaption></figure>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Method</th><th>Procedure</th></tr></thead><tbody><tr><td>Holdout</td><td>One train/test split, such as 2/3 versus 1/3</td></tr><tr><td>Random subsampling</td><td>Repeat holdout with several random splits</td></tr><tr><td>k-fold CV</td><td>Split into k folds; train on k−1 and evaluate on the remaining fold, rotating through all</td></tr><tr><td>Leave-one-out</td><td>k = N; reserve one example for evaluation each time</td></tr><tr><td>Stratified sampling</td><td>Preserve approximate overall class proportions in subsets</td></tr><tr><td>Bootstrap</td><td>Sample with replacement, so a record may appear repeatedly</td></tr></tbody></table></div>
+<p>The p. 42 exercise has six Yes and six No examples. One <strong>stratified 3-fold</strong> allocation gives each fold two Yes and two No: <code>{1,2,3,4}</code>, <code>{6,9,5,7}</code>, <code>{10,11,8,12}</code>, using the exercise's row numbers. Rotate the evaluation fold.</p>
+<p><code>ระวัง</code> Folds used to compare settings serve as validation data. Do not repeatedly use a separate final test to choose hyperparameters.</p>
+<h2 id="08-learning-curves">08 Learning curves</h2>
+<p>A <mark>learning curve</mark> shows how accuracy changes with training sample size (PDF p. 40). Arithmetic or geometric sampling schedules produce datasets of different sizes. Small samples can introduce bias and variance into estimates, so interpret scores together with the data sampling method.</p>
+<h2 id="09-roc-thresholds-and-auc">09 ROC, thresholds, and AUC</h2>
+<p><mark>ROC</mark> shows <strong>TPR on the Y axis</strong> versus <strong>FPR on the X axis</strong> while changing the threshold (PDF pp. 44–48). These are rates, not raw TP/FP counts.</p>
+<figure class="figure"><a href="../assets/w07-classification-performance-metrics/w7-roc.svg" target="_blank" rel="noopener" class="diagram-link" aria-label="Enlarge image: Schematic ROC: the ideal point is FPR 0, TPR 1; the diagonal is a random baseline"><img src="../assets/w07-classification-performance-metrics/w7-roc.svg" alt="Schematic ROC: the ideal point is FPR 0, TPR 1; the diagonal is a random baseline" loading="lazy" decoding="async"></a><figcaption>Schematic ROC: the ideal point is FPR 0, TPR 1; the diagonal is a random baseline<a href="../assets/w07-classification-performance-metrics/w7-roc.svg" target="_blank" rel="noopener" class="diagram-link figure-open">Enlarge ↗</a></figcaption></figure>
+<ul>
+<li><code>(FPR, TPR) = (0,0)</code>: predict every example negative.</li>
+<li><code>(1,1)</code>: predict every example positive.</li>
+<li><code>(0,1)</code>: ideal point.</li>
+<li>Diagonal: random baseline.</li>
+<li><mark>AUC</mark> is the area under the ROC; ideal = 1, random baseline = 0.5.</li>
+</ul>
+<p>When two ROC curves cross, neither model may win at every FPR. Consider the operating region and actual costs. AUC summarizes overall ranking performance but does not choose a threshold for you.</p>
+<p><code>ระวัง</code> Page 45 repeats the label FN in <code>FN = 0.88</code>; the negative-class totals imply that this should be TN, while FN = 0.5 belongs to the positive class.</p>
+<h2 id="10-lecture-announcements">10 Lecture announcements</h2>
+<p><em>(From the transcript)</em> Phase 1 feedback is to be returned through the submitting group representative and used to improve Phases 2/3, especially references and system clarity. The final exam format was still under discussion in this lecture: an A4 note sheet, calculator, and printed dictionary were mentioned. W08 records the later clarification; use the latest official course announcement.</p>
+<h2 id="glossary">Glossary</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Term</th><th>Meaning</th></tr></thead><tbody><tr><td>Confusion matrix</td><td>Table comparing actual and predicted classes</td></tr><tr><td>Precision</td><td>TP/(TP+FP): true positives among predicted positives</td></tr><tr><td>Recall</td><td>TP/(TP+FN): actual positives found by the model</td></tr><tr><td>Specificity</td><td>TN/(TN+FP): actual negatives correctly rejected</td></tr><tr><td>F1</td><td>Harmonic mean of precision and recall</td></tr><tr><td>Class imbalance</td><td>Large differences in class frequencies</td></tr><tr><td>Stratified sampling</td><td>Sampling that preserves class proportions</td></tr><tr><td>Bootstrap</td><td>Sampling with replacement</td></tr><tr><td>ROC</td><td>Curve of TPR versus FPR across thresholds</td></tr><tr><td>AUC</td><td>Area under ROC summarizing ranking performance</td></tr><tr><td>Learning curve</td><td>Performance plotted against training sample size</td></tr></tbody></table></div>
+<h2 id="chapter-summary">Chapter summary</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Topic</th><th>Remember</th></tr></thead><tbody><tr><td>Confusion matrix</td><td>Define positive; distinguish actual/predicted and count TP/TN/FP/FN</td></tr><tr><td>Metrics</td><td>Read the denominator and consider error costs</td></tr><tr><td>Accuracy</td><td>Can mislead with imbalanced classes</td></tr><tr><td>Estimation</td><td>Split data, rotate folds, preserve class proportions</td></tr><tr><td>ROC-AUC</td><td>TPR versus FPR across thresholds; still choose an operating point</td></tr></tbody></table></div></article><nav class="pagination" aria-label="Previous and next notes"><a href="w06-classification-and-model-validation.en.html"><small>← Previous</small>Classification and Model Validation</a><a href="w08-introduction-to-ai-and-agents.en.html"><small>Next →</small>Introduction to AI, Rational Agents, and PEAS</a></nav></main><aside class="toc-sidebar"><nav class="toc" aria-label="On this page"><strong>On this page</strong><a href="#01-classification-and-unseen-data">01 Classification and unseen data</a><a href="#02-underfitting-overfitting-and-occams-razor">02 Underfitting, overfitting, and Occam’s Razor</a><a href="#03-confusion-matrix-actual-versus-predicted">03 Confusion matrix: actual versus predicted</a><a href="#04-interpret-the-formulas">04 Interpret the formulas</a><a href="#05-why-high-accuracy-can-still-hide-failure">05 Why high accuracy can still hide failure</a><a href="#06-costs-and-business-goals">06 Costs and business goals</a><a href="#07-obtain-a-reliable-performance-estimate">07 Obtain a reliable performance estimate</a><a href="#08-learning-curves">08 Learning curves</a><a href="#09-roc-thresholds-and-auc">09 ROC, thresholds, and AUC</a><a href="#10-lecture-announcements">10 Lecture announcements</a><a href="#glossary">Glossary</a><a href="#chapter-summary">Chapter summary</a></nav></aside></div>
+<footer class="site-footer"><span>INT182 · Data Science & AI<br>Study summaries based on course materials</span><a href="https://github.com/Phakinza007/int182-study-notes">GitHub ↗</a></footer>
+<dialog id="search-dialog" aria-labelledby="search-title"><div class="dialog-heading"><h2 id="search-title">Search the notes</h2><button data-close-dialog aria-label="Close search">×</button></div><label for="search-input">Keyword, e.g. precision, PEAS, kNN</label><input id="search-input" type="search" autocomplete="off"><p id="search-status" role="status">Type a keyword to start</p><ul id="search-results"></ul></dialog>
+<dialog id="image-dialog" aria-labelledby="image-title"><div class="dialog-heading"><h2 id="image-title">Diagram</h2><button data-close-dialog aria-label="Close image">×</button></div><div class="image-controls"><button data-zoom="out" aria-label="Zoom out">−</button><button data-zoom="in" aria-label="Zoom in">+</button><button data-zoom="reset">Fit</button><a id="image-original" target="_blank" rel="noopener">Open original ↗</a></div><div class="image-stage"><img id="zoom-image" alt=""></div><p id="image-caption"></p></dialog>
+</body></html>

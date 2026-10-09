@@ -1,0 +1,266 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="INT182 Data Science and AI notes for weeks 1–9, with diagrams and key formulas"><meta name="theme-color" content="#f7f6f3"><title>Introduction to Machine Learning, k-NN, and AI Search · INT182</title><link rel="icon" href="../favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="../style.css"><script src="../app.js" defer></script></head>
+<body data-base="../" data-page="note"><a class="skip" href="#main">Skip to content</a>
+<header class="topbar"><div class="topbar-inner"><a class="brand" href="../en.html"><span class="brand-mark">182</span><span>INT182 <small>Study notes</small></span></a><nav aria-label="Main menu"><button class="search-trigger" data-search-open aria-haspopup="dialog">Search notes <kbd>/</kbd></button><a class="lang" href="w09-introduction-to-ml-and-nearest-neighbors.html" lang="th">ภาษาไทย</a></nav></div></header>
+<div class="reader-layout"><aside class="reader-sidebar"><details class="week-menu" open><summary>All weeks</summary><nav aria-label="Choose a week"><a href="w01-course-intro.en.html" ><span class="week-no">01</span><span>Course Introduction and Project Structure</span></a><a href="w02-ds-ai-landscape-and-tools.en.html" ><span class="week-no">02</span><span>The DS/AI Landscape (continued) and the Orange Toolkit</span></a><a href="w03-eda-and-model-fitting.en.html" ><span class="week-no">03</span><span>EDA and Model Fitting — Box Plot, Correlation, Linear Regression</span></a><a href="w04-association-rules.en.html" ><span class="week-no">04</span><span>Association Rules — Market Basket Analysis, Apriori and Support/Confidence/Lift</span></a><a href="w05-decision-trees-and-k-means.en.html" ><span class="week-no">05</span><span>Decision Trees, K-means Clustering, and the Exam 1 scope review</span></a><a href="w06-classification-and-model-validation.en.html" ><span class="week-no">06</span><span>Classification and Model Validation</span></a><a href="w07-classification-performance-metrics.en.html" ><span class="week-no">07</span><span>Classification Performance Metrics and Evaluation Methods</span></a><a href="w08-introduction-to-ai-and-agents.en.html" ><span class="week-no">08</span><span>Introduction to AI, Rational Agents, and PEAS</span></a><a href="w09-introduction-to-ml-and-nearest-neighbors.en.html" aria-current="page"><span class="week-no">09</span><span>Introduction to Machine Learning, k-NN, and AI Search</span></a></nav></details></aside><main id="main" class="reader"><div class="note-meta">WEEK 09 <span>2026-10-07</span></div><h1>Introduction to Machine Learning, k-NN, and AI Search</h1><div class="reader-actions"><button data-read-week="9" aria-pressed="false">Mark as read</button><button data-print>Print this note</button></div><article class="prose"><blockquote>
+<p>Based on <code>INT182_Lecture9_IntroML_UnivToronto.pdf</code> (49 pages; references use the original printed slide numbers 1–55) and the <strong>G1 lecture dated 7 October 2026</strong>. The recording includes project guidance and AI Search before ML. The final ASR section is heavily distorted, so detailed k-NN content follows the slides. This summary covers the supplied deck without claiming every slide was taught that day. Transcript-only material is labeled.</p>
+</blockquote>
+<h2 id="01-phase-2-evidence-of-progress">01 Phase 2: evidence of progress</h2>
+<p><em>(From the transcript)</em> Show a pipeline capable of delivering an output and progress since Phase 1: data sources/counts/labeling responsibility, selected models, implemented code/modules, a test plan, and references. Image projects should show actual examples; text projects should explain labeling criteria.</p>
+<p>Pretrained models or APIs are acceptable when appropriate to the scope. Document the <strong>model name, version, and prompt format</strong>, plus the architecture showing frontend/cloud processing and reasons for the choices.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>G1 lecture announcement</th><th>Detail</th></tr></thead><tbody><tr><td>Presentation file submission</td><td>21 October 2026; no clear closing time in the transcript</td></tr><tr><td>Presentation</td><td>22 October 2026, 13:00–18:00; room to be announced</td></tr><tr><td>Time per team</td><td>About 8 minutes presenting + 2–3 minutes of questions</td></tr><tr><td>Order</td><td>Randomized and announced on the evening of 20 October</td></tr><tr><td>Version</td><td>Present the file submitted on 21 October</td></tr></tbody></table></div>
+<p><code>ระวัง</code> This recording is from G1. Check Teams/LEB2 and the G2 conditions before applying these dates to your group.</p>
+<h2 id="02-ai-search-represent-states-and-actions">02 AI Search: represent states and actions</h2>
+<p><em>(From the transcript around 1:45–2:20; absent from the ML PDF)</em> Sliding 15-puzzle and route-finding examples use:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Component</th><th>Meaning</th></tr></thead><tbody><tr><td>State</td><td>Current configuration of the problem</td></tr><tr><td>Initial state</td><td>Starting point for finding a solution</td></tr><tr><td>Actions</td><td>Choices available in a state, such as moving a tile</td></tr><tr><td>Transition model</td><td><code>result(s, a)</code> returns the state after action a in state s</td></tr><tr><td>Goal test</td><td>Check whether the goal condition is satisfied</td></tr><tr><td>Path cost</td><td>Total cost of a sequence of actions</td></tr></tbody></table></div>
+<figure class="figure"><a href="../assets/w09-introduction-to-ml-and-nearest-neighbors/w9-search.svg" target="_blank" rel="noopener" class="diagram-link" aria-label="Enlarge image: Search represents a current state, action, transition, goal test, and path cost"><img src="../assets/w09-introduction-to-ml-and-nearest-neighbors/w9-search.svg" alt="Search represents a current state, action, transition, goal test, and path cost" loading="lazy" decoding="async"></a><figcaption>Search represents a current state, action, transition, goal test, and path cost<a href="../assets/w09-introduction-to-ml-and-nearest-neighbors/w9-search.svg" target="_blank" rel="noopener" class="diagram-link figure-open">Enlarge ↗</a></figcaption></figure>
+<p>A solution is a <strong>sequence of actions</strong> from the initial state to a goal. Among several solutions, the lowest path cost may be preferred. Breadth-first, depth-first, and heuristics are mentioned, but distorted transcription prevents reliably adding detailed pseudocode or guarantees from this recording.</p>
+<h2 id="03-what-is-machine-learning">03 What is machine learning?</h2>
+<p>Slides 11–15 describe learning using <mark>Task (T)</mark>, <mark>Experience (E)</mark>, and <mark>Performance measure (P)</mark>. A program learns when its performance at T, measured by P, improves with E.</p>
+<p>Recognition and speech are slide examples where hand-written rules cannot easily cover all cases. ML instead lets an algorithm learn behavior from data/experience, useful for changing environments and complex patterns.</p>
+<p>AI also includes symbolic reasoning, rule-based systems, and tree search, so not every AI system learns. ML overlaps with statistics; the slides emphasize predictive performance, scalability, and autonomy.</p>
+<h2 id="04-learning-types-and-applications">04 Learning types and applications</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Type</th><th>Learning signal</th><th>Objective</th></tr></thead><tbody><tr><td>Supervised</td><td>Examples with labels</td><td>Predict outputs for new inputs</td></tr><tr><td>Unsupervised</td><td>Data without labels</td><td>Find interesting patterns/structure</td></tr><tr><td>Reinforcement</td><td>Agent-world interaction with rewards</td><td>Choose behavior yielding higher rewards</td></tr></tbody></table></div>
+<p>Slides 16–23 illustrate computer vision, speech-to-text, NLP, games, and recommender systems, alongside history from perceptrons to probabilistic methods and deep learning. A task can combine several approaches; data modality alone does not determine the learning type.</p>
+<h2 id="05-ml-workflow">05 ML workflow</h2>
+<figure class="figure"><a href="../assets/w09-introduction-to-ml-and-nearest-neighbors/w9-workflow.svg" target="_blank" rel="noopener" class="diagram-link" aria-label="Enlarge image: ML workflow from framing the problem through data, baseline, model, optimization, and error analysis"><img src="../assets/w09-introduction-to-ml-and-nearest-neighbors/w9-workflow.svg" alt="ML workflow from framing the problem through data, baseline, model, optimization, and error analysis" loading="lazy" decoding="async"></a><figcaption>ML workflow from framing the problem through data, baseline, model, optimization, and error analysis<a href="../assets/w09-introduction-to-ml-and-nearest-neighbors/w9-workflow.svg" target="_blank" rel="noopener" class="diagram-link figure-open">Enlarge ↗</a></figcaption></figure>
+<p>Slide 26 orders the process: decide whether ML is needed → gather/organize data → establish a <mark>baseline</mark> → choose model/loss/regularization → optimize → search hyperparameters → analyze performance and mistakes, then revisit the model or data.</p>
+<p>Slide 24 recommends trying basic methods such as Logistic Regression before complex neural networks. Slides 27–28 explain that NumPy/vectorization and frameworks help computation, while debugging still requires understanding algorithms and their mathematics.</p>
+<h2 id="06-input-vectors-and-targets">06 Input vectors and targets</h2>
+<p>Represent input as a vector <code>x ∈ R^d</code> so linear algebra applies. Images can use raw pixels or meaningful features (slides 30–34).</p>
+<p>Write the training set as <code>{(x^(1), t^(1)), ..., (x^(N), t^(N))}</code>. Superscripts are <strong>example indices, not powers</strong>.</p>
+<ul>
+<li>Regression: t is real-valued.</li>
+<li>Classification: t belongs to the class set <code>{1, ..., C}</code>.</li>
+<li>Other tasks may have structured targets such as captions or images.</li>
+</ul>
+<p>A useful representation makes proximity in feature space relevant to the task. Otherwise nearest examples can be numerically close without sharing the desired meaning.</p>
+<h2 id="07-1-nearest-neighbor">07 1-Nearest Neighbor</h2>
+<p>For a new input x, find the nearest training example and copy its label (slides 35–39).</p>
+<p><code>x* = argmin distance(x^(i), x)</code> and <code>prediction = t*</code>.</p>
+<p>Euclidean distance is <code>sqrt(sum_j((x_j - z_j)^2))</code>. If only distance ordering matters, the square root is unnecessary because it preserves the order of nonnegative values.</p>
+<p>A decision boundary separates regions assigned to different classes. 1-NN can be visualized using Voronoi regions, but is sensitive to noise and incorrect labels.</p>
+<h2 id="08-k-nn-and-majority-voting">08 k-NN and majority voting</h2>
+<p>Reduce 1-NN sensitivity by finding the <strong>k nearest examples</strong> and voting on their labels (slides 39–41).</p>
+<figure class="figure"><a href="../assets/w09-introduction-to-ml-and-nearest-neighbors/w9-knn.svg" target="_blank" rel="noopener" class="diagram-link" aria-label="Enlarge image: Schematic: k 3 gives two red votes and one blue; k 5 gives three blue and two red"><img src="../assets/w09-introduction-to-ml-and-nearest-neighbors/w9-knn.svg" alt="Schematic: k 3 gives two red votes and one blue; k 5 gives three blue and two red" loading="lazy" decoding="async"></a><figcaption>Schematic: k 3 gives two red votes and one blue; k 5 gives three blue and two red<a href="../assets/w09-introduction-to-ml-and-nearest-neighbors/w9-knn.svg" target="_blank" rel="noopener" class="diagram-link figure-open">Enlarge ↗</a></figcaption></figure>
+<p>This redrawn illustration explains the principle; it is not a measured model result. At k = 3, two red and one blue votes predict red. At k = 5, three blue and two red predict blue. Changing k can change predictions and boundary smoothness.</p>
+<h2 id="09-choose-k-using-validation">09 Choose k using validation</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>k</th><th>Behavior</th><th>Risk</th></tr></thead><tbody><tr><td>Small</td><td>Captures fine details</td><td>Overfitting / noise sensitivity</td></tr><tr><td>Large</td><td>Averages more examples for stability</td><td>Underfitting / missing important patterns</td></tr></tbody></table></div>
+<p>Slide 42 gives the rule of thumb <code>k &#x3C; sqrt(N)</code>, but a suitable value depends on the data. Choose it with a <mark>validation set</mark> (slide 44), then use the <strong>test set only at the end after selecting the configuration</strong> to measure generalization. Do not repeatedly select k using test scores.</p>
+<h2 id="10-the-curse-of-dimensionality">10 The curse of dimensionality</h2>
+<p>In high dimensions, most points are far apart and their distances can become similar. Obtaining genuinely close neighbors requires rapidly increasing amounts of data. Slides 45–47 illustrate covering a space with approximately <code>(1/ε)^d</code> regions.</p>
+<p>Data may have a lower <mark>intrinsic dimension</mark> than the recorded feature count: megapixel images can lie near a manifold with far fewer degrees of freedom. Neighborhood structure also depends on this intrinsic dimension.</p>
+<h2 id="11-feature-scaling">11 Feature scaling</h2>
+<p>Nearest neighbors are sensitive to feature ranges: a large-unit feature may dominate distance. Slide 48 uses zero mean and unit variance:</p>
+<p><code>x_tilde_j = (x_j - μ_j) / σ_j</code>.</p>
+<p>This is <mark>standardization</mark>, although the slide heading says Normalization. It differs from the 0–1 min–max scaling in W05. The slide cautions that scale may carry meaning in some problems, so consider feature semantics before transforming it.</p>
+<h2 id="12-computational-cost-and-examples">12 Computational cost and examples</h2>
+<p>Slide 49 describes naive k-NN with N examples and D features:</p>
+<ul>
+<li>“Training” has no model-fitting optimization, but the dataset must be stored.</li>
+<li>Distance computation per query: <code>O(ND)</code>.</li>
+<li>Sorting all distances: <code>O(N log N)</code>.</li>
+<li>Repeat this for every query and keep the training data in memory.</li>
+</ul>
+<p>Slides 50–53 use digit recognition and Tiny Images to illustrate the value of data and a suitable similarity measure. The 0.63% versus 3% error figures belong to the cited shape-context research, not to experiments in this project.</p>
+<p>The deck concludes that k-NN is simple and its complexity is controlled by k, but it suffers from high dimensions and query costs. The source course next moves to parametric models that learn a compact summary of the data.</p>
+<h2 id="glossary">Glossary</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Term</th><th>Meaning</th></tr></thead><tbody><tr><td>Task (T)</td><td>Task the system is expected to perform</td></tr><tr><td>Experience (E)</td><td>Data or experience from which learning occurs</td></tr><tr><td>Performance measure (P)</td><td>Criterion measuring whether task performance improves</td></tr><tr><td>Baseline</td><td>Initial reference method for comparison</td></tr><tr><td>Input vector</td><td>Representation of an input using d features</td></tr><tr><td>Decision boundary</td><td>Boundary separating regions assigned to different classes</td></tr><tr><td>k-NN</td><td>Find k nearest examples and combine their outputs</td></tr><tr><td>Intrinsic dimension</td><td>Effective degrees of freedom in the data structure</td></tr><tr><td>Standardization</td><td>Scale features using (x−mean)/standard deviation</td></tr><tr><td>Transition model</td><td>Rule mapping a state and action to the resulting state</td></tr><tr><td>Path cost</td><td>Total cost of the actions along a solution path</td></tr></tbody></table></div>
+<h2 id="chapter-summary">Chapter summary</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Topic</th><th>Key idea</th></tr></thead><tbody><tr><td>ML</td><td>Performance on T measured by P improves with E</td></tr><tr><td>Search</td><td>Represent states/actions/transition/goal/cost from the transcript segment</td></tr><tr><td>k-NN</td><td>Represent → distance → k neighbors → vote</td></tr><tr><td>Choose k</td><td>Use validation; reserve final testing until choices are complete</td></tr><tr><td>Pitfalls</td><td>Noise, high dimensions, scale, and query cost</td></tr><tr><td>Phase 2</td><td>G1 recording gives submission 21 Oct/presentation 22 Oct; verify group announcement</td></tr></tbody></table></div></article><nav class="pagination" aria-label="Previous and next notes"><a href="w08-introduction-to-ai-and-agents.en.html"><small>← Previous</small>Introduction to AI, Rational Agents, and PEAS</a><span></span></nav></main><aside class="toc-sidebar"><nav class="toc" aria-label="On this page"><strong>On this page</strong><a href="#01-phase-2-evidence-of-progress">01 Phase 2: evidence of progress</a><a href="#02-ai-search-represent-states-and-actions">02 AI Search: represent states and actions</a><a href="#03-what-is-machine-learning">03 What is machine learning?</a><a href="#04-learning-types-and-applications">04 Learning types and applications</a><a href="#05-ml-workflow">05 ML workflow</a><a href="#06-input-vectors-and-targets">06 Input vectors and targets</a><a href="#07-1-nearest-neighbor">07 1-Nearest Neighbor</a><a href="#08-k-nn-and-majority-voting">08 k-NN and majority voting</a><a href="#09-choose-k-using-validation">09 Choose k using validation</a><a href="#10-the-curse-of-dimensionality">10 The curse of dimensionality</a><a href="#11-feature-scaling">11 Feature scaling</a><a href="#12-computational-cost-and-examples">12 Computational cost and examples</a><a href="#glossary">Glossary</a><a href="#chapter-summary">Chapter summary</a></nav></aside></div>
+<footer class="site-footer"><span>INT182 · Data Science & AI<br>Study summaries based on course materials</span><a href="https://github.com/Phakinza007/int182-study-notes">GitHub ↗</a></footer>
+<dialog id="search-dialog" aria-labelledby="search-title"><div class="dialog-heading"><h2 id="search-title">Search the notes</h2><button data-close-dialog aria-label="Close search">×</button></div><label for="search-input">Keyword, e.g. precision, PEAS, kNN</label><input id="search-input" type="search" autocomplete="off"><p id="search-status" role="status">Type a keyword to start</p><ul id="search-results"></ul></dialog>
+<dialog id="image-dialog" aria-labelledby="image-title"><div class="dialog-heading"><h2 id="image-title">Diagram</h2><button data-close-dialog aria-label="Close image">×</button></div><div class="image-controls"><button data-zoom="out" aria-label="Zoom out">−</button><button data-zoom="in" aria-label="Zoom in">+</button><button data-zoom="reset">Fit</button><a id="image-original" target="_blank" rel="noopener">Open original ↗</a></div><div class="image-stage"><img id="zoom-image" alt=""></div><p id="image-caption"></p></dialog>
+</body></html>

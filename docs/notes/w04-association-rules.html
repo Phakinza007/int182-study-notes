@@ -1,0 +1,991 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="สรุป INT182 Data Science และ AI สัปดาห์ 1–9 พร้อมไดอะแกรมและสูตรสำคัญ"><meta name="theme-color" content="#f7f6f3"><title>Association Rules — Market Basket Analysis, Apriori และ Support/Confidence/Lift · INT182</title><link rel="icon" href="../favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="../style.css"><script src="../app.js" defer></script></head>
+<body data-base="../" data-page="note"><a class="skip" href="#main">ข้ามไปเนื้อหา</a>
+<header class="topbar"><div class="topbar-inner"><a class="brand" href="../index.html"><span class="brand-mark">182</span><span>INT182 <small>Study notes</small></span></a><nav aria-label="เมนูหลัก"><button class="search-trigger" data-search-open aria-haspopup="dialog">ค้นหาเนื้อหา <kbd>/</kbd></button><a class="lang" href="w04-association-rules.en.html" lang="en">English</a></nav></div></header>
+<div class="reader-layout"><aside class="reader-sidebar"><details class="week-menu" open><summary>ทุกสัปดาห์</summary><nav aria-label="เลือกสัปดาห์"><a href="w01-course-intro.html" ><span class="week-no">01</span><span>แนะนำวิชา + โครงสร้างโปรเจกต์</span></a><a href="w02-ds-ai-landscape-and-tools.html" ><span class="week-no">02</span><span>ภาพรวม DS/AI (ต่อ) + เครื่องมือ Orange</span></a><a href="w03-eda-and-model-fitting.html" ><span class="week-no">03</span><span>EDA และ Model Fitting — Box Plot, Correlation, Linear Regression</span></a><a href="w04-association-rules.html" aria-current="page"><span class="week-no">04</span><span>Association Rules — Market Basket Analysis, Apriori และ Support/Confidence/Lift</span></a><a href="w05-decision-trees-and-k-means.html" ><span class="week-no">05</span><span>Decision Trees, K-means Clustering และการทวนขอบเขต Exam 1</span></a><a href="w06-classification-and-model-validation.html" ><span class="week-no">06</span><span>Classification และการตรวจสอบโมเดล</span></a><a href="w07-classification-performance-metrics.html" ><span class="week-no">07</span><span>Classification Performance Metrics และการเลือกวิธีประเมิน</span></a><a href="w08-introduction-to-ai-and-agents.html" ><span class="week-no">08</span><span>พื้นฐาน AI, Rational Agents และ PEAS</span></a><a href="w09-introduction-to-ml-and-nearest-neighbors.html" ><span class="week-no">09</span><span>พื้นฐาน Machine Learning, k-NN และ AI Search</span></a></nav></details></aside><main id="main" class="reader"><div class="note-meta">WEEK 04 <span>2026-08-26</span></div><h1>Association Rules — Market Basket Analysis, Apriori และ Support/Confidence/Lift</h1><div class="reader-actions"><button data-read-week="4" aria-pressed="false">ทำเครื่องหมายว่าอ่านแล้ว</button><button data-print>พิมพ์บทนี้</button></div><article class="prose"><blockquote>
+<p>Group 1 (พุธ 9.30-12.30 @ LX 12/2) — สรุปจากสไลด์ <code>Association rules.pdf</code> (19 หน้า, อ.พรชัย มงคลนาม) เป็นโครงหลัก เสริมด้วยสิ่งที่อาจารย์พูดเพิ่มจาก transcript ของคาบ (<code>INT182_G1_20260826.docx</code>)</p>
+<p>⚠️ <strong>หมายเหตุเรื่องกลุ่ม: ไฟล์นี้สรุปจาก transcript ของกลุ่ม 1 (พุธ 26 ส.ค.)</strong> ซึ่งเรียนก่อนกลุ่ม 2 (ศุกร์ 28 ส.ค.) สองวัน เนื้อหาตามหลักสูตรเป็นสัปดาห์เดียวกัน แต่ลำดับการนำเสนอและกำหนดส่งของกลุ่ม 2 อาจไม่ตรงกัน ให้ยืนยันในคาบของตัวเองอีกครั้ง</p>
+<p>⚠️ transcript เป็นคำถอดเสียงอัตโนมัติ คุณภาพต่ำมากในหลายช่วง — ส่วนที่มาจาก transcript อย่างเดียวจะระบุว่า <em>(จาก transcript)</em></p>
+<p>คาบนี้แบ่งเป็น 2 ครึ่ง: ครึ่งแรกเป็นการนำเสนอไอเดียโปรเจกต์ทีมละ 3–5 นาที + feedback จากอาจารย์ ครึ่งหลังเริ่มสไลด์ชุดที่ 3 คือ Association Rules — เรียนไปได้ประมาณสไลด์ที่ 14 แล้วหมดเวลา จะต่อสัปดาห์หน้า</p>
+</blockquote>
+<h2 id="agenda">Agenda</h2>
+<ol>
+<li>รูปแบบการนำเสนอไอเดียโปรเจกต์</li>
+<li>บทเรียนจาก feedback การนำเสนอโปรเจกต์</li>
+<li>นำ feedback มาใช้กับ SnoreSenseAI</li>
+<li>Association Rules คืออะไร</li>
+<li>Transactional data</li>
+<li>Item, itemset และ frequent itemset</li>
+<li>Apriori algorithm และ Apriori property</li>
+<li>Support</li>
+<li>Confidence</li>
+<li>Lift</li>
+<li>สูตรลัดทั้งสามตัว</li>
+<li>ตัวอย่างเต็ม — dataset 3 transaction</li>
+<li>การจัดการกับ 3-itemset</li>
+<li>แบบฝึกหัด — dataset 5 transaction</li>
+<li>งานที่สั่งและสิ่งที่ต้องเตรียม</li>
+</ol>
+<h2 id="01-รูปแบบการนำเสนอไอเดียโปรเจกต์">01 รูปแบบการนำเสนอไอเดียโปรเจกต์</h2>
+<p><em>(หัวข้อนี้มาจาก transcript ทั้งหมด)</em></p>
+<ul>
+<li>ทีมละ <strong>3–5 นาที</strong> (5 นาทีคือ maximum) อ.ชาคริดาตั้งนาฬิกาปลุกไว้ที่ <strong>4 นาที</strong> ถ้ายกมือแปลว่าให้เริ่ม wrap up</li>
+<li>มีทั้งหมดประมาณ <strong>9–10 ทีม</strong> ในกลุ่ม 1 ส่งตัวแทนขึ้นมาพูดก็ได้ หรือขึ้นมาทั้งทีมก็ได้</li>
+<li>อาจารย์ทั้งสองท่าน (อ.พรชัย + อ.ชาคริดา) ให้ comment รายทีมทันทีหลังจบการนำเสนอ</li>
+<li>ทีมละ <strong>4–5 คน</strong> ทีมที่มี 4 คนถูกขอให้เปิดรับเพื่อนที่ยังไม่มีทีมเข้ามาเพิ่ม</li>
+<li><strong>feedback ที่เขียนเป็นลายลักษณ์อักษรจะถูกโพสต์ให้วันศุกร์</strong> — ถ้าอาจารย์บอกว่าตรงไหนไม่ชัดเจน ไม่ต้องตกใจ ให้รับไปปรับให้ชัดขึ้น</li>
+<li>การนำเสนอครั้งนี้ยังไม่มีคะแนนตัดสิน เป็นการเสนอไอเดียเพื่อรับ feedback ก่อนไปทำต่อ</li>
+<li><strong>การนำเสนอครั้งที่ 2 จะมาแทนการสอบครั้งที่ 2</strong> (ไม่มีสอบครั้งที่ 2 แล้ว)</li>
+<li>ระหว่างนี้ติดต่อขอปรึกษาอาจารย์นอกรอบได้ตลอด แนะนำให้อัปเดตความคืบหน้าเรื่อย ๆ อย่าทิ้งไว้จนใกล้วันนำเสนอ</li>
+</ul>
+<h2 id="02-บทเรียนจาก-feedback-การนำเสนอโปรเจกต์">02 บทเรียนจาก feedback การนำเสนอโปรเจกต์</h2>
+<p><em>(รวบรวมจาก transcript — สรุปเป็นหลักการ ไม่ไล่ทีละกลุ่ม)</em></p>
+<h3 id="หลักการที่-1--หัวข้อต้องเจาะจง-ไม่ใช่ชื่อเทคโนโลยีลอย-ๆ">หลักการที่ 1 — หัวข้อต้องเจาะจง ไม่ใช่ชื่อเทคโนโลยีลอย ๆ</h3>
+<p>ชื่อโปรเจกต์ที่เป็นชื่อเทคโนโลยีเฉย ๆ ถือว่า <mark>general</mark> เกินไป ต้องย่อยลงมาให้เห็น domain และกลุ่มผู้ใช้ เช่นแทนที่จะตั้งว่า "Text to Speech" ให้ตั้งว่า "Thai Text-to-Speech สำหรับผู้พิการทางการพูด"</p>
+<p>อีกจุดที่อาจารย์ชม: ทีมที่ใส่คำว่า <strong>"พยากรณ์" / "predict"</strong> ลงไปในชื่อ ทำให้กรรมการรู้ทันทีว่าอย่างน้อยต้องมีการสร้างโมเดล ทีมที่ไม่ใส่คำนี้ พอนำเสนอออกมามักเหลือแค่ภาพของ <mark>database filter</mark></p>
+<h3 id="หลักการที่-2--ต้องมีโมเดล-ไม่ใช่แค่-filter">หลักการที่ 2 — ต้องมีโมเดล ไม่ใช่แค่ filter</h3>
+<p>ประเด็นนี้อาจารย์ย้ำกับหลายทีม: ถ้าระบบทำแค่ <strong>data collection + filter</strong> (ผู้ใช้กรอกเงื่อนไข → ระบบคัดรายการที่ตรงมาให้) อันนั้น<strong>ยังไม่ถือเป็น modeling ตามแบบ data science หรือ AI</strong></p>
+<p>วิธีแก้ที่อาจารย์แนะนำคือเติมส่วนที่เป็นการทำนายเข้าไป เช่น</p>
+<ul>
+<li>จาก "ค้นหาห้องเช่าตามสเปค" → เพิ่ม <strong>regression</strong> ทำนายราคาค่าเช่าที่เหมาะสม หรือทำนายว่าถ้าตั้งราคานี้จะปล่อยเช่าได้ภายในกี่เดือน</li>
+<li>หรือถ้าไม่ทำ regression ก็ใช้ <strong>clustering</strong> จับกลุ่มห้อง/ลูกค้าแทนก็ได้ — ขอให้มี modeling สักอย่าง</li>
+<li>จาก "EDA ยอดขาย" → ต้องบอกให้ชัดว่าจะ predict อะไร เช่นควรสต๊อกสินค้าแต่ละประเภทกี่เปอร์เซ็นต์</li>
+</ul>
+<h3 id="หลักการที่-3--dataset-ต้องมี-label-หรือ-scoring-ไม่งั้น-predict-ไม่ได้">หลักการที่ 3 — dataset ต้องมี label หรือ scoring ไม่งั้น predict ไม่ได้</h3>
+<p><strong>นี่คือประเด็นที่อาจารย์ย้ำหนักที่สุดในคาบ</strong> ถ้าข้อมูลมีแต่ feature ดิบ ๆ โดยไม่มีตัวแปรเป้าหมาย (y) กำกับไว้ โมเดลจะไม่มีอะไรให้เรียนรู้</p>
+<p>ตัวอย่างจากคาบ:</p>
+<ul>
+<li>ทีมทำนายความล้า/บาดเจ็บของนักกีฬา มี feature แค่ heart rate, HRV, step count และการนอน — อาจารย์ถามว่า <strong>"ตัว training data ต้องมี score บอกว่าคนนี้ถือว่าเจ็บหรือเปล่า"</strong> เพราะคน 10 คนไปเล่นเวทคนละครึ่งชั่วโมงเท่ากัน ความล้าแต่ละคนไม่เท่ากัน ต้องมี <mark>fatigue index</mark> หรือ <mark>injury score</mark> ตั้งแต่ต้น เทียบได้กับ credit score ที่ธนาคารใช้ตัดสินใจปล่อยกู้</li>
+<li>ทีมตรวจจับการล้มของผู้สูงอายุ — ต้องมีข้อมูลทั้งฝั่ง "ล้ม" และฝั่ง "ไม่ได้ล้ม" เพราะการนอนลงบนเบาะเพื่อเล่นโยคะไม่ใช่การล้ม ถ้าไม่มีคู่เทียบโมเดลก็แยกไม่ออก</li>
+</ul>
+<blockquote>
+<p><strong>ประโยคสำคัญของอาจารย์:</strong> ถ้าคุณมี data แค่นั้น (ไม่มี label / ไม่มี level) สิ่งที่ทำได้มากที่สุดก็คือ <mark>association</mark> หรือ <mark>clustering</mark> เท่านั้น</p>
+<p>ประโยคนี้เชื่อมตรงกับเนื้อหาครึ่งหลังของคาบพอดี — association rules เป็นวิธี <strong>unsupervised</strong> ที่ใช้ได้แม้ไม่มี label</p>
+</blockquote>
+<h3 id="หลักการที่-4--ต้องมี-data-science-pipeline-ที่ชัดเจน">หลักการที่ 4 — ต้องมี data science pipeline ที่ชัดเจน</h3>
+<p>สไลด์ต้องแสดงให้เห็นเป็นแผนภาพว่า <strong>อะไรเข้า → เกิดอะไรใน process → อะไรออก</strong> หลายทีมโชว์แค่ผลลัพธ์ปลายทาง อาจารย์เลยมองไม่ออกว่าโมเดลเรียนรู้ pattern อะไร</p>
+<p>ต้องเห็นครบว่า input คืออะไร, feature engineering ทำอะไร, ใช้โมเดลอะไร (และเทียบกับโมเดลอื่นไหม เช่น logistic regression เทียบ decision tree), validation วัดด้วย metric ไหน (MAE / R²), output ที่ผู้ใช้ได้รับหน้าตาเป็นอย่างไร</p>
+<h3 id="หลักการที่-5--tech-stack-ต้องระบุชัดเป็น-diagram">หลักการที่ 5 — tech stack ต้องระบุชัดเป็น diagram</h3>
+<p>อย่าใช้เวลาทั้งหมดไปกับ rationale ว่าทำไมควรมีโปรเจกต์นี้ ในแง่ของการ <strong>pitch</strong> ต้องมี concretely ว่าจะใช้อะไรเป็น tech stack: AI component ตัวไหน, agent ตัวไหน, open source ตัวไหน — และควรทำเป็น <mark>diagram</mark> หรือ <mark>flow</mark> พร้อมไอคอนว่า engine ตัวไหนมาเสียบตรงจุดไหน</p>
+<h3 id="หลักการที่-6--ต้องมี-reference">หลักการที่ 6 — ต้องมี reference</h3>
+<p>อาจารย์ถามหา reference แทบทุกทีม เหตุผลคือ <strong>เวลา pitch project ถ้าไม่มี reference มันจะขาดความน่าเชื่อถือ แต่ถ้ามี reference ที่ทันสมัยจะดึงความมั่นใจจากผู้ฟังได้เยอะ</strong></p>
+<p>reference ที่ควรใส่มี 3 ประเภท:</p>
+<ol>
+<li><strong>Domain reference</strong> — เว็บไซต์/แหล่งข้อมูลที่น่าเชื่อถือในโดเมนนั้น เช่นถ้าทำเรื่องการลงทุนก็อ้างเว็บการเงินที่น่าเชื่อถือ</li>
+<li><strong>AI technology reference</strong> — โยงไปที่เว็บไซต์ของเครื่องมือ/โมเดลที่เอามาใช้</li>
+<li><strong>งานที่คนอื่นทำไว้แล้ว</strong> — Kaggle notebook ที่ศึกษามา, บทความ Medium, published paper ที่ค้นเจอ</li>
+</ol>
+<h3 id="หลักการที่-7--หาจุดต่างของเรา-ไม่ต้องทำทุกอย่าง">หลักการที่ 7 — หาจุดต่างของเรา ไม่ต้องทำทุกอย่าง</h3>
+<p>ถ้าเรื่องที่ทำมีคนทำอยู่แล้ว (โดยเฉพาะในไทย) ให้ไปดูว่าเขาทำอะไรอยู่ แล้วชี้ให้ชัดว่า<strong>เราจะปรับตรงไหนให้ต่างจากเขา</strong> อาจารย์ย้ำว่า "<strong>ไม่จำเป็นต้องทำทุกอย่าง</strong> ขอให้มีตัวที่คนอื่นยังไม่ทำ เพราะเวลาเราสั้น"</p>
+<h3 id="หลักการที่-8--scope-ต้องเขียนไว้ตั้งแต่-requirement">หลักการที่ 8 — scope ต้องเขียนไว้ตั้งแต่ requirement</h3>
+<p>ข้อจำกัดต่าง ๆ ต้องไม่ใช่แค่หน้า "Limitation" ท้ายสไลด์ แต่ต้องเขียนไว้ตั้งแต่ requirement ตอนแรก ตัวอย่างการ scope ที่อาจารย์แนะนำ:</p>
+<ul>
+<li>รับเฉพาะ comment ภาษาอังกฤษ, จำกัดจำนวน comment ต่อคลิป, จำกัดความยาว comment</li>
+<li>เลือก <strong>hardware platform เดียว</strong> ไม่ต้องรองรับหลายยี่ห้อ (เพราะ sensor แต่ละยี่ห้อ calibrate ต่างกัน) — ในสโคปวิชานี้ hardware data source เดียวก็พอ</li>
+<li>ทำสินค้าแค่ ~30 ชิ้นในร้านหนังสือ มจธ. แทนที่จะพยายามครอบคลุมสินค้าเป็นพันชิ้นในร้านสะดวกซื้อ</li>
+</ul>
+<p>เหตุผล: <strong>"อันนี้เป็นแค่โปรเจกต์ใน class เล็ก ๆ ไม่ใช่ commercial เราแค่ทดสอบไอเดีย"</strong></p>
+<h3 id="หลักการที่-9--ทุกทีมต้องตอบได้ว่าจะทดสอบอย่างไร">หลักการที่ 9 — ทุกทีมต้องตอบได้ว่าจะทดสอบอย่างไร</h3>
+<p>อาจารย์บอกว่า <strong>"ทุกทีมต้องลองนึกแล้วว่าจะมาบอกอาจารย์ว่ามันทำแล้ว success 70% 80% ได้ยังไง"</strong> ต้องมี test case และต้องรู้ว่าจะแบ่ง <mark>train/test</mark> อย่างไร (ซึ่งเป็นเรื่องที่ อ.พรชัยจะสอนใน data science)</p>
+<p>เกร็ดเสริม: ถ้า dataset ที่หยิบมาจาก Kaggle เป็นโปรเจกต์ที่ยัง live อยู่ จะมี <mark>live scoreboard</mark> ให้ submit โมเดลขึ้นไปแล้วได้ accuracy กลับมาทันที ทำให้พัฒนาได้เร็วขึ้นมาก — ให้ไปเช็กว่า dataset ของทีมตัวเองมีหรือเปล่า</p>
+<h3 id="หลักการที่-10--การเก็บและคุณภาพของข้อมูล">หลักการที่ 10 — การเก็บและคุณภาพของข้อมูล</h3>
+<ul>
+<li><strong>สุ่มอย่าเลือก</strong> — ถ้าข้อมูลจริงมีเป็นแสนแถวแล้วจะย่อลงมา ให้ <mark>random sample</mark> อย่าเลือก top-N เพราะการสุ่มจะรักษาพฤติกรรมตามความเป็น randomness ของข้อมูลไว้</li>
+<li><strong>เก็บให้หลากหลาย</strong> — โปรเจกต์ที่ใช้ภาพ ต้องเก็บหลายมุม หลายสภาพแสง หลายสภาพอากาศ (เช้าแดดย้อน / ฝนตก) และถ้าเป็นไปได้ควรมีภาพจากบริบทไทยด้วย ไม่ใช่ใช้แต่ dataset ต่างประเทศ</li>
+<li><strong>จริยธรรมการเก็บข้อมูล</strong> — การเก็บ dataset ที่ต้องให้คนมาแสดงพฤติกรรมจริง (เช่น ล้ม) ในงานวิจัยต้องยื่นขอ <mark>IRB</mark> จากมหาวิทยาลัยก่อน แล้วจึงหา volunteer ถ้านักศึกษาไม่ได้ขอ IRB ให้ระวังตัวเองมาก ๆ หรือเปลี่ยนไปใช้ dataset สาธารณะแทน</li>
+<li><strong>PDPA</strong> — ข้อมูลสุขภาพและข้อมูลชีวมาตร (biometric) ถือเป็น <mark>ข้อมูลอ่อนไหว</mark> ตาม PDPA จึงเก็บได้ยาก ต้องคิดเผื่อไว้</li>
+</ul>
+<h3 id="หลักการที่-11--คิดถึงเงื่อนไขในโลกจริง">หลักการที่ 11 — คิดถึงเงื่อนไขในโลกจริง</h3>
+<ul>
+<li><strong>ทำนายให้ทันเวลาที่จะแก้ไข</strong> — ทีมทำนายการลาออก อาจารย์ชี้ว่าตามกฎหมายพนักงานต้องยื่นใบลาออกล่วงหน้าอย่างน้อย 30 วัน ดังนั้นถ้าโมเดลบอกตอนที่เขายื่นไปแล้วก็สายเกินไป ต้องออกแบบให้ predict ความเสี่ยงล่วงหน้า <strong>2 เดือน</strong></li>
+<li><strong>ความปลอดภัยและ redundancy</strong> — อุปกรณ์ที่ช่วยคนตาบอดสีอ่านสัญญาณไฟจราจร ถ้าเป็นของจริงต้องมีมากกว่าหนึ่ง device เพราะถ้าเครื่องเดียวแบตหมดกลางทางจะกลายเป็นอันตราย ในสโคปวิชานี้ให้ถือเป็น <mark>prototype</mark></li>
+<li><strong>ราคา/ข้อมูลที่เปลี่ยนตามเวลา</strong> — ระบบเช็กราคาสินค้า ต้องรู้ว่าราคา standard (UPC) อาจไม่ใช่ราคาจริงในวันนั้น เพราะร้านลดราคาเฉพาะสัปดาห์ได้ ทางแก้ในสโคปคือ fix ราคาไว้ก่อน</li>
+</ul>
+<h3 id="หลักการที่-12--การออกแบบสไลด์">หลักการที่ 12 — การออกแบบสไลด์</h3>
+<ul>
+<li>ตัวหนังสือ<strong>ใหญ่ขึ้น</strong> กราฟิก<strong>น้อยลง</strong> เน้นข้อความหรือ diagram ให้ชัด และใช้พื้นที่ในสไลด์ให้เหมาะสม</li>
+<li><strong>อย่าไว้ใจ AI จนเกินไป</strong> — สไลด์ที่ generate ด้วย AI มักแน่นเกินกว่าที่คนจะอ่านทัน ทำให้ presentation ไม่ effective ต้องเอามาเบรกเองเป็นหน้า ๆ (เช่น แยกหน้า data preprocessing ออกจากหน้า modeling)</li>
+<li>ดูตัวอย่าง <strong>sample project</strong> ที่อาจารย์โพสต์ไว้ (เป็นภาษาอังกฤษ) จะเห็นว่าเขาพูดถึง use case และ engine ที่เลือกใช้ชัดเจน</li>
+</ul>
+<h2 id="03-นำ-feedback-มาใช้กับ-snoresenseai">03 นำ feedback มาใช้กับ SnoreSenseAI</h2>
+<p>เทียบ 12 หลักการข้างบนกับเด็คของเราเอง (<code>../project-phase1/SnoreSenseAI-Phase1-Pitch.pdf</code>) เพื่อเตรียมนำเสนอในคาบวันศุกร์:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>หลักการ</th><th>สถานะในเด็คปัจจุบัน</th><th>สิ่งที่ควรเตรียมตอบ</th></tr></thead><tbody><tr><td>หัวข้อเจาะจง</td><td>ชื่อโปรเจกต์ระบุ domain ชัด (snoring → sleep-disordered breathing)</td><td>เพิ่มคำที่สื่อถึงการทำนาย/คัดกรอง (flag / screen) ให้เด่นขึ้น</td></tr><tr><td>ต้องมีโมเดล ไม่ใช่ filter</td><td>มีหน้า AI components &#x26; tech stack แล้ว</td><td>ต้องอธิบายให้ชัดว่าโมเดลเรียนรู้ pattern อะไรจากเสียง ไม่ใช่แค่ตั้ง threshold ความดัง</td></tr><tr><td>dataset ต้องมี label</td><td>จุดเสี่ยงที่สุด</td><td>ต้องตอบให้ได้ว่า label มาจากไหน — มี <mark>AHI</mark> หรือ apnea event annotation ติดมากับ dataset หรือไม่ ถ้าไม่มีก็ทำ supervised ไม่ได้</td></tr><tr><td>data science pipeline</td><td>มีหน้า System architecture</td><td>ทำให้เห็น input → feature → model → output ต่อเนื่องเป็นเส้นเดียว</td></tr><tr><td>tech stack เป็น diagram</td><td>มีแล้ว</td><td>ใส่ไอคอน/ชื่อ engine ให้ตรงจุดในแผนภาพ</td></tr><tr><td>reference</td><td>มีหน้า References + cite Benjafield et al. (2019), Young et al. (1997)</td><td>ตรงตาม feedback แล้ว ควรเพิ่ม reference ฝั่ง AI technology และ Kaggle notebook ที่ศึกษามา</td></tr><tr><td>หาจุดต่าง</td><td>ยังไม่เห็นชัด</td><td>เพิ่มการเทียบกับแอปตรวจกรนที่มีอยู่แล้ว และชี้ว่าเราต่างตรงไหน</td></tr><tr><td>scope ตั้งแต่ requirement</td><td>มีหน้า Constraints &#x26; boundaries</td><td>ดี — ย้ำว่าเป็น screening ไม่ใช่ diagnosis</td></tr><tr><td>test plan</td><td>มีหน้า Evaluation &#x26; roadmap</td><td>ต้องระบุ train/test split และ metric ที่จะใช้ให้เป็นตัวเลข</td></tr><tr><td>การเก็บข้อมูล/จริยธรรม</td><td>ต้องเพิ่ม</td><td>เสียงตอนนอนเป็นข้อมูลสุขภาพ → เข้าข่าย <mark>ข้อมูลอ่อนไหวตาม PDPA</mark> ควรมีสไลด์พูดถึง</td></tr><tr><td>เงื่อนไขโลกจริง</td><td>ต้องเพิ่ม</td><td>ตอบเรื่อง false positive — การ flag ผิดทำให้คนตกใจโดยไม่จำเป็น</td></tr><tr><td>สไลด์</td><td>ตัวหนังสือใหญ่ กราฟิกน้อย</td><td>ระวังหน้า problem statement ที่มีตัวเลขเยอะ อย่าให้แน่นเกิน</td></tr></tbody></table></div>
+<h2 id="04-association-rules-คืออะไร">04 Association Rules คืออะไร</h2>
+<p><mark>Association rules</mark> (หรือ <mark>association mining</mark>) คือการสร้าง <strong>กฎความสัมพันธ์</strong> จากข้อมูล เขียนในรูป <strong>if–then</strong></p>
+<pre><code>X → Y     อ่านว่า "ถ้ามี X แล้ว มีโอกาสที่จะมี Y ด้วย"
+</code></pre>
+<ul>
+<li><strong>X</strong> เรียกว่า <mark>antecedent</mark> (ฝั่งซ้าย / left-hand side) — เป็นเซตของ item ตั้งแต่ 1 ตัวขึ้นไป</li>
+<li><strong>Y</strong> เรียกว่า <mark>consequent</mark> (ฝั่งขวา / right-hand side) — เป็นเซตของ item ตั้งแต่ 1 ตัวขึ้นไป</li>
+<li>X และ Y ต้อง <mark>disjoint</mark> คือไม่มี item ซ้ำกันเลย</li>
+</ul>
+<p>รูปแบบของกฎที่เป็นไปได้ (จากสไลด์หน้า 16):</p>
+<pre><code>A ∧ B → C
+A ∧ C → B
+B → A ∧ C
+...
+</code></pre>
+<p><strong>Market Basket Analysis (MBA)</strong> คือเทคนิค data mining ที่ใช้หาความสัมพันธ์ของสินค้าที่ถูกซื้อพร้อมกันบ่อย ๆ เป้าหมายคือขุดหา hidden pattern ในข้อมูลธุรกรรมแล้วเขียนออกมาเป็น association rules</p>
+<blockquote>
+<p><em>(จาก transcript)</em> วิธีจำชื่อของอาจารย์: MBA ตัวเดียวกับปริญญาโท Master of Business Administration ที่คนไทยสมัยก่อนชอบไปเรียนต่อกัน แต่ในวิชานี้คือ <strong>Market Basket Analysis</strong></p>
+</blockquote>
+<blockquote>
+<p><em>(จาก transcript)</em> <strong>เรื่องเล่า beer &#x26; diapers</strong> — มีการค้นพบจากข้อมูลฝั่งอเมริกาว่าผู้ชายที่ไปช้อปปิ้งช่วงเย็นวันศุกร์ ซื้อเบียร์แล้วมักจะซื้อผ้าอ้อมเด็กไปด้วย ตีความได้ว่าเป็นกลุ่มคนที่แต่งงานมีลูกเล็ก มาซื้อของให้ลูกไปพร้อมกับซื้อเบียร์ไว้ดูกีฬาของตัวเอง — เดิมทีคนคิดว่าผ้าอ้อมน่าจะเป็นแม่บ้านซื้อมากกว่า นี่คือตัวอย่างของ <strong>pattern ที่ซ่อนอยู่และไม่มีใครคาดคิด</strong> ซึ่งเป็นสิ่งที่ MBA ต้องการขุดหา</p>
+</blockquote>
+<h2 id="05-transactional-data">05 Transactional data</h2>
+<p><mark>Transactional data</mark> คือข้อมูลที่เก็บบันทึกจากธุรกรรมหรือเหตุการณ์แต่ละครั้ง คุณลักษณะสำคัญคือมัน<strong>บันทึกรายละเอียดของเหตุการณ์เดียวที่เกิดขึ้นจริงหนึ่งครั้ง</strong></p>
+<p>ตัวอย่างจากสไลด์หน้า 3 (จะกลับมาใช้อีกเป็นแบบฝึกหัด):</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>Transaction ID</th><th>Items Purchased</th></tr></thead><tbody><tr><td>1</td><td>Milk, Bread, Butter</td></tr><tr><td>2</td><td>Milk, Diapers</td></tr><tr><td>3</td><td>Bread, Butter, Diapers</td></tr><tr><td>4</td><td>Milk, Bread, Butter</td></tr><tr><td>5</td><td>Milk, Bread, Diapers</td></tr></tbody></table></div>
+<p>Total transactions: <strong>N = 5</strong></p>
+<p><em>(จาก transcript)</em> ข้อสังเกตที่อาจารย์ย้ำ:</p>
+<ul>
+<li>ข้อมูล transaction จริง ๆ จะเก็บมากกว่านี้ — ใครซื้อ ซื้ออะไร <strong>จำนวนเท่าไหร่</strong> จ่ายไปเท่าไหร่ <strong>ที่ไหน และเวลาอะไร</strong></li>
+<li><strong>timestamp สำคัญมาก</strong> เพราะเวลาทำ data mining กับข้อมูลจำนวนมาก ต้องแยกแยะได้ว่าปีที่แล้ว/เดือนที่ผ่านมา/สัปดาห์ที่ผ่านมาเป็นอย่างไร ถ้าไม่มี time stamp ก็แยกไม่ได้</li>
+<li><strong>แต่ในสโคปของ MBA เราไม่สนใจจำนวนชิ้น</strong> สนใจแค่ว่า "อะไรเกิดขึ้นพร้อมกับอะไร" เท่านั้น</li>
+<li>เพราะเก็บเป็น <mark>set</mark> จึง <strong>ไม่มีการใส่ item ซ้ำ</strong> ถ้าซื้อนม 3 กล่องก็นับเป็น Milk ตัวเดียว และ <strong>ลำดับไม่สำคัญ</strong> เพราะเซตไม่มีลำดับ</li>
+</ul>
+<h2 id="06-item-itemset-และ-frequent-itemset">06 Item, itemset และ frequent itemset</h2>
+<ul>
+<li><mark>Item</mark> = สินค้าหนึ่งประเภท เช่น Milk, Bread, Butter, Eggs, Diapers</li>
+<li><mark>Itemset</mark> = กลุ่มของ item ตั้งแต่ 1 ตัวขึ้นไปที่ปรากฏด้วยกันใน transaction เดียว
+<ul>
+<li><strong>1-itemset</strong> เช่น {Milk}</li>
+<li><strong>2-itemset</strong> เช่น {Milk, Bread}</li>
+<li><strong>3-itemset</strong> เช่น {Milk, Bread, Butter}</li>
+</ul>
+</li>
+<li><mark>Frequent itemset</mark> = itemset ที่ปรากฏใน database ของ transaction <strong>มากกว่าหรือเท่ากับ <mark>minimum support threshold</mark></strong> ที่ผู้ใช้กำหนด</li>
+</ul>
+<p><em>(จาก transcript)</em> จุดที่อาจารย์อธิบายเพิ่ม:</p>
+<ul>
+<li><strong>1-itemset อย่างเดียวใช้สร้างกฎไม่ได้</strong> เพราะการมีสินค้าประเภทเดียวไม่ได้บอกความสัมพันธ์กับสินค้าอื่น ต้องมีอย่างน้อย 2-itemset</li>
+<li>ในทางปฏิบัติ <strong>3–4 itemset กำลังพอดี</strong> ถ้าเกิน 5 ขึ้นไปจะสับสน หา pattern ยาก และไม่มีประโยชน์ ส่วนใหญ่โจทย์จะจบกันที่ 3 หรือ 4 itemset</li>
+<li>คำว่า <strong>frequency</strong> คือจำนวนครั้งที่ itemset นั้นปรากฏ ยังไม่ได้หารด้วยอะไร ส่วน <strong>support</strong> คือ frequency ที่หารด้วย N แล้ว</li>
+</ul>
+<h2 id="07-apriori-algorithm-และ-apriori-property">07 Apriori algorithm และ Apriori property</h2>
+<p><mark>Apriori algorithm</mark> เสนอครั้งแรกโดย <strong>Rakesh Agrawal และ Ramakrishnan Srikant ในปี 1994</strong> ใช้หา frequent itemset และผลิต association rules ออกมา</p>
+<p><em>(จาก transcript)</em> ชื่อ "Apriori" มาจากความหมายว่า <strong>"สิ่งที่เกิดขึ้นก่อน"</strong> — คือใช้สิ่งที่รู้จากรอบก่อนหน้ามาช่วยตัดสินใจในรอบถัดไป (อ่านออกเสียงได้หลายแบบ ไม่ต้องซีเรียส)</p>
+<h3 id="apriori-property-มี-2-ข้อ">Apriori property มี 2 ข้อ</h3>
+<p><strong>ข้อ 1 — ถ้า itemset ใด frequent แล้ว ทุก subset ของมันก็ต้อง frequent ด้วย</strong></p>
+<p>ตัวอย่างจากสไลด์: ถ้า {Bread, Butter, Milk} frequent (คือถูกซื้อพร้อมกันบ่อย) แล้วโดยตรรกะ subset ทั้งหมดของมัน คือ {Bread, Butter}, {Butter, Milk}, {Bread, Milk}, {Bread}, {Butter}, {Milk} ก็ต้อง frequent ด้วย</p>
+<p><strong>ข้อ 2 (contrapositive) — ถ้า itemset ใดไม่ frequent แล้ว ทุก superset ของมันก็ไม่ frequent ด้วย</strong></p>
+<p>ตัวอย่างจากสไลด์: ถ้าอัลกอริทึมพบว่า itemset เล็ก ๆ อย่าง {Beer, Chips} ไม่ frequent ก็สามารถ <mark>prune</mark> (ตัดทิ้ง) itemset ที่ใหญ่กว่าซึ่งมี {Beer, Chips} อยู่ข้างในได้ทันที</p>
+<p><em>(จาก transcript)</em> อาจารย์โยงกลับไปที่วิชา Discrete Mathematics: กฎข้อ 2 คือ <mark>contrapositive</mark> ของกฎข้อ 1 พอดี</p>
+<pre><code>p → q   สมมูลกับ   ¬q → ¬p
+</code></pre>
+<p>จึงแทบไม่ต้องจำอะไรใหม่เลย — กฎข้อ 2 คือกฎข้อ 1 สลับข้าง</p>
+<h3 id="ทำไมต้องมี-pruning">ทำไมต้องมี pruning</h3>
+<p><em>(จาก transcript)</em> เพราะในความเป็นจริงร้านค้ามีสินค้าเป็นพันเป็นหมื่นประเภท ถ้ามี item n ตัว จำนวน subset ทั้งหมด (power set) จะเป็น <strong>2ⁿ</strong> — ถ้า n = 1,000 ก็คือ 2^1000 ซึ่งคำนวณไม่ไหวเลย</p>
+<p>Apriori จึงใช้กฎข้อ 2 ตัดทิ้ง: <strong>อะไรที่ไม่ frequent ก็โยนทิ้ง ไม่ต้องไปขยายต่อ</strong> ประหยัดเวลาการคำนวณมหาศาล</p>
+<h3 id="ขั้นตอนการทำงาน">ขั้นตอนการทำงาน</h3>
+<pre><code>1. หา 1-itemset ทั้งหมด → คำนวณ support → ตัดตัวที่ต่ำกว่า min support ทิ้ง
+2. จับคู่เฉพาะตัวที่เหลือ เป็น 2-itemset → คำนวณ support → ตัดทิ้งอีกรอบ
+3. จับกลุ่มเฉพาะตัวที่เหลือ เป็น 3-itemset → คำนวณ support → ตัดทิ้งอีกรอบ
+4. วนไปเรื่อย ๆ จนไม่เหลือ itemset ที่ผ่านเกณฑ์ แล้วหยุด
+5. เอา frequent itemset ที่เหลือทั้งหมดไปสร้าง association rules ด้วย confidence
+</code></pre>
+<h2 id="08-support">08 Support</h2>
+<p><mark>Support</mark> ตอบคำถามว่า <strong>"itemset นี้ popular แค่ไหน"</strong></p>
+<p>$$\text{Support}(X) = \frac{\text{จำนวน transaction ที่มี } X}{\text{จำนวน transaction ทั้งหมด}}$$</p>
+<ul>
+<li>มีค่าตั้งแต่ <strong>0% ถึง 100%</strong></li>
+<li><mark>Minimum support threshold</mark> คือค่าขั้นต่ำที่ผู้ใช้ตั้งไว้เอง อะไรที่ต่ำกว่านี้ถือว่า infrequent → <strong>discard</strong> ทิ้ง</li>
+</ul>
+<p>ตัวอย่างจากตาราง 5 transaction ข้างบน:</p>
+<ul>
+<li>Support({Milk}) = 4/5 = <strong>80%</strong> (ปรากฏใน T1, T2, T4, T5)</li>
+<li>Support({Milk, Diapers}) = 2/5 = <strong>40%</strong> (ปรากฏใน T2, T5 เท่านั้น)</li>
+</ul>
+<p><em>(จาก transcript)</em> <strong>อาจารย์ย้ำว่าเวลาสอบต้องจำสูตร support และ confidence ให้ได้</strong> เพราะข้อสอบจะไม่ให้สูตรมา ต้องเขียนสูตรเองได้</p>
+<h2 id="09-confidence">09 Confidence</h2>
+<p><mark>Confidence</mark> ตอบคำถามว่า <strong>"ถ้ามี X แล้ว บ่อยแค่ไหนที่มี Y อยู่ด้วย"</strong></p>
+<p>$$\text{Confidence}(X \rightarrow Y) = \frac{\text{Support}(X, Y)}{\text{Support}(X)}$$</p>
+<p>โดย Support(X, Y) หมายถึง support ของกรณีที่ <strong>X และ Y เกิดขึ้นพร้อมกัน</strong> (X ∧ Y)</p>
+<p><em>(จาก transcript)</em> วิธีจำของอาจารย์: confidence เป็น<strong>เงื่อนไข</strong> — "ถ้ามี X แล้ว Y จะเกิดขึ้นไหม" ดังนั้น <strong>X ต้องเกิดขึ้นก่อน</strong> จึงเอา X ไปเป็นตัวหาร ส่วนตัวเศษคือกรณีที่ทั้ง X และ Y เกิดขึ้นพร้อมกัน</p>
+<p>สูตรนี้มาจาก <mark>conditional probability</mark> ที่เคยเรียนมา:</p>
+<p>$$P(B|A) = \frac{P(A \cap B)}{P(A)}$$</p>
+<h3 id="ข้อควรระวังสำคัญ--confidence-ไม่สมมาตร">ข้อควรระวังสำคัญ — Confidence ไม่สมมาตร</h3>
+<p><em>(จาก transcript — อาจารย์ย้ำเป็นเรื่องสุดท้ายก่อนหมดเวลา)</em></p>
+<p>$$\text{Confidence}(X \rightarrow Y) \neq \text{Confidence}(Y \rightarrow X)$$</p>
+<p>เหตุผล: <strong>ตัวเศษเหมือนกัน แต่ตัวหารต่างกัน</strong></p>
+<pre><code>Confidence(Milk → Bread) = Support(Milk ∧ Bread) / Support(Milk)
+Confidence(Bread → Milk) = Support(Milk ∧ Bread) / Support(Bread)
+                            ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^
+                            เหมือนกัน               ต่างกัน!
+</code></pre>
+<p>Support(X ∧ Y) กับ Support(Y ∧ X) เป็นสิ่งเดียวกัน (เพราะ "และ" สลับที่ได้) แต่ตัวหารเป็นคนละตัว ค่าที่ได้จึงไม่จำเป็นต้องเท่ากัน — <strong>"การซื้อนมแล้วซื้อขนมปัง" ไม่เหมือนกับ "การซื้อขนมปังแล้วซื้อนม"</strong></p>
+<h2 id="10-lift">10 Lift</h2>
+<p><mark>Lift</mark> ตอบคำถามว่า <strong>"ความสัมพันธ์นี้แข็งแรงกว่าความบังเอิญหรือเปล่า"</strong></p>
+<p>$$\text{Lift}(X \rightarrow Y) = \frac{\text{Confidence}(X \rightarrow Y)}{\text{Support}(Y)} = \frac{\text{Support}(X, Y)}{\text{Support}(X) \times \text{Support}(Y)}$$</p>
+<ul>
+<li>ช่วงของค่า: <strong>[0, +∞)</strong></li>
+</ul>
+<h3 id="การตีความค่า-lift">การตีความค่า Lift</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>ค่า Lift</th><th>ความหมาย</th></tr></thead><tbody><tr><td><strong>Lift > 1</strong></td><td>X และ Y เกิดขึ้นพร้อมกันบ่อยกว่าที่คาดไว้ถ้าทั้งสองเป็นอิสระต่อกัน → <strong>มีความสัมพันธ์ที่แข็งแรง</strong></td></tr><tr><td><strong>Lift = 1</strong></td><td>X และ Y เป็นอิสระต่อกัน (independent) → <strong>ไม่มีความสัมพันธ์กันเลย</strong></td></tr><tr><td><strong>Lift &#x3C; 1</strong></td><td>X และ Y มีความสัมพันธ์เชิงลบ (negatively associated) → การมีตัวหนึ่ง <strong>ลด</strong> โอกาสของอีกตัว</td></tr></tbody></table></div>
+<blockquote>
+<p>⚠️ <strong>หมายเหตุ — สไลด์หน้า 6 พิมพ์ผิด</strong> บรรทัดสุดท้ายเขียนว่า "Lift > 1: The items X and Y are negatively associated" ซึ่งขัดกับบรรทัดแรก ที่ถูกต้องคือ <strong>Lift &#x3C; 1</strong> ตามที่ระบุในตารางข้างบน</p>
+</blockquote>
+<p><em>(จาก transcript)</em> อาจารย์บอกให้ <strong>"อ่านผ่าน ๆ ได้ก่อน"</strong> สำหรับ lift ในคาบนี้ เพราะถ้าใส่มากเกินไปจะจำไม่หมด ให้จำ support กับ confidence ให้แม่นก่อนเป็นอย่างน้อย</p>
+<h2 id="11-สูตรลัดทั้งสามตัว">11 สูตรลัดทั้งสามตัว</h2>
+<p>สไลด์หน้า 7 สรุปสูตรทั้งสามในรูปที่ใช้ <strong>frequency (จำนวนครั้งดิบ ๆ)</strong> แทนที่จะใช้ support — ใช้แล้วสะดวกกว่าเวลาคำนวณด้วยมือ เพราะตัว N ตัดกันเอง</p>
+<p>สำหรับกฎ <strong>X ⟹ Y</strong>:</p>
+<p>$$\text{Support} = \frac{\text{Frequency}(X, Y)}{N}$$</p>
+<p>$$\text{Confidence} = \frac{\text{Frequency}(X, Y)}{\text{Frequency}(X)}$$</p>
+<p>$$\text{Lift} = \frac{\text{Support}}{\text{Support}(X) \times \text{Support}(Y)}$$</p>
+<p>โดย <strong>N = จำนวน transaction ทั้งหมด</strong></p>
+<p><em>(จาก transcript)</em> อาจารย์แนะนำให้จำเวอร์ชัน frequency เพราะจำง่ายกว่า และให้จำแค่ <strong>2 ตัวบน (support, confidence)</strong> ก่อน ส่วน lift ค่อยว่ากันทีหลัง</p>
+<h3 id="ขยายไปใช้กับ-3-item">ขยายไปใช้กับ 3 item</h3>
+<p>ถ้ากฎเปลี่ยนจาก X → Y เป็น X → Y ∧ Z ก็แค่<strong>เพิ่ม Z เข้าไปในทุกที่ที่มี Y</strong>:</p>
+<p>$$\text{Confidence}(X \rightarrow Y, Z) = \frac{\text{Support}(X, Y, Z)}{\text{Support}(X)}$$</p>
+<p>และถ้าเป็น A, B → C:</p>
+<p>$$\text{Confidence}(A, B \rightarrow C) = \frac{\text{Support}(A, B, C)}{\text{Support}(A, B)}$$</p>
+<h2 id="12-ตัวอย่างเต็ม--dataset-3-transaction">12 ตัวอย่างเต็ม — dataset 3 transaction</h2>
+<p>สไลด์หน้า 8–15 เดินตัวอย่างครบตั้งแต่ต้นจนจบ ทำตามได้ด้วยมือทั้งหมด</p>
+<p><strong>ข้อมูล:</strong></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>Transaction ID</th><th>Items Purchased</th></tr></thead><tbody><tr><td>T1</td><td>Milk, Bread, Butter</td></tr><tr><td>T2</td><td>Milk, Bread, Eggs</td></tr><tr><td>T3</td><td>Milk, Eggs</td></tr></tbody></table></div>
+<p><strong>เกณฑ์ที่ตั้งไว้:</strong> minimum support = <strong>50%</strong> (คือต้องปรากฏอย่างน้อย 2 จาก 3 transaction) และ minimum confidence = <strong>75%</strong></p>
+<h3 id="step-1a--นับ-1-itemset">Step 1a — นับ 1-itemset</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>1-itemset</th><th>ปรากฏใน</th><th>Support</th><th>ผล</th></tr></thead><tbody><tr><td>{Milk}</td><td>T1, T2, T3</td><td>3/3 = <strong>100%</strong></td><td>Frequent ✅</td></tr><tr><td>{Bread}</td><td>T1, T2</td><td>2/3 = <strong>67%</strong></td><td>Frequent ✅</td></tr><tr><td>{Butter}</td><td>T1</td><td>1/3 = <strong>33%</strong></td><td>Infrequent ❌ <strong>discard</strong></td></tr><tr><td>{Eggs}</td><td>T2, T3</td><td>2/3 = <strong>67%</strong></td><td>Frequent ✅</td></tr></tbody></table></div>
+<p><strong>Frequent 1-itemsets: {Milk}, {Bread}, {Eggs}</strong></p>
+<h3 id="step-1b--นับ-2-itemset">Step 1b — นับ 2-itemset</h3>
+<p>จับคู่เฉพาะตัวที่รอดจากรอบก่อน (Butter ถูกตัดไปแล้ว จึงไม่ต้องนับคู่ใด ๆ ที่มี Butter — นี่คือ Apriori property ข้อ 2 ในการทำงานจริง)</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>2-itemset</th><th>ปรากฏใน</th><th>Support</th><th>ผล</th></tr></thead><tbody><tr><td>{Milk, Bread}</td><td>T1, T2</td><td>2/3 = <strong>67%</strong></td><td>Frequent ✅</td></tr><tr><td>{Milk, Eggs}</td><td>T2, T3</td><td>2/3 = <strong>67%</strong></td><td>Frequent ✅</td></tr><tr><td>{Bread, Eggs}</td><td>T2</td><td>1/3 = <strong>33%</strong></td><td>Infrequent ❌ <strong>discard</strong></td></tr></tbody></table></div>
+<p><strong>Frequent 2-itemsets: {Milk, Bread}, {Milk, Eggs}</strong></p>
+<h3 id="step-1c--หยุดที่นี่">Step 1c — หยุดที่นี่</h3>
+<p>ต้องหยุดเพราะ <strong>ไม่มี 3-itemset ตัวไหนที่มี support ถึง 50% ได้</strong> — {Milk, Bread, Eggs} ปรากฏใน T2 เท่านั้น คือ 1/3 = <strong>33.33%</strong> ต่ำกว่าเกณฑ์</p>
+<h3 id="step-2--สร้าง-association-rules">Step 2 — สร้าง association rules</h3>
+<p>จาก frequent itemset ที่ได้ สร้างกฎ if–then แล้วเช็ก confidence กับเกณฑ์ 75%</p>
+<p><strong>จาก {Milk, Bread}:</strong></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>กฎ</th><th>การคำนวณ</th><th>Confidence</th><th>ผล</th></tr></thead><tbody><tr><td><strong>Rule 1:</strong> {Milk} → {Bread}</td><td>Support({Milk, Bread}) / Support({Milk}) = (2/3) / (3/3) = 2/3</td><td><strong>67%</strong></td><td>อ่อน ❌ <strong>discard</strong> (&#x3C; 75%)</td></tr><tr><td><strong>Rule 2:</strong> {Bread} → {Milk}</td><td>Support({Milk, Bread}) / Support({Bread}) = (2/3) / (2/3)</td><td><strong>100%</strong></td><td><strong>strong rule</strong> ✅</td></tr></tbody></table></div>
+<p>Rule 2 บอกว่า <strong>เมื่อไหร่ก็ตามที่มีคนซื้อขนมปัง เขาจะซื้อนมด้วยเสมอ</strong></p>
+<p><strong>จาก {Milk, Eggs}:</strong></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>กฎ</th><th>การคำนวณ</th><th>Confidence</th><th>ผล</th></tr></thead><tbody><tr><td><strong>Rule 3:</strong> {Milk} → {Eggs}</td><td>Support({Milk, Eggs}) / Support({Milk}) = (2/3) / (3/3) = 2/3</td><td><strong>67%</strong></td><td>อ่อน ❌ <strong>discard</strong></td></tr><tr><td><strong>Rule 4:</strong> {Eggs} → {Milk}</td><td>Support({Milk, Eggs}) / Support({Eggs}) = (2/3) / (2/3)</td><td><strong>100%</strong></td><td><strong>strong rule</strong> ✅</td></tr></tbody></table></div>
+<p>Rule 4 บอกว่า <strong>เมื่อไหร่ก็ตามที่มีคนซื้อไข่ เขาจะซื้อนมด้วยเสมอ</strong></p>
+<h3 id="กฎที่แข็งแรงสุดท้าย">กฎที่แข็งแรงสุดท้าย</h3>
+<ol>
+<li><strong>{Bread} → {Milk}</strong> (Confidence = 100%)</li>
+<li><strong>{Eggs} → {Milk}</strong> (Confidence = 100%)</li>
+</ol>
+<p>ข้อมูลนี้มีประโยชน์กับเจ้าของร้าน เช่นอาจวางนมไว้ใกล้กับโซนขนมปังและโซนไข่ เพื่อกระตุ้น <mark>impulse purchase</mark></p>
+<h3 id="ตีความด้วย-lift--บทเรียนสำคัญที่สุดของตัวอย่างนี้">ตีความด้วย Lift — บทเรียนสำคัญที่สุดของตัวอย่างนี้</h3>
+<p>สังเกตว่าทั้งสองกฎมี confidence 100% ซึ่งดูดีมาก แต่พอคำนวณ lift:</p>
+<p>$$\text{Lift}({Eggs} \rightarrow {Milk}) = \frac{\text{Confidence}}{\text{Support}({Milk})} = \frac{100%}{100%} = \mathbf{1}$$</p>
+<p>$$\text{Lift}({Bread} \rightarrow {Milk}) = \frac{100%}{100%} = \mathbf{1}$$</p>
+<p><strong>Lift = 1 พอดี แปลว่าไม่มีความสัมพันธ์กันเลย</strong></p>
+<p>เหตุผล: ที่ลูกค้าซื้อนมทุกครั้งที่ซื้อไข่ <strong>ไม่ใช่เพราะไข่กับนมเกี่ยวข้องกัน แต่เพราะเขาซื้อนมในทุก transaction อยู่แล้ว</strong> (Support({Milk}) = 100%) — confidence สูงจึงหลอกตาได้</p>
+<p>ถ้า support ของนมต่ำกว่านี้ (เช่น 50%) แล้วยังได้ lift > 1 นั่นจึงจะบอกได้ว่ามีความสัมพันธ์ที่แข็งแรงจริงและไม่ใช่ความบังเอิญ</p>
+<blockquote>
+<p><strong>นี่คือเหตุผลว่าทำไม lift จึงเป็น metric ที่สำคัญในการค้นหา pattern ที่น่าสนใจจริง ๆ</strong> — support กับ confidence อย่างเดียวไม่พอ</p>
+</blockquote>
+<h2 id="13-การจัดการกับ-3-itemset">13 การจัดการกับ 3-itemset</h2>
+<p>สไลด์หน้า 16 และ 18–19 อธิบายเรื่องนี้</p>
+<h3 id="หยุดที่-2-itemset-ได้ไหม">หยุดที่ 2-itemset ได้ไหม</h3>
+<p><strong>ได้</strong> — การหยุดที่ 2-itemset ถือว่าถูกต้องสมบูรณ์ แม้จะมี itemset ที่ใหญ่กว่าอยู่ก็ตาม เพียงแต่แปลว่าเราเลือกดูเฉพาะความสัมพันธ์แบบ <mark>pairwise</mark> เท่านั้น ถ้าต้องการ bundle ที่ซับซ้อนขึ้นค่อยไปทำ 3-itemset</p>
+<h3 id="กฎเหล็กของการสร้างกฎจาก-3-itemset">กฎเหล็กของการสร้างกฎจาก 3-itemset</h3>
+<blockquote>
+<p><strong>ทุกกฎต้องมี union ของ antecedent กับ consequent เท่ากับ itemset นั้นพอดี และทั้งสองฝั่งต้องไม่ว่าง — เมื่อสร้างกฎจาก frequent itemset ใด item ทุกตัวใน itemset นั้นต้องปรากฏในกฎ ไม่ว่าจะฝั่งซ้ายหรือฝั่งขวา ห้ามขาดตัวใดตัวหนึ่ง</strong></p>
+</blockquote>
+<p>ดังนั้นถ้า frequent itemset คือ <strong>{Milk, Bread, Butter}</strong> จะสร้างกฎได้ <strong>6 กฎ</strong>:</p>
+<p><strong>1. กฎที่มี 1 item ฝั่ง consequent (3 กฎ)</strong></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>กฎ</th><th>Confidence</th></tr></thead><tbody><tr><td><strong>Rule 1:</strong> {Milk, Bread} → {Butter}</td><td>Support(Milk, Bread, Butter) / Support(Milk, Bread)</td></tr><tr><td><strong>Rule 2:</strong> {Milk, Butter} → {Bread}</td><td>Support(Milk, Bread, Butter) / Support(Milk, Butter)</td></tr><tr><td><strong>Rule 3:</strong> {Bread, Butter} → {Milk}</td><td>Support(Milk, Bread, Butter) / Support(Bread, Butter)</td></tr></tbody></table></div>
+<p><strong>2. กฎที่มี 2 item ฝั่ง consequent (3 กฎ)</strong></p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>กฎ</th><th>Confidence</th></tr></thead><tbody><tr><td><strong>Rule 4:</strong> {Milk} → {Bread, Butter}</td><td>Support(Milk, Bread, Butter) / Support(Milk)</td></tr><tr><td><strong>Rule 5:</strong> {Bread} → {Milk, Butter}</td><td>Support(Milk, Bread, Butter) / Support(Bread)</td></tr><tr><td><strong>Rule 6:</strong> {Butter} → {Milk, Bread}</td><td>Support(Milk, Bread, Butter) / Support(Butter)</td></tr></tbody></table></div>
+<p>สังเกตว่า <strong>ตัวเศษเหมือนกันหมดทั้ง 6 กฎ</strong> คือ Support ของ 3-itemset เต็ม ๆ ต่างกันแค่ตัวหาร</p>
+<blockquote>
+<p><strong>จุดที่มักผิด:</strong> จาก 3-itemset {Milk, Bread, Butter} เรา <strong>ไม่สามารถ</strong> เขียนกฎว่า {Milk} → {Bread} ได้ เพราะ <strong>Butter หายไป</strong> — กฎนั้นเป็นกฎของ 2-itemset {Milk, Bread} ไม่ใช่ของ 3-itemset นี้</p>
+</blockquote>
+<h2 id="14-แบบฝึกหัด--dataset-5-transaction">14 แบบฝึกหัด — dataset 5 transaction</h2>
+<p>สไลด์หน้า 17 ให้ทำแบบฝึกหัดจากตาราง 5 transaction ในหัวข้อ 05 ข้างบน โจทย์คือ <strong>"Find association rules"</strong></p>
+<p><em>(จาก transcript)</em> อาจารย์ตั้งเกณฑ์ให้ทำในคาบว่า <strong>min support = 60%</strong> และ <strong>min confidence = 80%</strong> (โจทย์จริงในข้อสอบจะให้ threshold มาด้วยเสมอ ถ้าไม่ให้มาถือว่าโจทย์ยังไม่ครบ) ทำได้ไม่จบเพราะหมดเวลา — ข้างล่างนี้คือเฉลยที่ทำต่อจนจบ</p>
+<p><strong>ข้อมูล:</strong> T1 {Milk, Bread, Butter}, T2 {Milk, Diapers}, T3 {Bread, Butter, Diapers}, T4 {Milk, Bread, Butter}, T5 {Milk, Bread, Diapers} — <strong>N = 5</strong></p>
+<h3 id="step-1a--1-itemset-min-support-60--อย่างน้อย-3-จาก-5">Step 1a — 1-itemset (min support 60% = อย่างน้อย 3 จาก 5)</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>1-itemset</th><th>ปรากฏใน</th><th>Support</th><th>ผล</th></tr></thead><tbody><tr><td>{Milk}</td><td>T1, T2, T4, T5</td><td>4/5 = <strong>80%</strong></td><td>Frequent ✅</td></tr><tr><td>{Bread}</td><td>T1, T3, T4, T5</td><td>4/5 = <strong>80%</strong></td><td>Frequent ✅</td></tr><tr><td>{Butter}</td><td>T1, T3, T4</td><td>3/5 = <strong>60%</strong></td><td>Frequent ✅ (พอดีเกณฑ์)</td></tr><tr><td>{Diapers}</td><td>T2, T3, T5</td><td>3/5 = <strong>60%</strong></td><td>Frequent ✅ (พอดีเกณฑ์)</td></tr></tbody></table></div>
+<p>รอบนี้ผ่านหมดทั้ง 4 ตัว</p>
+<h3 id="step-1b--2-itemset">Step 1b — 2-itemset</h3>
+<p>จับคู่จาก 4 ตัวที่รอด ได้ทั้งหมด 6 คู่</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>2-itemset</th><th>ปรากฏใน</th><th>Support</th><th>ผล</th></tr></thead><tbody><tr><td>{Milk, Bread}</td><td>T1, T4, T5</td><td>3/5 = <strong>60%</strong></td><td>Frequent ✅</td></tr><tr><td>{Milk, Butter}</td><td>T1, T4</td><td>2/5 = <strong>40%</strong></td><td>❌ discard</td></tr><tr><td>{Milk, Diapers}</td><td>T2, T5</td><td>2/5 = <strong>40%</strong></td><td>❌ discard</td></tr><tr><td>{Bread, Butter}</td><td>T1, T3, T4</td><td>3/5 = <strong>60%</strong></td><td>Frequent ✅</td></tr><tr><td>{Bread, Diapers}</td><td>T3, T5</td><td>2/5 = <strong>40%</strong></td><td>❌ discard</td></tr><tr><td>{Butter, Diapers}</td><td>T3</td><td>1/5 = <strong>20%</strong></td><td>❌ discard</td></tr></tbody></table></div>
+<p><strong>Frequent 2-itemsets: {Milk, Bread}, {Bread, Butter}</strong></p>
+<h3 id="step-1c--3-itemset-และการ-prune">Step 1c — 3-itemset และการ prune</h3>
+<p>candidate เดียวที่ประกอบจาก 2-itemset ที่รอดได้คือ <strong>{Milk, Bread, Butter}</strong> แต่ Apriori property ข้อ 2 ตัดทิ้งได้ทันทีโดยไม่ต้องนับเลย เพราะ subset ของมันคือ <strong>{Milk, Butter} มี support แค่ 40% ซึ่งไม่ frequent</strong></p>
+<p>(ถ้านับจริงจะได้ 2/5 = 40% ยืนยันว่า prune ถูกต้อง) → <strong>ไม่มี frequent 3-itemset หยุดที่ 2-itemset</strong></p>
+<h3 id="step-2--สร้างกฎ-min-confidence-80">Step 2 — สร้างกฎ (min confidence 80%)</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>กฎ</th><th>การคำนวณ</th><th>Confidence</th><th>ผล</th></tr></thead><tbody><tr><td>{Milk} → {Bread}</td><td>60% / 80%</td><td><strong>75%</strong></td><td>❌ ไม่ผ่าน</td></tr><tr><td>{Bread} → {Milk}</td><td>60% / 80%</td><td><strong>75%</strong></td><td>❌ ไม่ผ่าน</td></tr><tr><td>{Bread} → {Butter}</td><td>60% / 80%</td><td><strong>75%</strong></td><td>❌ ไม่ผ่าน</td></tr><tr><td>{Butter} → {Bread}</td><td>60% / 60%</td><td><strong>100%</strong></td><td><strong>strong rule</strong> ✅</td></tr></tbody></table></div>
+<p><strong>กฎเดียวที่ผ่าน: {Butter} → {Bread} (Confidence = 100%)</strong></p>
+<p>สังเกตว่า {Bread} → {Butter} ได้ 75% แต่ {Butter} → {Bread} ได้ 100% ทั้งที่มาจาก itemset เดียวกัน — <strong>นี่คือตัวอย่างชัด ๆ ของความไม่สมมาตรของ confidence ที่อาจารย์ย้ำในหัวข้อ 09</strong></p>
+<h3 id="เช็ก-lift">เช็ก Lift</h3>
+<p>$$\text{Lift}({Butter} \rightarrow {Bread}) = \frac{\text{Confidence}}{\text{Support}({Bread})} = \frac{100%}{80%} = \mathbf{1.25}$$</p>
+<p><strong>Lift = 1.25 > 1</strong> แปลว่ากฎนี้มีความสัมพันธ์ที่แข็งแรงจริง ไม่ใช่ความบังเอิญ — ต่างจากตัวอย่างในหัวข้อ 12 ที่ได้ lift = 1 พอดี</p>
+<p>(lift เป็นค่าที่สมมาตร ดังนั้น Lift({Bread} → {Butter}) = 75% / 60% = 1.25 เท่ากัน แม้ confidence จะต่างกัน)</p>
+<h2 id="15-งานที่สั่งและสิ่งที่ต้องเตรียม">15 งานที่สั่งและสิ่งที่ต้องเตรียม</h2>
+<p><em>(จาก transcript)</em></p>
+<ul>
+<li><strong>การบ้านสัปดาห์นี้:</strong> อาจารย์จะอัปโหลดตัวอย่าง Association Rules แบบ advanced (เคสธุรกิจ) ขึ้น Microsoft Teams ให้ไปดูเองช่วงเสาร์–อาทิตย์ แล้วกลับมาสัปดาห์หน้าจะได้เข้าใจเร็วขึ้น</li>
+<li><strong>สัปดาห์หน้า:</strong> เรียนต่อเรื่อง Association Rules ให้จบ + <strong>ทำด้วยมือเอง แล้วเทียบผลกับที่ Orange คำนวณให้</strong> อาจารย์บอกว่าปีที่แล้วให้รุ่นพี่ทำแล้วเข้าใจดี ปีนี้ถ้าไม่ลงมือเขียนเองกลัวว่าจะไม่เข้าใจ</li>
+<li><strong>แบบฝึกหัดสไลด์หน้า 17:</strong> หา association rules จาก dataset 5 transaction (เฉลยอยู่ในหัวข้อ 14)</li>
+<li><strong>โปรเจกต์:</strong> ปรับสไลด์ตาม feedback ที่ได้รับ — feedback ที่เขียนเป็นทางการจะโพสต์ให้วันศุกร์ ระหว่างนี้ปรึกษาอาจารย์นอกรอบได้ตลอด อย่าทิ้งไว้จนใกล้วันนำเสนอครั้งที่ 2</li>
+<li><strong>การนำเสนอครั้งที่ 2 = แทนการสอบครั้งที่ 2</strong> ไม่มีสอบครั้งที่ 2 แล้ว</li>
+<li><strong>Midterm exam:</strong> ตามซิลลาบัสอยู่สัปดาห์ที่ 6 ระหว่าง <strong>7–11 กันยายน 2026</strong> (สัดส่วน 30%)</li>
+<li><strong>สำหรับกลุ่ม 2:</strong> ทีมที่ยังไม่ได้นำเสนอในกลุ่ม 1 ถูกนัดให้นำเสนอออนไลน์ภายหลังและอาจโดนตัดคะแนน — ยืนยันเงื่อนไขของกลุ่มตัวเองในคาบวันศุกร์อีกครั้ง</li>
+</ul>
+<blockquote>
+<p>📌 <strong>หมายเหตุเรื่องซิลลาบัส:</strong> ซิลลาบัสระบุว่าสัปดาห์ที่ 4 (26, 28 ส.ค.) ควรเป็น <em>Statistical Analysis, EDA, Data Visualization</em> แต่ในทางปฏิบัติเนื้อหานั้นสอนจบไปแล้วในสัปดาห์ที่ 3 คาบนี้จึงเดินหน้าไปที่ Association Rules ซึ่งอยู่นอกลำดับของซิลลาบัส (ซิลลาบัสหมายเหตุไว้ว่า "อาจมีการเปลี่ยนแปลงได้ตามความเหมาะสม")</p>
+</blockquote>
+<h2 id="อภิธานศัพท์-glossary">อภิธานศัพท์ (Glossary)</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>คำศัพท์</th><th>ความหมายโดยย่อ</th></tr></thead><tbody><tr><td>Association rules</td><td>กฎความสัมพันธ์ในรูป if–then ที่บอกว่าถ้ามี X แล้วมีโอกาสมี Y ด้วย</td></tr><tr><td>Association mining</td><td>อีกชื่อหนึ่งของการทำ association rules เป็นสาขาย่อยของ data mining</td></tr><tr><td>Market Basket Analysis (MBA)</td><td>เทคนิค data mining หาความสัมพันธ์ของสินค้าที่ถูกซื้อพร้อมกันบ่อย ๆ</td></tr><tr><td>Transactional data</td><td>ข้อมูลที่บันทึกรายละเอียดของธุรกรรมหรือเหตุการณ์เดียวที่เกิดขึ้นจริงหนึ่งครั้ง</td></tr><tr><td>Transaction ID</td><td>รหัสประจำ transaction แต่ละรายการในตารางข้อมูล</td></tr><tr><td>Item</td><td>สินค้าหรือองค์ประกอบหนึ่งประเภทใน transaction</td></tr><tr><td>Itemset</td><td>กลุ่มของ item ตั้งแต่หนึ่งตัวขึ้นไปที่ปรากฏด้วยกันใน transaction เดียว</td></tr><tr><td>k-itemset</td><td>itemset ที่มีสมาชิก k ตัว เช่น 2-itemset คือ {Milk, Bread}</td></tr><tr><td>Frequent itemset</td><td>itemset ที่มี support มากกว่าหรือเท่ากับ minimum support threshold</td></tr><tr><td>Frequency</td><td>จำนวนครั้งดิบ ๆ ที่ itemset นั้นปรากฏ ยังไม่ได้หารด้วย N</td></tr><tr><td>Support</td><td>สัดส่วนของ transaction ที่มี itemset นั้นอยู่ ตอบว่า itemset นี้ popular แค่ไหน</td></tr><tr><td>Minimum support threshold</td><td>ค่าขั้นต่ำของ support ที่ผู้ใช้ตั้งไว้เอง ต่ำกว่านี้ถือว่า infrequent</td></tr><tr><td>Confidence</td><td>สัดส่วนที่ว่าเมื่อมี X แล้วมี Y ด้วยบ่อยแค่ไหน คำนวณจาก Support(X,Y) หารด้วย Support(X)</td></tr><tr><td>Minimum confidence threshold</td><td>ค่าขั้นต่ำของ confidence ที่กฎต้องผ่านจึงจะถือว่าเป็น strong rule</td></tr><tr><td>Lift</td><td>อัตราส่วนที่บอกว่าความสัมพันธ์แข็งแรงกว่าความบังเอิญหรือไม่ มีค่าตั้งแต่ 0 ถึงอนันต์</td></tr><tr><td>Strong rule</td><td>กฎที่ confidence ผ่านเกณฑ์ขั้นต่ำที่ตั้งไว้</td></tr><tr><td>Antecedent</td><td>ฝั่งซ้ายของกฎ คือเงื่อนไข "ถ้า" ใช้สัญลักษณ์ A หรือ X</td></tr><tr><td>Consequent</td><td>ฝั่งขวาของกฎ คือผลลัพธ์ "แล้ว" ใช้สัญลักษณ์ C หรือ Y</td></tr><tr><td>Disjoint</td><td>สภาพที่ antecedent กับ consequent ไม่มี item ซ้ำกันเลย</td></tr><tr><td>Apriori algorithm</td><td>อัลกอริทึมหา frequent itemset และสร้าง association rules เสนอโดย Agrawal และ Srikant ปี 1994</td></tr><tr><td>Apriori property</td><td>คุณสมบัติสองข้อ คือถ้า itemset frequent ทุก subset ก็ frequent และถ้าไม่ frequent ทุก superset ก็ไม่ frequent</td></tr><tr><td>Contrapositive</td><td>รูปสมมูลทางตรรกศาสตร์ที่ว่า p→q เท่ากับ ¬q→¬p ใช้อธิบาย Apriori property ข้อสอง</td></tr><tr><td>Subset</td><td>เซตย่อยที่สมาชิกทุกตัวเป็นสมาชิกของเซตแม่</td></tr><tr><td>Superset</td><td>เซตที่ใหญ่กว่าซึ่งบรรจุ itemset ที่กำลังพิจารณาอยู่ข้างใน</td></tr><tr><td>Power set</td><td>เซตของทุก subset มีขนาด 2 ยกกำลัง n จึงต้องใช้ pruning ช่วยลดงานคำนวณ</td></tr><tr><td>Prune / discard</td><td>การตัด itemset ที่ไม่ frequent ทิ้ง เพื่อไม่ต้องขยายไปคำนวณ superset ของมัน</td></tr><tr><td>Impulse purchase</td><td>การซื้อโดยไม่ได้ตั้งใจล่วงหน้า เป็นเหตุผลที่ร้านค้าจัดวางสินค้าตาม association rules</td></tr><tr><td>Conditional probability</td><td>ความน่าจะเป็นแบบมีเงื่อนไข P(B</td></tr><tr><td>Label</td><td>ตัวแปรเป้าหมายที่กำกับข้อมูลไว้ ถ้าไม่มีจะทำ supervised learning ไม่ได้</td></tr><tr><td>Data science pipeline</td><td>แผนภาพที่แสดงว่าอะไรเข้า เกิดอะไรใน process และอะไรออกมาเป็นผลลัพธ์</td></tr><tr><td>Live scoreboard</td><td>กระดานคะแนนของ Kaggle ที่ส่งโมเดลขึ้นไปแล้วได้ค่าความแม่นยำกลับมาทันที</td></tr><tr><td>IRB</td><td>คณะกรรมการจริยธรรมการวิจัยในมนุษย์ ต้องขออนุมัติก่อนเก็บข้อมูลจากอาสาสมัคร</td></tr><tr><td>PDPA</td><td>กฎหมายคุ้มครองข้อมูลส่วนบุคคล ข้อมูลสุขภาพและชีวมาตรถือเป็นข้อมูลอ่อนไหว</td></tr></tbody></table></div>
+<h2 id="สรุปท้ายบท">สรุปท้ายบท</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>ประเด็น</th><th>สิ่งที่ต้องจำ</th></tr></thead><tbody><tr><td>Association rules คืออะไร</td><td>กฎ if–then รูป X → Y ที่ได้จากข้อมูล transaction — อีกชื่อคือ association mining</td></tr><tr><td>MBA</td><td>Market Basket Analysis หาสินค้าที่ถูกซื้อพร้อมกัน ตัวอย่างคลาสสิกคือ beer &#x26; diapers</td></tr><tr><td>Transactional data</td><td>บันทึกเหตุการณ์เดียวหนึ่งครั้ง ควรมี timestamp — แต่ใน MBA ไม่สนใจจำนวนชิ้นและลำดับ</td></tr><tr><td>Itemset</td><td>เป็น set จึงไม่ซ้ำและไม่มีลำดับ — 1-itemset ใช้สร้างกฎไม่ได้ ต้องอย่างน้อย 2-itemset</td></tr><tr><td>ในทางปฏิบัติ</td><td>3–4 itemset กำลังพอดี เกิน 5 ขึ้นไปหา pattern ยากและไม่มีประโยชน์</td></tr><tr><td>Apriori property ข้อ 1</td><td>ถ้า itemset frequent → ทุก subset ก็ frequent</td></tr><tr><td>Apriori property ข้อ 2</td><td>ถ้า itemset ไม่ frequent → ทุก superset ก็ไม่ frequent (contrapositive ของข้อ 1)</td></tr><tr><td>ทำไมต้อง prune</td><td>power set มีขนาด 2ⁿ ถ้าสินค้ามีพันประเภทจะคำนวณไม่ไหว ต้องตัดตัวที่ไม่ frequent ทิ้งทันที</td></tr><tr><td>ขั้นตอน Apriori</td><td>1-itemset → ตัดทิ้ง → 2-itemset → ตัดทิ้ง → 3-itemset → ตัดทิ้ง → หยุดเมื่อไม่เหลือ</td></tr><tr><td><strong>สูตร Support</strong></td><td><strong>Support(X) = จำนวน transaction ที่มี X ÷ จำนวน transaction ทั้งหมด</strong></td></tr><tr><td><strong>สูตร Confidence</strong></td><td><strong>Confidence(X→Y) = Support(X,Y) ÷ Support(X)</strong> — มาจาก conditional probability</td></tr><tr><td>สูตร Lift</td><td>Lift(X→Y) = Confidence(X→Y) ÷ Support(Y) = Support(X,Y) ÷ [Support(X) × Support(Y)]</td></tr><tr><td>ที่ออกสอบแน่</td><td>อาจารย์ย้ำว่า<strong>ต้องเขียนสูตร support และ confidence ได้เอง</strong> ข้อสอบไม่ให้สูตรมา ส่วน lift อ่านผ่านก่อนได้</td></tr><tr><td>ตีความ Lift</td><td>> 1 สัมพันธ์แข็งแรง, = 1 เป็นอิสระต่อกัน, &#x3C; 1 สัมพันธ์เชิงลบ (สไลด์หน้า 6 พิมพ์ผิดเป็น > 1)</td></tr><tr><td>กับดักของ confidence สูง</td><td>ตัวอย่างในสไลด์ได้ confidence 100% แต่ lift = 1 พอดี เพราะนมอยู่ในทุก transaction อยู่แล้ว — จึงต้องดู lift ด้วยเสมอ</td></tr><tr><td>Confidence ไม่สมมาตร</td><td>Confidence(X→Y) ≠ Confidence(Y→X) เพราะตัวเศษเหมือนกันแต่ตัวหารคนละตัว</td></tr><tr><td>กฎจาก 3-itemset</td><td>ได้ 6 กฎ (3 แบบ consequent 1 ตัว + 3 แบบ consequent 2 ตัว) ทุก item ต้องอยู่ในกฎครบ ห้ามขาด</td></tr><tr><td>หยุดที่ 2-itemset</td><td>ทำได้และถูกต้อง แค่แปลว่าเลือกดูเฉพาะความสัมพันธ์แบบ pairwise</td></tr><tr><td>ผลตัวอย่างในสไลด์</td><td>min sup 50%, min conf 75% → strong rules คือ {Bread}→{Milk} และ {Eggs}→{Milk} ทั้งคู่ confidence 100%</td></tr><tr><td>ผลแบบฝึกหัด 5 transaction</td><td>min sup 60%, min conf 80% → strong rule เดียวคือ {Butter}→{Bread} confidence 100%, lift 1.25</td></tr><tr><td>feedback โปรเจกต์ที่ย้ำที่สุด</td><td>dataset <strong>ต้องมี label หรือ scoring</strong> ไม่งั้น predict ไม่ได้ — เหลือแค่ทำ association หรือ clustering เท่านั้น</td></tr><tr><td>feedback รองลงมา</td><td>ต้องมี modeling ไม่ใช่แค่ filter, ต้องมี data science pipeline ที่ชัด, ต้องมี reference, ต้องบอกได้ว่าจะทดสอบอย่างไร</td></tr><tr><td>งานที่ต้องทำ</td><td>ดูตัวอย่าง advanced ที่อาจารย์อัปขึ้น Teams ช่วงเสาร์–อาทิตย์ + สัปดาห์หน้าคำนวณด้วยมือเทียบกับ Orange</td></tr></tbody></table></div></article><nav class="pagination" aria-label="บทก่อนหน้าและถัดไป"><a href="w03-eda-and-model-fitting.html"><small>← บทก่อนหน้า</small>EDA และ Model Fitting — Box Plot, Correlation, Linear Regression</a><a href="w05-decision-trees-and-k-means.html"><small>บทถัดไป →</small>Decision Trees, K-means Clustering และการทวนขอบเขต Exam 1</a></nav></main><aside class="toc-sidebar"><nav class="toc" aria-label="สารบัญบทนี้"><strong>ในบทนี้</strong><a href="#agenda">Agenda</a><a href="#01-รูปแบบการนำเสนอไอเดียโปรเจกต์">01 รูปแบบการนำเสนอไอเดียโปรเจกต์</a><a href="#02-บทเรียนจาก-feedback-การนำเสนอโปรเจกต์">02 บทเรียนจาก feedback การนำเสนอโปรเจกต์</a><a href="#03-นำ-feedback-มาใช้กับ-snoresenseai">03 นำ feedback มาใช้กับ SnoreSenseAI</a><a href="#04-association-rules-คืออะไร">04 Association Rules คืออะไร</a><a href="#05-transactional-data">05 Transactional data</a><a href="#06-item-itemset-และ-frequent-itemset">06 Item, itemset และ frequent itemset</a><a href="#07-apriori-algorithm-และ-apriori-property">07 Apriori algorithm และ Apriori property</a><a href="#08-support">08 Support</a><a href="#09-confidence">09 Confidence</a><a href="#10-lift">10 Lift</a><a href="#11-สูตรลัดทั้งสามตัว">11 สูตรลัดทั้งสามตัว</a><a href="#12-ตัวอย่างเต็ม--dataset-3-transaction">12 ตัวอย่างเต็ม — dataset 3 transaction</a><a href="#13-การจัดการกับ-3-itemset">13 การจัดการกับ 3-itemset</a><a href="#14-แบบฝึกหัด--dataset-5-transaction">14 แบบฝึกหัด — dataset 5 transaction</a><a href="#15-งานที่สั่งและสิ่งที่ต้องเตรียม">15 งานที่สั่งและสิ่งที่ต้องเตรียม</a><a href="#อภิธานศัพท์-glossary">อภิธานศัพท์ (Glossary)</a><a href="#สรุปท้ายบท">สรุปท้ายบท</a></nav></aside></div>
+<footer class="site-footer"><span>INT182 · Data Science & AI<br>สรุปเพื่อทบทวนจากเอกสารประกอบการเรียน</span><a href="https://github.com/Phakinza007/int182-study-notes">GitHub ↗</a></footer>
+<dialog id="search-dialog" aria-labelledby="search-title"><div class="dialog-heading"><h2 id="search-title">ค้นหาในสรุป</h2><button data-close-dialog aria-label="ปิดการค้นหา">×</button></div><label for="search-input">คำค้น เช่น precision, PEAS, kNN</label><input id="search-input" type="search" autocomplete="off"><p id="search-status" role="status">พิมพ์คำเพื่อเริ่มค้นหา</p><ul id="search-results"></ul></dialog>
+<dialog id="image-dialog" aria-labelledby="image-title"><div class="dialog-heading"><h2 id="image-title">ภาพประกอบ</h2><button data-close-dialog aria-label="ปิดภาพ">×</button></div><div class="image-controls"><button data-zoom="out" aria-label="ย่อภาพ">−</button><button data-zoom="in" aria-label="ขยายภาพ">+</button><button data-zoom="reset">พอดีจอ</button><a id="image-original" target="_blank" rel="noopener">เปิดภาพต้นฉบับ ↗</a></div><div class="image-stage"><img id="zoom-image" alt=""></div><p id="image-caption"></p></dialog>
+</body></html>

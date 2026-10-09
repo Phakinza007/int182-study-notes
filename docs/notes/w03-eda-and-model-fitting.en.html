@@ -1,0 +1,1180 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="INT182 Data Science and AI notes for weeks 1–9, with diagrams and key formulas"><meta name="theme-color" content="#f7f6f3"><title>EDA and Model Fitting — Box Plot, Correlation, Linear Regression · INT182</title><link rel="icon" href="../favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="../style.css"><script src="../app.js" defer></script></head>
+<body data-base="../" data-page="note"><a class="skip" href="#main">Skip to content</a>
+<header class="topbar"><div class="topbar-inner"><a class="brand" href="../en.html"><span class="brand-mark">182</span><span>INT182 <small>Study notes</small></span></a><nav aria-label="Main menu"><button class="search-trigger" data-search-open aria-haspopup="dialog">Search notes <kbd>/</kbd></button><a class="lang" href="w03-eda-and-model-fitting.html" lang="th">ภาษาไทย</a></nav></div></header>
+<div class="reader-layout"><aside class="reader-sidebar"><details class="week-menu" open><summary>All weeks</summary><nav aria-label="Choose a week"><a href="w01-course-intro.en.html" ><span class="week-no">01</span><span>Course Introduction and Project Structure</span></a><a href="w02-ds-ai-landscape-and-tools.en.html" ><span class="week-no">02</span><span>The DS/AI Landscape (continued) and the Orange Toolkit</span></a><a href="w03-eda-and-model-fitting.en.html" aria-current="page"><span class="week-no">03</span><span>EDA and Model Fitting — Box Plot, Correlation, Linear Regression</span></a><a href="w04-association-rules.en.html" ><span class="week-no">04</span><span>Association Rules — Market Basket Analysis, Apriori and Support/Confidence/Lift</span></a><a href="w05-decision-trees-and-k-means.en.html" ><span class="week-no">05</span><span>Decision Trees, K-means Clustering, and the Exam 1 scope review</span></a><a href="w06-classification-and-model-validation.en.html" ><span class="week-no">06</span><span>Classification and Model Validation</span></a><a href="w07-classification-performance-metrics.en.html" ><span class="week-no">07</span><span>Classification Performance Metrics and Evaluation Methods</span></a><a href="w08-introduction-to-ai-and-agents.en.html" ><span class="week-no">08</span><span>Introduction to AI, Rational Agents, and PEAS</span></a><a href="w09-introduction-to-ml-and-nearest-neighbors.en.html" ><span class="week-no">09</span><span>Introduction to Machine Learning, k-NN, and AI Search</span></a></nav></details></aside><main id="main" class="reader"><div class="note-meta">WEEK 03 <span>2026-08-19</span></div><h1>EDA and Model Fitting — Box Plot, Correlation, Linear Regression</h1><div class="reader-actions"><button data-read-week="3" aria-pressed="false">Mark as read</button><button data-print>Print this note</button></div><article class="prose"><blockquote>
+<p>Group 1 (Wednesday 9.30–12.30 @ LX 12/2) — built on the deck <code>INT182_02_EDA-Model-Fitting.pdf</code> (40 slides, Assoc. Prof. Dr. Pornchai Mongkolnam), with additions from what the lecturer said in class (<code>INT182_G1_20260819.docx</code>) and the example code handed out in <code>../code/LinearReg_auto.R</code></p>
+<p>⚠️ The transcript comes from automatic speech recognition and is poor quality in several stretches — anything drawn from the transcript alone is marked <em>(from the transcript)</em>, and figures that came through unclearly are flagged as such</p>
+<p>A note about the groups: this file covers the session for <strong>Group 1 (Wednesday)</strong>, who are one day ahead of Group 2. The syllabus places both in the same week, but the <strong>submission deadline for Group 2 may not match the one given in section 16</strong> — confirm it in your own session</p>
+<p>This deck was already opened for its first 16 slides or so at the end of week 2 — this file gathers the whole deck in one place</p>
+</blockquote>
+<h2 id="agenda">Agenda</h2>
+<ol>
+<li>The evolution of DS: OLTP → OLAP → big data</li>
+<li>What EDA is</li>
+<li>Modeling / Data Modeling / Data Fitting / Model Fitting</li>
+<li>Parameters and hyperparameters</li>
+<li>Model bias — underfitting and overfitting</li>
+<li>An overview of the ML methods used in DS</li>
+<li>Types of data and scales of measurement</li>
+<li>Distributions, and mean/median/mode</li>
+<li>Box plots</li>
+<li>Scatter plots and correlation</li>
+<li>Linear regression</li>
+<li>Reading the model output</li>
+<li>Categorical variables in the equation</li>
+<li>Hands-on: R and RStudio</li>
+<li>Comparing the results against Orange</li>
+<li>The work that was set</li>
+</ol>
+<h2 id="01-the-evolution-of-data-science">01 The evolution of data science</h2>
+<p>One of the most important aspects of DS is <strong>finding and recognizing patterns, and then evaluating them</strong> — where recognizing means the patterns were not expected in advance.</p>
+<p>The timeline:</p>
+<p><strong>Relational databases (1970, later becoming DBMS)</strong> → <strong>OLTP</strong> → <strong>OLAP</strong> → <strong>Pattern recognition / recommendation systems</strong> → <strong>Big data</strong> (which needs DS, ML and DL)</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Abbreviation</th><th>Stands for</th><th>What it is for</th></tr></thead><tbody><tr><td><strong>OLTP</strong></td><td>Online <strong>T</strong>ransaction <strong>P</strong>rocessing</td><td>Answering transactional questions, e.g. online banking</td></tr><tr><td><strong>OLAP</strong></td><td>Online <strong>A</strong>nalytical <strong>P</strong>rocessing</td><td>Data exploration and visualization, using multidimensional databases such as a data warehouse</td></tr></tbody></table></div>
+<p><em>(from the transcript)</em> OLTP covers transactions that happen often and fast — withdrawing money, depositing, paying, or buying something at a convenience store. These are exchanges of data between two parties that occur very frequently. OLAP is what happens when you take those time-stamped transactions, store them in a <mark>data warehouse</mark> divided by period, and analyse them after the fact.</p>
+<p>The relational databases we already know (using SQL, Structured Query Language) date back to <mark>1970</mark>, with tables and relationships such as one-to-many.</p>
+<figure class="figure"><a href="../assets/w03-eda-and-model-fitting/w3_fig_ds_evolution.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="Enlarge image: The evolution of data science — from OLTP to OLAP and big data (slide 2)"><img src="../assets/w03-eda-and-model-fitting/w3_fig_ds_evolution.webp" alt="The evolution of data science — from OLTP to OLAP and big data (slide 2)" loading="lazy" decoding="async"></a><figcaption>The evolution of data science — from OLTP to OLAP and big data (slide 2)<a href="../assets/w03-eda-and-model-fitting/w3_fig_ds_evolution.webp" target="_blank" rel="noopener" class="diagram-link figure-open">Enlarge ↗</a></figcaption></figure>
+<h2 id="02-what-eda-is">02 What EDA is</h2>
+<p><strong>Exploratory Data Analysis (EDA)</strong> is a data analysis technique that helps you understand your data by summarizing its main characteristics, often using statistical graphics and other data visualization methods.</p>
+<p><strong>EDA is a <mark>non-parametric</mark> approach</strong> — it makes no assumptions about the underlying distribution of the data.</p>
+<p>The distinction the slide states outright:</p>
+<ul>
+<li><strong>A <mark>box plot</mark> is an EDA chart</strong></li>
+<li><strong><mark>Linear regression</mark> is not EDA</strong> — it is a type of <strong>data modeling</strong></li>
+<li>But EDA is used to identify patterns and trends in the data, which can then feed into building a linear regression model</li>
+</ul>
+<p>EDA takes in <strong>data visualization + <mark>statistical summaries</mark> + hypothesis testing</strong>.</p>
+<p><em>(from the transcript)</em> The main purpose is to understand the important characteristics of the data before analysing it further — looking at the car dataset to see what each feature is, what range of values it holds, whether there is much missing data, and whether all 26 columns will be used. Reading a table of text alone makes this hard, so you plot it. It is an <strong>iterative process</strong>, not something done once and finished, comparable to building a rough prototype in software work to check a few things before committing real effort.</p>
+<h3 id="how-many-variables-are-analysed-at-once">How many variables are analysed at once</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Term</th><th>Number of variables</th><th>Example</th></tr></thead><tbody><tr><td><strong>Univariate</strong></td><td>1</td><td>A box plot (one axis only)</td></tr><tr><td><strong>Bivariate</strong></td><td>2</td><td>A scatter plot (x and y axes)</td></tr><tr><td><strong>Multivariate</strong></td><td>3 or more</td><td>Predicting price from horsepower + engine size + brand</td></tr></tbody></table></div>
+<h2 id="03-modeling--data-modeling--data-fitting--model-fitting">03 Modeling / Data Modeling / Data Fitting / Model Fitting</h2>
+<p>These four are easily confused, and the slides separate them clearly.</p>
+<h3 id="modeling-the-broadest">Modeling (the broadest)</h3>
+<p>Creating a <strong>simplified representation</strong> of a system or process, by any of several means: mathematical equations, computer simulations, or a physical model.</p>
+<p><strong>Model fitting is an <mark>iterative</mark> process</strong>, because there are typically several modelling approaches applicable to a given task, and even within one approach there is a list of parameters you can set to obtain different configurations of the model.</p>
+<p><em>(from the transcript)</em> The examples given in class: modelling the direction and speed of a storm to work out which province it will reach and when, which needs sensor data (wind speed, humidity, air pressure); or a small model aeroplane in a wind tunnel before the real thing is built.</p>
+<h3 id="data-modeling">Data Modeling</h3>
+<p><strong>Broader than <mark>data fitting</mark></strong> — creating a <strong>conceptual representation</strong> of data, used to</p>
+<ul>
+<li>understand the data</li>
+<li>communicate the data to others</li>
+<li>build systems that use the data</li>
+</ul>
+<p>It can take many forms: mathematical models, statistical models and conceptual models such as <strong>ERD</strong> (data entities and relationships), <strong>DFD</strong> and <strong>UML</strong> <em>(from the transcript: which is exactly what is taught in <mark>System Analysis and Design</mark>)</em>.</p>
+<h3 id="data-fitting">Data Fitting</h3>
+<p>Specifically focused on <strong>finding the mathematical function that best describes the existing data</strong>.</p>
+<ul>
+<li>Used to interpolate and extrapolate data points in a dataset</li>
+<li>Example techniques: <strong><mark>least squares regression</mark>, polynomial fitting, spline interpolation</strong></li>
+</ul>
+<h3 id="model-fitting">Model Fitting</h3>
+<p><strong>Emphasis on the model itself</strong> — adjusting the parameters of a pre-selected model (one that represents a theoretical relationship or hypothesis) so that it best explains or predicts the observed data.</p>
+<ul>
+<li>Used in statistics, machine learning and econometrics, with models such as linear regression, neural networks and decision trees</li>
+<li><strong>Focus on <mark>generalization</mark></strong> — not just how well it fits the training data, but how well it works on new, unseen data</li>
+<li>Example techniques: <strong><mark>gradient descent</mark>, maximum likelihood estimation</strong> and other optimization algorithms</li>
+</ul>
+<p><em>(from the transcript)</em> To sum up how they nest: <strong>Modeling</strong> is the broadest → inside it sits <strong>Data modeling</strong> → and below that come <strong>Data fitting</strong> and <strong>Model fitting</strong>, with data fitting forming a part of doing model fitting.</p>
+<h2 id="04-model-parameters-and-hyperparameters">04 Model parameters and hyperparameters</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th></th><th>Who sets it</th><th>Examples</th></tr></thead><tbody><tr><td><strong>Model parameter</strong></td><td><strong>Estimated from the data automatically by the algorithm</strong></td><td>Weights, coefficients</td></tr><tr><td><strong>Model hyperparameter</strong></td><td><strong>Set manually by a person</strong>, used in the process of estimating the parameters</td><td>k in KNN, learning rate, number of layers in a NN, number of epochs, loss function</td></tr></tbody></table></div>
+<p><em>(from the transcript)</em> Why weights can hold "knowledge" — for a straight line, all you need to store is the <strong>slope</strong> and the <strong>y-intercept</strong>. Once you have those two, you have the equation y = mx + c. Now picture a modern model with <mark>billions or trillions</mark> of parameters. That is where the term <strong>open weight model</strong>, heard so often around generative AI, comes from.</p>
+<p>As for the word <strong>hyper</strong>, it is there to mark these off from ordinary model parameters and to signal something that lies <em>beyond</em>, put in from the outside rather than arising from within.</p>
+<h2 id="05-model-bias--underfitting-and-overfitting">05 Model bias — underfitting and overfitting</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th></th><th>Meaning</th></tr></thead><tbody><tr><td><strong>Underfitting</strong></td><td>The model is too simple to capture the underlying patterns in the data <em>(from the transcript: or there are too few data points, or too little training)</em></td></tr><tr><td><strong>Overfitting</strong></td><td>The model is too complex and <strong>learns the noise as well</strong>, performing very well on the training data but poorly on new data</td></tr></tbody></table></div>
+<p><em>(from the transcript)</em> <strong>Noise</strong> is the part of the data that comes in unwanted and serves no purpose, but which the model goes and learns anyway — the fix for <mark>overfitting</mark> is <strong>validation</strong> (to be covered later).</p>
+<h2 id="06-an-overview-of-the-ml-methods-used-in-ds">06 An overview of the ML methods used in DS</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Group</th><th>Kind of task</th><th>Methods</th></tr></thead><tbody><tr><td><strong>Supervised Learning</strong></td><td><strong>Classification</strong> (predictive)</td><td>Naïve Bayes, K-nearest neighbors (k-NN), Support vector machine (SVM), Decision trees, Random forest, Logistic regression</td></tr><tr><td><strong>Supervised Learning</strong></td><td><strong>Regression</strong> (predictive)</td><td><strong>Linear regression</strong></td></tr><tr><td><strong>Unsupervised Learning</strong></td><td><strong>Clustering</strong> (descriptive)</td><td>DBSCAN, <strong>K-means</strong>, BIRCH</td></tr><tr><td><strong>Unsupervised Learning</strong></td><td><strong>Association rules</strong> (descriptive)</td><td>Apriori, e.g. market basket analysis</td></tr><tr><td><strong>Unsupervised Learning</strong></td><td><strong>Anomaly detection</strong> / outlier detection (descriptive)</td><td></td></tr><tr><td>—</td><td><strong>Visualization</strong> (descriptive analytics)</td><td>Box plots, scatter plots and so on</td></tr><tr><td><strong>Reinforcement Learning</strong></td><td>Learning by trial and error</td><td></td></tr></tbody></table></div>
+<figure class="figure"><a href="../assets/w03-eda-and-model-fitting/w3_fig_ml_methods.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="Enlarge image: The ML methods used in DS — supervised, unsupervised, and visualization (slide 10)"><img src="../assets/w03-eda-and-model-fitting/w3_fig_ml_methods.webp" alt="The ML methods used in DS — supervised, unsupervised, and visualization (slide 10)" loading="lazy" decoding="async"></a><figcaption>The ML methods used in DS — supervised, unsupervised, and visualization (slide 10)<a href="../assets/w03-eda-and-model-fitting/w3_fig_ml_methods.webp" target="_blank" rel="noopener" class="diagram-link figure-open">Enlarge ↗</a></figcaption></figure>
+<figure class="figure"><a href="../assets/w03-eda-and-model-fitting/w3_fig_ml_algorithms.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="Enlarge image: The ML algorithm taxonomy from another angle — split by supervised/unsupervised/reinforcement (slide 11)"><img src="../assets/w03-eda-and-model-fitting/w3_fig_ml_algorithms.webp" alt="The ML algorithm taxonomy from another angle — split by supervised/unsupervised/reinforcement (slide 11)" loading="lazy" decoding="async"></a><figcaption>The ML algorithm taxonomy from another angle — split by supervised/unsupervised/reinforcement (slide 11)<a href="../assets/w03-eda-and-model-fitting/w3_fig_ml_algorithms.webp" target="_blank" rel="noopener" class="diagram-link figure-open">Enlarge ↗</a></figcaption></figure>
+<h3 id="supervised-vs-unsupervised-vs-reinforcement-from-the-transcript">Supervised vs unsupervised vs reinforcement <em>(from the transcript)</em></h3>
+<ul>
+<li><strong>Supervised</strong> = learning <mark>with a teacher</mark>, which means <strong>labels</strong> are supplied — telling the model that a flower with petals of roughly this width and length is species A. There has to be a y variable</li>
+<li><strong>Unsupervised</strong> = no labels and no y variable; the model learns on its own, as in clustering. The simplest example is <strong>k-means</strong>, where k is the <mark>number of groups</mark> (a <mark>hyperparameter</mark>) and mean refers to the <strong>centroid</strong>, the centre point of each group. Compare it to letting a class of students form their own groups by whatever similarities they see, with nobody telling anyone which group to join</li>
+<li>In clustering <strong>there is no fixed right or wrong</strong> — three groups or four groups, neither is wrong; you only ask which is better</li>
+<li><strong>Reinforcement learning</strong> = learning by trial and error, with a <strong>reward</strong> for doing well and a penalty for doing badly, plus feedback. The examples are playing chess or Go, or a robot learning to walk and avoid obstacles</li>
+</ul>
+<h3 id="generative-ai-mixes-all-three-from-the-transcript">Generative AI mixes all three <em>(from the transcript)</em></h3>
+<ol>
+<li><strong><mark>Unsupervised</mark> pre-training</strong> — vast amounts of data are collected, textbooks, articles and code from around the world, and used for training</li>
+<li><strong>Supervised</strong> — question-and-answer pairs are fed in for the model to learn from</li>
+<li><strong>Reinforcement</strong> — several models are run at once and given feedback on which answered better, with more points to the better one, and the model learns from that</li>
+</ol>
+<h3 id="predictive-vs-descriptive-models">Predictive vs descriptive models</h3>
+<p>The models produced by the <mark>data mining</mark> step fall into two types.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Type</th><th>Goal</th></tr></thead><tbody><tr><td><strong>Predictive model</strong></td><td>Predict the value of one variable given the rest — the variable to be predicted is the <strong>dependent or target variable</strong>, and the ones used for prediction are the <strong>independent or predictor variables</strong></td></tr><tr><td><strong>Descriptive model</strong></td><td>Identify the relationships between variables in order to learn more about the structure of the data</td></tr></tbody></table></div>
+<p><em>(from the transcript)</em> A predictive example: this make of car, a sedan, this much horsepower, black — roughly what price? Or a condo on the twentieth floor in this district, this many square metres, what price? A descriptive model simply presents what it found.</p>
+<h2 id="07-types-of-data-and-scales-of-measurement">07 Types of data and scales of measurement</h2>
+<h3 id="types-of-variable">Types of variable</h3>
+<pre><code>                   Variable
+        ┌──────────────┴──────────────┐
+   Categorical                    Numerical
+  (Qualitative)                 (Quantitative)
+    ┌────┴────┐                  ┌────┴────┐
+ Nominal   Ordinal            Discrete  Continuous
+</code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Type</th><th>Characteristics</th><th>Examples</th></tr></thead><tbody><tr><td><strong>Discrete</strong></td><td>Distinct numbers with step-size values</td><td>Population, number of coins in a pocket</td></tr><tr><td><strong>Continuous</strong></td><td>Not limited by step size, nor by the number of decimal places (though usually rounded somewhere)</td><td>The amount of water in a cup, a real value from 0 to 1, weight, height</td></tr><tr><td><strong>Nominal</strong></td><td>Describes characteristics; numbers can be assigned but cannot be compared mathematically</td><td>Gender, race, city, product brand</td></tr><tr><td><strong>Ordinal</strong></td><td>A mix of numerical and categorical; comparable, but not straightforwardly, and you need many data points for the comparison to mean anything</td><td>Hotel star ratings of 1–5, education level, grades A B C D F</td></tr></tbody></table></div>
+<p><em>(from the transcript)</em> An interesting example: <strong>the numbers on athletes' shirts</strong>, such as 8, 10 or 23 — they are numbers, but they are only <strong>symbols</strong> and say nothing about who is better, so they are <strong>nominal</strong> rather than numerical. Seeing digits is not enough; you have to consider the purpose and the context of their use.</p>
+<figure class="figure"><a href="../assets/w03-eda-and-model-fitting/w3_fig_data_types.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="Enlarge image: Types of variable — categorical (nominal/ordinal) and numerical (discrete/continuous) (slide 13)"><img src="../assets/w03-eda-and-model-fitting/w3_fig_data_types.webp" alt="Types of variable — categorical (nominal/ordinal) and numerical (discrete/continuous) (slide 13)" loading="lazy" decoding="async"></a><figcaption>Types of variable — categorical (nominal/ordinal) and numerical (discrete/continuous) (slide 13)<a href="../assets/w03-eda-and-model-fitting/w3_fig_data_types.webp" target="_blank" rel="noopener" class="diagram-link figure-open">Enlarge ↗</a></figcaption></figure>
+<h3 id="scales-of-measurement">Scales of measurement</h3>
+<p>Another way of looking at numeric data: through the lens of <strong>measurement</strong>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Scale</th><th>Property</th><th>Examples</th></tr></thead><tbody><tr><td><strong>Nominal</strong></td><td>Identifies a category only</td><td>Blood type, zip/area code, gender, race, eye colour, political party</td></tr><tr><td><strong>Ordinal</strong></td><td>Has an order</td><td>Socio-economic status (low/middle/high income), education level (high school, BS, MS, PhD), satisfaction rating</td></tr><tr><td><strong>Interval</strong></td><td><strong>No true zero</strong>; differences are meaningful, and equal differences mean equal distances</td><td>Temperature (°F, °C), pH, TOEFL score (310-677), standardized exam score, AD year, BE year</td></tr><tr><td><strong>Ratio</strong></td><td><strong>Has a true zero</strong>, so ratios of "how many times" are meaningful</td><td>Dose amount, flow rate, concentration, pulse, weight, length, temperature in <strong>Kelvin</strong> (0.0 K = no heat at all = −273.15 °C)</td></tr></tbody></table></div>
+<p><em>(from the transcript)</em> How to remember it:</p>
+<ul>
+<li><strong>True zero</strong> means that a value of zero really is <strong>the complete absence of the quantity</strong> — 0 kilograms is no weight, 0 baht is no money, <mark>0 Kelvin</mark> is no thermal energy</li>
+<li><mark>0 °C</mark> is <strong>not</strong> a true zero, because thermal energy is still present; it is a number human beings agreed on</li>
+<li>The consequence: <strong>50 °C is not twice as hot as 25 °C</strong>, but <strong>100 K is twice 50 K</strong>, because they share a <mark>true zero</mark> as their base</li>
+<li>AD and BE years have no true zero (they mark an agreed starting point) → the year 2000 is not "twice" the year 1000</li>
+<li>Standardized test scores like <mark>TOEFL</mark> have no true zero, since even answering everything wrong still leaves you with a baseline score</li>
+<li><strong>Interval</strong> is about <strong>differences</strong>: if the numeric difference is equal, the distance must be equal. pH 7.8 and 9.8 are 2 units apart, exactly as pH 0.9 and 2.9 are</li>
+</ul>
+<figure class="figure"><a href="../assets/w03-eda-and-model-fitting/w3_fig_scales.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="Enlarge image: The four scales of measurement — nominal, ordinal, interval, ratio (slide 15)"><img src="../assets/w03-eda-and-model-fitting/w3_fig_scales.webp" alt="The four scales of measurement — nominal, ordinal, interval, ratio (slide 15)" loading="lazy" decoding="async"></a><figcaption>The four scales of measurement — nominal, ordinal, interval, ratio (slide 15)<a href="../assets/w03-eda-and-model-fitting/w3_fig_scales.webp" target="_blank" rel="noopener" class="diagram-link figure-open">Enlarge ↗</a></figcaption></figure>
+<h2 id="08-distributions-and-the-three-measures-of-centre">08 Distributions and the three measures of centre</h2>
+<h3 id="the-three-averages">The three averages</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Measure</th><th>Meaning</th><th>Pros and cons</th><th>Example use</th></tr></thead><tbody><tr><td><strong>Mean</strong></td><td>The typical average value we all know</td><td>Easy to understand, <strong>takes every data point into account</strong>, but <strong>pulled by outliers</strong></td><td>Exam scores of a class, average time to drive home</td></tr><tr><td><strong>Median</strong></td><td>The middle value once the data is sorted</td><td>Doesn't tell you much about the rest of the data</td><td>Household income of a country</td></tr><tr><td><strong>Mode</strong></td><td>The most common value = <strong>the peak of a histogram</strong></td><td>Doesn't tell you much about the rest of the data</td><td>Employees' income in a company</td></tr></tbody></table></div>
+<p>The slide stresses that <strong>there is no single best measure, but using <mark>just one</mark> is a bad idea</strong>.</p>
+<h3 id="the-shape-of-a-distribution-from-the-transcript">The shape of a distribution <em>(from the transcript)</em></h3>
+<ul>
+<li><strong>Normal distribution</strong> — symmetric, the same on the left and the right, shaped like an upturned <strong>bell</strong>. In this case mean, median and mode all land on the <mark>same point</mark></li>
+<li>The y axis of a histogram is <strong>frequency</strong>, the number of occurrences, so the peak is <strong>always the <mark>mode</mark></strong></li>
+<li><strong>Skew</strong> — if there are <strong>extreme</strong> values to the right, the values are dragged right, which is <strong>positive skew</strong>; dragged left is <strong>negative skew</strong></li>
+<li><strong>The mean is always pulled towards the <mark>tail</mark></strong>, while the median sits between the mode and the mean</li>
+<li>Examples of the pull: most people stand around 1.7–1.8 metres, so a few people over 2 metres drag the average to the right; a few very high earners drag the average income of the whole group up</li>
+</ul>
+<figure class="figure"><a href="../assets/w03-eda-and-model-fitting/w3_fig_three_averages.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="Enlarge image: Where mean, median, and mode sit for a left-skewed, normal, and right-skewed distribution (slide 17)"><img src="../assets/w03-eda-and-model-fitting/w3_fig_three_averages.webp" alt="Where mean, median, and mode sit for a left-skewed, normal, and right-skewed distribution (slide 17)" loading="lazy" decoding="async"></a><figcaption>Where mean, median, and mode sit for a left-skewed, normal, and right-skewed distribution (slide 17)<a href="../assets/w03-eda-and-model-fitting/w3_fig_three_averages.webp" target="_blank" rel="noopener" class="diagram-link figure-open">Enlarge ↗</a></figcaption></figure>
+<h3 id="statistical-summary-and-aggregate-data">Statistical summary and aggregate data</h3>
+<p>Summary statistics such as min, max, mean, median and mode — <em>(from the transcript)</em> sometimes called <strong>aggregate data</strong>, because they are values that have been gathered and processed (finding a mean means summing first, then dividing by the count).</p>
+<h2 id="09-box-plots-box-and-whisker-plots">09 Box plots (box and whisker plots)</h2>
+<p>What a box plot tells you</p>
+<ul>
+<li>The <strong>dispersion</strong> (also called variability, scatter or spread) of the data</li>
+<li>The <strong>skewness</strong>, if any</li>
+<li>The <strong>quartiles</strong></li>
+<li>The <strong>outliers</strong>, if any</li>
+<li>It can be used <strong>to compare between groups</strong></li>
+</ul>
+<figure class="figure"><a href="../assets/w03-eda-and-model-fitting/w3_fig_boxplot.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="Enlarge image: The parts of a box plot — quartiles, median, whiskers, and the IQR (slide 19)"><img src="../assets/w03-eda-and-model-fitting/w3_fig_boxplot.webp" alt="The parts of a box plot — quartiles, median, whiskers, and the IQR (slide 19)" loading="lazy" decoding="async"></a><figcaption>The parts of a box plot — quartiles, median, whiskers, and the IQR (slide 19)<a href="../assets/w03-eda-and-model-fitting/w3_fig_boxplot.webp" target="_blank" rel="noopener" class="diagram-link figure-open">Enlarge ↗</a></figcaption></figure>
+<h3 id="the-five-number-summary">The five-number summary</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Symbol</th><th>Meaning</th></tr></thead><tbody><tr><td>min</td><td>The smallest value lying inside the fence</td></tr><tr><td><strong>Q1</strong></td><td>The 25th percentile</td></tr><tr><td><strong>Q2</strong></td><td>The 50th percentile = <strong>the median</strong></td></tr><tr><td><strong>Q3</strong></td><td>The 75th percentile</td></tr><tr><td>max</td><td>The largest value lying inside the fence</td></tr></tbody></table></div>
+<p><em>(from the transcript)</em> Q stands for <mark>quartile</mark> — once you know these <mark>five values</mark> you can draw the box.</p>
+<h3 id="iqr-and-the-fences">IQR and the fences</h3>
+<pre><code>IQR         = Q3 − Q1                  ← the length of the box
+lower fence = Q1 − 1.5 × IQR
+upper fence = Q3 + 1.5 × IQR
+</code></pre>
+<ul>
+<li>The <strong>whisker</strong> must always end at an <strong>observed data point</strong> — it runs to the point furthest from the box that is still <strong>inside the fence</strong>, not out to the fence itself. So <strong>the two whiskers need not be the <mark>same length</mark></strong></li>
+<li><strong>Any point outside the fence is an <mark>outlier</mark></strong>, and the min/max counted for the box exclude outliers</li>
+<li><strong><mark>Q2</mark> is inside the box but need not be in the middle</strong>, because the data may be skewed left or right</li>
+<li>Each section of a box plot holds <strong>25%</strong> of the data (four sections in all)</li>
+<li>Drawing it vertically or horizontally makes no difference; it is only a change of viewpoint</li>
+<li>The <mark>1.5</mark> in Orange is a <strong>default that can be adjusted</strong></li>
+</ul>
+<p><em>(from the transcript)</em> How to handle outliers: you may discard them, <strong>but you have to find the reason they are extreme</strong>. You might analyse the extreme group separately from everyone else, because if you don't, the overall picture is spoiled — if two or three classmates are over 2 metres tall, analyse them apart.</p>
+<p><strong>The advantage over a histogram</strong> <em>(from the transcript)</em> — you see the distribution without plotting the whole thing, and you can <strong>compare several groups side by side at once</strong>.</p>
+<figure class="figure"><a href="../assets/w03-eda-and-model-fitting/w3_fig_boxplot_fences.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="Enlarge image: The fences at Q1−1.5×IQR and Q3+1.5×IQR, and which points count as outliers (slide 21)"><img src="../assets/w03-eda-and-model-fitting/w3_fig_boxplot_fences.webp" alt="The fences at Q1−1.5×IQR and Q3+1.5×IQR, and which points count as outliers (slide 21)" loading="lazy" decoding="async"></a><figcaption>The fences at Q1−1.5×IQR and Q3+1.5×IQR, and which points count as outliers (slide 21)<a href="../assets/w03-eda-and-model-fitting/w3_fig_boxplot_fences.webp" target="_blank" rel="noopener" class="diagram-link figure-open">Enlarge ↗</a></figcaption></figure>
+<h3 id="an-example-in-orange-iris">An example in Orange: Iris</h3>
+<p>Plotting a box plot of petal width split by species (setosa / versicolor / virginica) makes it obvious that <strong>the three species differ clearly</strong>, so this feature can be used to classify the species — a demonstration of doing EDA before moving on to the next stage of analysis.</p>
+<h2 id="10-scatter-plots-and-correlation">10 Scatter plots and correlation</h2>
+<h3 id="scatter-plot">Scatter plot</h3>
+<ul>
+<li>Shows <strong>every data point</strong></li>
+<li>Shows <strong>how dense or sparse</strong> the data is</li>
+<li>Shows <strong>correlation</strong> and <strong>trend</strong>, if any</li>
+</ul>
+<p><em>(from the transcript)</em> The word scatter means spread about, like scattering seed — a trend is a direction, up or down, such as bigger cars costing more.</p>
+<figure class="figure"><a href="../assets/w03-eda-and-model-fitting/w3_fig_scatter_correlation.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="Enlarge image: Scatter plots showing positive, negative, and no correlation (slide 22)"><img src="../assets/w03-eda-and-model-fitting/w3_fig_scatter_correlation.webp" alt="Scatter plots showing positive, negative, and no correlation (slide 22)" loading="lazy" decoding="async"></a><figcaption>Scatter plots showing positive, negative, and no correlation (slide 22)<a href="../assets/w03-eda-and-model-fitting/w3_fig_scatter_correlation.webp" target="_blank" rel="noopener" class="diagram-link figure-open">Enlarge ↗</a></figcaption></figure>
+<h3 id="correlation">Correlation</h3>
+<pre><code>-1 ≤ r ≤ 1
+</code></pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Value of r</th><th>Meaning</th></tr></thead><tbody><tr><td><strong>+1</strong></td><td>A perfect positive relationship; the points line up going upward</td></tr><tr><td><strong>0</strong></td><td>No relationship; the points are spread everywhere</td></tr><tr><td><strong>−1</strong></td><td>A perfect negative relationship; the points line up going downward</td></tr></tbody></table></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Method</th><th>Used with</th><th>Condition</th></tr></thead><tbody><tr><td><strong>Pearson correlation</strong></td><td><strong>Numerical</strong> data</td><td>Only for <strong>linear</strong> relationships</td></tr><tr><td><strong>Spearman correlation</strong></td><td><strong>Ordinal scale</strong> (ranked order) data</td><td>Monotonic or linear relationships</td></tr></tbody></table></div>
+<p><em>(from the transcript)</em> The formula rests on subtracting each value from the mean of its own axis (x̄, ȳ) and multiplying — <strong>the numerator may be positive or negative, but the denominator has a <mark>square root</mark> and is therefore always positive</strong>, which is why the result lands between <mark>−1 and 1</mark>. The lecturer said there is no need to memorise the formula.</p>
+<figure class="figure"><a href="../assets/w03-eda-and-model-fitting/w3_fig_correlation.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="Enlarge image: Values of r from +1 to −1, with the coefficient of correlation formula (slide 23)"><img src="../assets/w03-eda-and-model-fitting/w3_fig_correlation.webp" alt="Values of r from +1 to −1, with the coefficient of correlation formula (slide 23)" loading="lazy" decoding="async"></a><figcaption>Values of r from +1 to −1, with the coefficient of correlation formula (slide 23)<a href="../assets/w03-eda-and-model-fitting/w3_fig_correlation.webp" target="_blank" rel="noopener" class="diagram-link figure-open">Enlarge ↗</a></figcaption></figure>
+<h2 id="11-linear-regression">11 Linear regression</h2>
+<h3 id="the-question-linear-modeling-answers">The question linear modeling answers</h3>
+<p><strong>“Does x influence y?”</strong> For instance:</p>
+<ul>
+<li>Are house prices influenced by incomes?</li>
+<li>Is changing a car's oil more frequently a good thing — does it save money in the long run?</li>
+</ul>
+<blockquote>
+<p>⚠️ The classic statisticians' warning quoted on the slide: <strong>“Correlation does not mean causation.”</strong></p>
+</blockquote>
+<h3 id="conditions-on-the-variables">Conditions on the variables</h3>
+<ul>
+<li><strong>The target variable must always be <mark>numerical</mark></strong>, e.g. inches of rain for the day, or the price of a car</li>
+<li><strong>The predictor variables may be <mark>numerical, categorical or ordinal</mark></strong></li>
+<li>If the target is categorical (a weather forecast of sunny/cloudy/rain/snow), threshold values can still be used (<mark>quantization</mark>) to classify, but in general <strong>logistic regression</strong> (which is based on probability) is more suitable</li>
+</ul>
+<h3 id="the-equation">The equation</h3>
+<p>The linear model is <code>y = f(X, w)</code>, where x is the predictor, y is the target, f() is a linear function and w is the parameter set.</p>
+<p><strong>Simple linear regression</strong> — one predictor variable</p>
+<pre><code>y = w₀ + w₁x + ε
+</code></pre>
+<p>where w₀ is the <mark>intercept</mark>, w₁ the <mark>slope</mark>, and ε the error or residual.</p>
+<p><em>(from the transcript)</em> The word <strong>linear</strong> means the degree (the exponent) is only <strong>0 or 1</strong>. From degree 2 upwards it is called a <strong>polynomial</strong> (degree 2 is <mark>quadratic</mark>, degree 3 is cubic), for instance <code>w₀ + w₁x₁ + w₂x₂² + w₃x₃³ + …</code> — this course uses only the linear form.</p>
+<figure class="figure"><a href="../assets/w03-eda-and-model-fitting/w3_fig_simple_regression.webp" target="_blank" rel="noopener" class="diagram-link" aria-label="Enlarge image: A regression line fitted to real data, and the equation y = ax + b (slide 27)"><img src="../assets/w03-eda-and-model-fitting/w3_fig_simple_regression.webp" alt="A regression line fitted to real data, and the equation y = ax + b (slide 27)" loading="lazy" decoding="async"></a><figcaption>A regression line fitted to real data, and the equation y = ax + b (slide 27)<a href="../assets/w03-eda-and-model-fitting/w3_fig_simple_regression.webp" target="_blank" rel="noopener" class="diagram-link figure-open">Enlarge ↗</a></figcaption></figure>
+<h3 id="why-it-is-called-regression-from-the-transcript">Why it is called "regression" <em>(from the transcript)</em></h3>
+<p>There are a million lines that could be drawn through the data, and the algorithm asks of each in turn whether it is good enough, then picks the single line with <strong>the smallest error</strong>. The "regression" here is that <strong>the error regresses, falling step by step</strong>, until the best line is found.</p>
+<h3 id="the-loss-function-and-finding-w">The loss function and finding w</h3>
+<ul>
+<li><strong>Error</strong> is defined as <strong>the distance between a data point and the line</strong>, squared, then summed over every point</li>
+<li>The most popular loss function (cost function) for regression is the <strong><mark>least squares</mark> method</strong></li>
+<li>How the best w is found: <strong>take the <mark>derivative</mark> of the loss function, set it to zero, and solve</strong></li>
+<li>The target function is called the <strong>cost function</strong> or objective function, with the goal of <strong>minimizing</strong> it — the answer is the <strong>argmin</strong>, the argument that returns the minimum value from the target function</li>
+</ul>
+<p><em>(from the transcript)</em> This is the same principle deep learning and machine learning use — find the smallest error to get the best weights. The only difference is that we have two weights while generative AI has millions upon millions.</p>
+<h3 id="the-two-steps-of-using-a-model">The two steps of using a model</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Step</th><th>What happens</th></tr></thead><tbody><tr><td><strong>Model Fitting</strong></td><td>For a dataset with variables x₁…x_m and y, calculate the model parameters <strong>w</strong> that best meet the chosen criteria</td></tr><tr><td><strong>Model Prediction</strong></td><td>Given the predictor variables x₁…x_m and the parameters w, calculate the value of <strong>y</strong></td></tr></tbody></table></div>
+<h3 id="simple-vs-multiple">Simple vs multiple</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th></th><th>Number of predictors</th></tr></thead><tbody><tr><td><strong>Simple linear regression</strong></td><td>1</td></tr><tr><td><strong>Multivariate / multiple linear regression</strong></td><td>More than 1</td></tr></tbody></table></div>
+<p>Multiple linear regression looks at how several predictors affect the target, letting you <strong>observe the effect of changing one predictor while holding the others fixed</strong>.</p>
+<p><em>(from the transcript)</em> You can keep adding predictors, <strong>but too many is not a good thing</strong> — around <mark>four or five</mark> it starts getting unwieldy. Two or three is usually enough to see a relationship that actually holds up.</p>
+<h2 id="12-reading-the-model-output">12 Reading the model output</h2>
+<p>The output of <code>lm()</code> in R (lm = <strong>l</strong>inear <strong>m</strong>odel) has several things worth reading properly.</p>
+<h3 id="coefficients">Coefficients</h3>
+<p>Each line is the <strong>weight</strong> of that variable, with the <code>(Intercept)</code> line being <strong>w₀</strong>.</p>
+<h3 id="the-stars-significance-codes--from-the-t-test">The stars (significance codes) — from the t-test</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Stars</th><th>p-value level</th></tr></thead><tbody><tr><td><code>***</code></td><td>0.001 (0.1%)</td></tr><tr><td><code>**</code></td><td>0.01 (1%)</td></tr><tr><td><code>*</code></td><td>0.05 (5%)</td></tr></tbody></table></div>
+<ul>
+<li>A <strong>t-test</strong> tells you whether <strong>a single variable</strong> on its own is statistically significant</li>
+<li>An <strong>F-test</strong> tells you whether <strong>a group of variables jointly</strong> is significant (the larger the better), and the <strong>p-value</strong> is read alongside it for the big picture</li>
+<li>The rule of thumb: a <code>Pr(>|t|)</code> or p-value <strong>below <mark>0.05</mark></strong> counts as statistically significant</li>
+</ul>
+<p><em>(from the transcript)</em> The smaller the error the better — <mark>three stars</mark> is best, and anything from one star up is usable. No stars at all means the variable predicts poorly and need not be used. For work that is not a matter of life and death, a 5% error is acceptable.</p>
+<h3 id="r-r-and-adjusted-r">R, R² and adjusted R²</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Value</th><th>Meaning</th></tr></thead><tbody><tr><td><strong>R</strong></td><td>The correlation</td></tr><tr><td><strong>R²</strong></td><td>The <strong>coefficient of determination (CD)</strong> — how well the terms fit a line or curve, from 0 to 1. A value of 1.0 would mean the X variables as a set predict Y perfectly</td></tr><tr><td><strong>Adjusted R²</strong></td><td>Penalises adding variables carelessly — <strong>add a useless variable and adjusted R² falls, add a useful one and it rises</strong>, and <strong>adjusted R² is always ≤ R²</strong></td></tr></tbody></table></div>
+<p><em>(from the transcript)</em> The rough thresholds the lecturer gave: <strong>R² of <mark>0.6</mark> upwards is good</strong> (0.5 will do), while R should be above <mark>0.8</mark> (0.8² ≈ 0.64). The reason adjusted R² is needed is that <strong>R tends to rise simply from adding more predictors</strong>, so a high value can be manufactured artificially. When comparing models of differing complexity, rely on adjusted R².</p>
+<h2 id="13-categorical-variables-in-the-equation">13 Categorical variables in the equation</h2>
+<p>An example from the slides (multivariate, all numeric):</p>
+<pre><code>Price = 58.35 × Horsepower + 110.13 × Length + 101.45 × EngineSize − 24,836.65
+</code></pre>
+<p>An example including a categorical variable (the car's brand) — the slide's case is BMW:</p>
+<pre><code>Price = 64.38 × Horsepower + 57.07 × EngineSize + 1.0 × 8,062.71 − 408.06
+</code></pre>
+<p><strong>The rule</strong> — use only one brand per prediction, <strong>multiplying <mark>1.0</mark> by the coefficient of the chosen brand and <mark>0.0</mark> by every other brand</strong> (multiplying by 0 simply means leaving it out).</p>
+<p>The example code in <code>LinearReg_auto.R</code> applies the same rule to Porsche and Mitsubishi:</p>
+<pre><code class="language-r"># Porsche: hp=150, es=100, bd="porsche", intercept = -408.062
+pred_price = 64.381*150 + 57.068*100 + 1.0*9054.119 - 408.062
+
+# Mitsubishi: hp=150, es=100, bd="mitsubishi"
+pred_price = 64.381*150 + 57.068*100 + 1.0*(-3804.304) - 408.062
+</code></pre>
+<p><em>(from the transcript)</em> Once again, <strong>y must always be <mark>numeric</mark></strong>, whether simple or multiple. The x side can mix numbers (horsepower) with categories (brand, which is <strong>nominal</strong> rather than ordinal, since no brand ranks above another). Looking at the output you will see some brands earning three stars and others no stars at all (typically those with little data), meaning that brand predicts poorly.</p>
+<h2 id="14-hands-on-r-and-rstudio">14 Hands-on: R and RStudio</h2>
+<p>Install <strong>R (the compiler/interpreter)</strong> first, then <strong>RStudio</strong>, and set the <strong>working directory</strong> to wherever the files are kept. In RStudio, putting the cursor on a line and hitting Run executes one statement at a time, or you can select several lines and run them together.</p>
+<p>All the code is in <code>../code/LinearReg_auto.R</code> and the data in <code>../code/imports-85.data</code>.</p>
+<h3 id="reading-the-data-and-inspecting-its-structure">Reading the data and inspecting its structure</h3>
+<pre><code class="language-r"># this dataset has no header, and some systems convert char to factors automatically, so switch that off
+auto &#x3C;- read.csv("data/imports-85.data", header = FALSE, stringsAsFactors = FALSE)
+
+dim(auto)     # number of rows and columns → 205 x 26
+str(auto)     # the structure: what type each column is
+names(auto)   # column names (V1, V2, ... by default)
+</code></pre>
+<h3 id="naming-the-columns">Naming the columns</h3>
+<pre><code class="language-r"># rename every column at once with c() (combine)
+names(auto) &#x3C;- c("symbol","nloss","make","fuel","aspiration",
+                 "doors","body","wheels","engineloc","wheelbase",
+                 "length","width","height","weight","enginetype",
+                 "cylinders","enginesize","fuelsys","bore",
+                 "stroke","compressratio","horsepower","rpm",
+                 "citympg","hwmpg","price")
+
+# or rename them one at a time by index
+names(auto)[22] &#x3C;- "Horsepower"
+names(auto)[26] &#x3C;- "Price"
+names(auto)[3]  &#x3C;- "Brand"
+names(auto)[7]  &#x3C;- "BodyStyle"
+names(auto)[17] &#x3C;- "EngineSize"
+</code></pre>
+<h3 id="handling-missing-data">Handling missing data</h3>
+<pre><code class="language-r"># in this dataset missing values are represented by '?'
+which(auto$Horsepower == '?')
+which(auto$Price == '?')
+
+sort(auto$Horsepower)   # not quite sorted, because it is still character
+
+# convert to number — '?' is coerced to NA
+auto$Horsepower &#x3C;- as.numeric(auto$Horsepower)
+sort(auto$Horsepower, decreasing = TRUE)   # NA is not shown
+which(is.na(auto$Horsepower))              # find the index of the NAs
+
+auto &#x3C;- na.omit(auto)   # drop the rows holding NA
+</code></pre>
+<p><em>(from the transcript)</em> <strong>An important observation</strong> — while <code>Horsepower</code> is still a string, <code>sort()</code> orders it <mark>alphabetically</mark>, so <code>"100"</code> comes before <code>"62"</code>. You have to convert it to a number for the sort to be right. And <code>$</code> is how you reach a column in a data frame (<code>data_frame_name$column_name</code>).</p>
+<h3 id="basic-statistics">Basic statistics</h3>
+<pre><code class="language-r">min(auto$Horsepower, na.rm = TRUE)     # na.rm = TRUE means ignore the NAs
+max(auto$Horsepower, na.rm = TRUE)
+range(auto$Horsepower, na.rm = TRUE)
+mean(auto$Horsepower, na.rm = TRUE)
+median(auto$Horsepower, na.rm = TRUE)
+
+summary(auto$Horsepower)   # min, Q1, median, mean, Q3 and max in one call
+
+# R has no built-in mode function — use a frequency table instead
+table(auto$Horsepower)
+sort(table(auto$Horsepower))
+</code></pre>
+<p><em>(from the transcript)</em> <code>summary()</code> gives the five values a box plot uses <strong>plus the mean</strong>, but it is not a box plot. <code>table()</code> reveals the <strong>mode</strong> — in class it showed that <strong>68 horsepower occurs most often, <mark>19 times</mark></strong>, while 48 horsepower has only a single value.</p>
+<h3 id="visualization">Visualization</h3>
+<pre><code class="language-r"># Histogram
+hist(auto$Horsepower, col = "lightgray")
+hist(auto$Horsepower, xlab = "Horsepower", breaks = seq(0,300,10),
+     col = "yellow", main = "Histogram of horsepower (205 cars)")
+
+# Box plot, vertical then horizontal
+boxplot(auto$Horsepower, main = "205 Cars from the 1985 Automobile Dataset",
+        ylab = "Horsepower", col = "orange")
+boxplot(auto$Horsepower, horizontal = TRUE, xlab = "Horsepower", col = "lightyellow")
+
+# Box plot split by subgroup — note the ~
+boxplot(auto$Horsepower ~ auto$BodyStyle, col = "lightgreen",
+        ylab = "HP", xlab = "Body Style", main = "Horsepower vs. Body Styles")
+
+# add the mean of each group onto the box plot
+means &#x3C;- tapply(auto$Horsepower, auto$BodyStyle, mean)
+points(means, pch = 19, cex = 1.2, col = 'red')   # pch = plot character, cex = scale
+
+# Scatter plot
+plot(auto$Horsepower, auto$Price, xlab = "Horsepower", ylab = "Price ($)",
+     main = "205 Cars from the 1985 Ward's Automotive Yearbook", col = "blue")
+</code></pre>
+<p><em>(from the transcript)</em> The box plot of horsepower shows <strong><mark>four</mark> outliers</strong> at the extreme, and splitting the box plot by body style allows an immediate comparison of the subgroups — wagon looks fairly normal, while convertible and hardtop look off (Q1 and Q2 sit very close together). The default histogram may not look good; adjust <code>breaks</code> to control the size of each <strong>bin</strong>, which counts how many values fall into that range.</p>
+<h3 id="pairs-plot--several-pairs-at-once">Pairs plot — several pairs at once</h3>
+<pre><code class="language-r">pairs(data = auto, ~ auto$Price + auto$Horsepower + auto$EngineSize,
+      col = "blue", main = "Automobile dataset")
+
+# a version with a regression line added to every pair
+panel.lm &#x3C;- function(x, y){
+  points(x, y, col = "blue")
+  abline(lm(y ~ x), col = 'red')
+}
+pairs(data = auto, ~ Price + Horsepower + EngineSize + height + citympg,
+      panel = panel.lm, main = "Pairs function of some chosen variables")
+</code></pre>
+<p><em>(from the transcript)</em> <strong>When reading a pairs plot, check carefully which axis is which</strong>, because the panel opposite has <mark>x and y swapped</mark>. The advantage is seeing the relationship of every pair at once.</p>
+<h3 id="simple-linear-regression">Simple linear regression</h3>
+<pre><code class="language-r">modelAuto &#x3C;- lm(auto$Price ~ auto$Horsepower)   # the form is lm(Y ~ X)
+coef(modelAuto)        # the coefficients
+summary(modelAuto)     # the full output, with t-tests, R² and adjusted R²
+
+# Pearson correlation, ignoring the NAs
+cr &#x3C;- cor(auto$Horsepower, auto$Price, method = "pearson", use = "complete.obs")
+cat("Correlation =", cr)
+
+# add the regression line onto the scatter plot drawn earlier
+abline(modelAuto, col = "red")
+</code></pre>
+<p><strong>The result obtained in class</strong> — the equation the lecturer wrote out was</p>
+<pre><code>Price = -4562.175 + 172.206 × Horsepower
+</code></pre>
+<p>(Confirmed by recomputing it from <code>imports-85.data</code> directly: across the 199 rows holding both horsepower and price, the intercept is −4562.175 and the slope 172.206, with <strong>r = 0.8105</strong> and <strong>R² = <mark>0.657</mark></strong>, matching the r = 0.81 Orange displayed in last week's session.)</p>
+<h3 id="prediction">Prediction</h3>
+<pre><code class="language-r"># name the variables and rebuild the model
+pr &#x3C;- auto$Price
+hp &#x3C;- auto$Horsepower
+modelPr &#x3C;- lm(pr ~ hp)
+
+# the data frame of test values must use the SAME variable name used in training
+predData &#x3C;- data.frame(hp = c(0, 200, 100, 250))
+predict(modelPr, predData)
+</code></pre>
+<h3 id="multiple-linear-regression">Multiple linear regression</h3>
+<pre><code class="language-r">multivModel &#x3C;- lm(auto$Price ~ auto$Horsepower + auto$EngineSize)
+coef(multivModel)
+summary(multivModel)
+
+# several plots in one figure
+par(mfrow = c(1,2))   # c(nrows, ncolumns)
+# ... plot ...
+par(mfrow = c(1,1))   # reset
+</code></pre>
+<h3 id="adding-a-categorical-variable">Adding a categorical variable</h3>
+<pre><code class="language-r"># the character column has to become one of R's factors first
+auto$Brand &#x3C;- as.factor(auto$Brand)
+str(auto)   # check that it changed
+
+multivModel &#x3C;- lm(auto$Price ~ auto$Horsepower + auto$EngineSize + auto$Brand)
+summary(multivModel)
+
+# predicting by passing the categorical value straight in
+pr &#x3C;- auto$Price; hp &#x3C;- auto$Horsepower
+es &#x3C;- auto$EngineSize; bd &#x3C;- auto$Brand
+modelPr &#x3C;- lm(pr ~ hp + es + bd)
+
+predData &#x3C;- data.frame(hp = c(150,150), es = c(100,100),
+                       bd = c("porsche","mitsubishi"))
+predict(modelPr, predData)
+</code></pre>
+<h2 id="15-comparing-the-results-against-orange">15 Comparing the results against Orange</h2>
+<p>In class the Orange workspace <code>Linear Regression (Imports-1985 dataset).ows</code> was opened to build the same model (target = price, features = horsepower + brand + body style) and its coefficients compared with the ones R produced.</p>
+<p><strong>They come out close but not identical</strong> — the coefficient for horsepower was around 105 in Orange against 109.64 in R. The lecturer put this down to <strong>the two pieces of software having different defaults for <mark>preprocessing and scaling</mark></strong>. The conclusion: <strong>Orange can be used to check R's results</strong>.</p>
+<p><em>(The figures in this section were transcribed from a poor-quality recording and may be inaccurate — trust whatever you get running it on your own machine.)</em></p>
+<p>In Orange you must run <strong>Edit Domain</strong> to name the columns first, then <strong>Select Columns</strong> to pick features and target — note that <strong>Orange's index starts at <mark>x0</mark> while R's starts at <mark>V1</mark></strong>, so the same column is 25 in Orange but 26 in R.</p>
+<h2 id="16-the-work-that-was-set">16 The work that was set</h2>
+<h3 id="exercise-2--multiple-linear-regression-on-imports-85">Exercise 2 — multiple linear regression on imports-85</h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Item</th><th>Detail</th></tr></thead><tbody><tr><td>Do it in</td><td><strong>Both R (RStudio) and Orange</strong>, and compare the results</td></tr><tr><td>Dataset</td><td><code>imports-85</code> (Automobile), the same one used in class</td></tr><tr><td>Target (y)</td><td><strong>Price</strong></td></tr><tr><td>Predictors (x)</td><td><strong>Three</strong> — Horsepower, BodyStyle, Brand (make)</td></tr><tr><td>What to submit</td><td><strong>The equation and the coefficients</strong> at minimum, screen captures of the important code, and the prediction results</td></tr><tr><td>Test cases</td><td>Make up two or three of your own, e.g. Brand = Honda, BodyStyle = sedan, a given horsepower, then <strong>substitute into the equation by hand</strong> and compare against <code>predict()</code></td></tr><tr><td>File format</td><td>Capture the images → paste into Word → <strong>save as PDF</strong></td></tr><tr><td>Working together</td><td>Talking with friends and sharing is allowed (not everyone brought a computer), but <strong>each person submits their own file</strong></td></tr><tr><td>Marks</td><td>It <strong>counts towards the coursework mark</strong></td></tr><tr><td>Deadline</td><td><strong>18.00 the same day (Wednesday 19 Aug)</strong> — anyone who has to go home to do it may take until midnight <em>(this deadline is Group 1's — Group 2 must confirm it in their own session)</em></td></tr></tbody></table></div>
+<p><em>(from the transcript)</em> The lecturer said there is no need to submit plots, since a categorical variable like body style cannot be plotted directly (it goes beyond <mark>two dimensions</mark>) — <strong>the equation and the coefficients</strong> are what he wants. If you are unsure how to do the prediction, look at the example in the decision tree file he sent, search YouTube, or ask an AI.</p>
+<h3 id="the-to-do-left-inside-the-code-file">The to-do left inside the code file</h3>
+<p>The end of <code>LinearReg_auto.R</code> carries a matching exercise:</p>
+<blockquote>
+<p>Use this Automobile dataset and try to work out on finding some more useful correlation, boxplots, and linear regression, using one more additional variable, which is: <strong>body-style</strong> (hardtop, wagon, sedan, hatchback, convertible)</p>
+</blockquote>
+<h3 id="the-assignment-written-on-the-final-slide">The assignment written on the final slide</h3>
+<p>Slide 40 sets out a separate task (not assigned as homework in this session).</p>
+<blockquote>
+<p>Work on the <strong>smartwatch's heart rate dataset</strong> provided in class (or pick any publicly available dataset), then produce box plots, histograms (or distributions) and scatter plots, perform linear regression (intercept and coefficient values), and find the correlation (r), R-squared and adjusted R-squared values</p>
+</blockquote>
+<h3 id="project-idea-presentation--next-week-week-4">Project idea presentation — next week (week 4)</h3>
+<p><strong>3–4 minutes</strong> per team over about <strong>3 slides</strong>, covering what you will do, where the data comes from and what you expect to get. <strong>Asst. Prof. Dr. Chakarida</strong> will sit in and give comments. Teams of 4–5 (4 recommended).</p>
+<h2 id="glossary">Glossary</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Term</th><th>Short definition</th></tr></thead><tbody><tr><td>OLTP</td><td>Online Transaction Processing, handling transactions that occur frequently and fast, as in banking or a convenience store</td></tr><tr><td>OLAP</td><td>Online Analytical Processing, exploring and analysing historical data from a multidimensional warehouse</td></tr><tr><td>EDA</td><td>Exploratory Data Analysis, summarising the main characteristics of data with graphics and statistics; a non-parametric approach</td></tr><tr><td>Univariate</td><td>Analysis using a single variable, such as a box plot</td></tr><tr><td>Bivariate</td><td>Analysis using two variables, such as a scatter plot</td></tr><tr><td>Multivariate</td><td>Analysis using three or more variables</td></tr><tr><td>Modeling</td><td>Creating a simplified representation of a system or process; the broadest term in this group</td></tr><tr><td>Data modeling</td><td>Creating a conceptual representation of data, such as an ERD, DFD or UML diagram</td></tr><tr><td>Data fitting</td><td>Finding the mathematical function that best describes existing data, e.g. least squares or polynomial fitting</td></tr><tr><td>Model fitting</td><td>Adjusting the parameters of a chosen model to explain or predict the data best, with the emphasis on generalization</td></tr><tr><td>Model parameter</td><td>A value the algorithm estimates from the data itself, such as a weight or coefficient</td></tr><tr><td>Hyperparameter</td><td>A value a person sets before training, such as k in KNN, the learning rate, the layer count or the epoch count</td></tr><tr><td>Underfitting</td><td>A model too simple to capture the real patterns</td></tr><tr><td>Overfitting</td><td>A model so complex it learns the noise, doing well on training data but badly on new data</td></tr><tr><td>Noise</td><td>The part of the data that arrives unwanted and serves no purpose</td></tr><tr><td>Supervised learning</td><td>Learning with a teacher, meaning labels or a y variable are supplied</td></tr><tr><td>Unsupervised learning</td><td>Learning without a teacher, with no labels and no y variable, as in clustering</td></tr><tr><td>Reinforcement learning</td><td>Learning by trial and error, with rewards and penalties acting as feedback</td></tr><tr><td>Centroid</td><td>The centre point of each group when doing k-means</td></tr><tr><td>Predictive model</td><td>A model that predicts the value of the target variable from the predictor variables</td></tr><tr><td>Descriptive model</td><td>A model that identifies relationships between variables to reveal the structure of the data</td></tr><tr><td>Nominal</td><td>Categorical data naming a type only, with no order, such as gender or brand</td></tr><tr><td>Ordinal</td><td>Categorical data carrying an order, such as star ratings or grades</td></tr><tr><td>Interval</td><td>A scale where differences are meaningful but there is no true zero, such as Celsius, the AD year or pH</td></tr><tr><td>Ratio</td><td>A scale with a true zero, so ratios are meaningful, such as weight, height or Kelvin</td></tr><tr><td>True zero</td><td>The point where zero means the quantity is genuinely absent; the test that separates ratio from interval</td></tr><tr><td>Mean</td><td>The average across every data point, and therefore easily pulled by outliers</td></tr><tr><td>Median</td><td>The middle value once sorted, equal to Q2 or the 50th percentile</td></tr><tr><td>Mode</td><td>The most common value, corresponding to the peak of a histogram</td></tr><tr><td>Skewness</td><td>How lopsided a distribution is; leaning right is positive skew, leaning left is negative skew</td></tr><tr><td>Box plot</td><td>A chart showing spread, skew, quartiles and outliers from five values</td></tr><tr><td>Quartile</td><td>The values splitting the data into four equal parts, namely Q1, Q2 and Q3</td></tr><tr><td>IQR</td><td>Interquartile Range, Q3 minus Q1, which is the length of the box</td></tr><tr><td>Fence</td><td>The bounds computed as Q1 minus 1.5 times IQR and Q3 plus 1.5 times IQR</td></tr><tr><td>Whisker</td><td>The line of a box plot running to the furthest real data point still inside the fence</td></tr><tr><td>Outlier</td><td>A data point outside the fence, treated as an extreme value and usually excluded</td></tr><tr><td>Scatter plot</td><td>A plot of every data point, revealing density, correlation and trend</td></tr><tr><td>Correlation</td><td>The relationship between two variables, ranging from minus one to one</td></tr><tr><td>Pearson correlation</td><td>The correlation method for numeric data and linear relationships only</td></tr><tr><td>Spearman correlation</td><td>The correlation method for ordinal data and monotonic relationships</td></tr><tr><td>Linear regression</td><td>Fitting the straight line that best represents the relationship between predictor and target</td></tr><tr><td>Least squares</td><td>Finding the best line by minimising the sum of the squared distances</td></tr><tr><td>Residual</td><td>The discrepancy between the actual value and the one the model predicts</td></tr><tr><td>Intercept</td><td>Where the line crosses the y axis, the w zero term of the equation</td></tr><tr><td>Coefficient</td><td>The weight multiplying each predictor variable</td></tr><tr><td>Simple linear regression</td><td>Linear regression using a single predictor variable</td></tr><tr><td>Multiple linear regression</td><td>Linear regression using more than one predictor variable</td></tr><tr><td>Polynomial</td><td>An equation of degree two or higher, unlike linear which is only degree zero and one</td></tr><tr><td>Cost function</td><td>The objective function set up to be minimised, whose answer is the argmin</td></tr><tr><td>t-test</td><td>A test of whether one individual variable is statistically significant</td></tr><tr><td>F-test</td><td>A test of whether a group of variables is jointly significant; larger is better</td></tr><tr><td>p-value</td><td>The value that, below 0.05, marks a result as statistically significant</td></tr><tr><td>R-squared</td><td>The coefficient of determination, showing how well the data fits the line, from 0 to 1</td></tr><tr><td>Adjusted R-squared</td><td>R-squared penalised for adding useless variables, always less than or equal to R-squared</td></tr><tr><td>lm()</td><td>R's function for building a linear model, written in the form lm(Y ~ X)</td></tr><tr><td>NA</td><td>The value R uses for missing data, short for not available</td></tr></tbody></table></div>
+<h2 id="chapter-summary">Chapter summary</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="Table, scroll horizontally"><table><thead><tr><th>Point</th><th>What to remember</th></tr></thead><tbody><tr><td>The DS timeline</td><td>Relational DB (1970) → OLTP → OLAP → pattern recognition → big data</td></tr><tr><td>What EDA is</td><td>Non-parametric initial exploration through visualization, statistical summary and hypothesis testing, done iteratively</td></tr><tr><td>The trap that could show up in an exam</td><td><strong>A box plot is EDA, but linear regression is not</strong> — it is data modeling</td></tr><tr><td>How the terms nest</td><td>Modeling is broadest → Data modeling → and inside that, Data fitting and Model fitting</td></tr><tr><td>Parameter vs hyperparameter</td><td>Parameters the algorithm finds itself (weights); hyperparameters a person sets (k, learning rate, layer count)</td></tr><tr><td>Model bias</td><td>Underfitting is too simple, overfitting is so complex it learns noise; validation is the fix</td></tr><tr><td>Types of data</td><td>Categorical (nominal, ordinal) and Numerical (discrete, continuous) — an athlete's shirt number is nominal</td></tr><tr><td>Scales of measurement</td><td>Remember the true-zero test: ratio has one (weight, Kelvin), interval does not (°C, AD year, pH)</td></tr><tr><td>The measures of centre</td><td>The mean is pulled by outliers, the median is Q2, the mode is the peak of a histogram — never use just one</td></tr><tr><td>Box plot</td><td>Remember the five values (min, Q1, Q2, Q3, max), IQR = Q3 − Q1, fences at ±1.5 × IQR, whiskers ending on real data points, and anything outside the fence being an outlier</td></tr><tr><td>Correlation</td><td>−1 ≤ r ≤ 1 — Pearson for numeric and linear, Spearman for ordinal</td></tr><tr><td>Regression</td><td>Choose the line with the smallest total squared error, via least squares — and “correlation does not mean causation”</td></tr><tr><td>The constraint on variables</td><td><strong>y must always be numeric</strong>, while x may mix numeric and categorical</td></tr><tr><td>Categorical variables</td><td>Multiply 1.0 by the coefficient of the value you chose and 0.0 by all the rest</td></tr><tr><td>Reading the output</td><td>Stars come from the t-test (more is better, p &#x3C; 0.05 counts as significant), R² of 0.6 upwards is good, and comparing models of different complexity requires adjusted R²</td></tr><tr><td>The result from class</td><td>Price = −4562.175 + 172.206 × Horsepower, with r = 0.81</td></tr><tr><td>The R commands to remember</td><td><code>read.csv</code>, <code>dim</code>, <code>str</code>, <code>names</code>, <code>as.numeric</code>, <code>is.na</code>, <code>na.omit</code>, <code>summary</code>, <code>table</code>, <code>hist</code>, <code>boxplot</code>, <code>plot</code>, <code>abline</code>, <code>pairs</code>, <code>lm</code>, <code>coef</code>, <code>cor</code>, <code>predict</code></td></tr><tr><td>What has to be handed in</td><td>Exercise 2 — multiple regression (y = price, x = horsepower + body style + brand) done in both R and Orange, submitted as a PDF</td></tr></tbody></table></div></article><nav class="pagination" aria-label="Previous and next notes"><a href="w02-ds-ai-landscape-and-tools.en.html"><small>← Previous</small>The DS/AI Landscape (continued) and the Orange Toolkit</a><a href="w04-association-rules.en.html"><small>Next →</small>Association Rules — Market Basket Analysis, Apriori and Support/Confidence/Lift</a></nav></main><aside class="toc-sidebar"><nav class="toc" aria-label="On this page"><strong>On this page</strong><a href="#agenda">Agenda</a><a href="#01-the-evolution-of-data-science">01 The evolution of data science</a><a href="#02-what-eda-is">02 What EDA is</a><a href="#03-modeling--data-modeling--data-fitting--model-fitting">03 Modeling / Data Modeling / Data Fitting / Model Fitting</a><a href="#04-model-parameters-and-hyperparameters">04 Model parameters and hyperparameters</a><a href="#05-model-bias--underfitting-and-overfitting">05 Model bias — underfitting and overfitting</a><a href="#06-an-overview-of-the-ml-methods-used-in-ds">06 An overview of the ML methods used in DS</a><a href="#07-types-of-data-and-scales-of-measurement">07 Types of data and scales of measurement</a><a href="#08-distributions-and-the-three-measures-of-centre">08 Distributions and the three measures of centre</a><a href="#09-box-plots-box-and-whisker-plots">09 Box plots (box and whisker plots)</a><a href="#10-scatter-plots-and-correlation">10 Scatter plots and correlation</a><a href="#11-linear-regression">11 Linear regression</a><a href="#12-reading-the-model-output">12 Reading the model output</a><a href="#13-categorical-variables-in-the-equation">13 Categorical variables in the equation</a><a href="#14-hands-on-r-and-rstudio">14 Hands-on: R and RStudio</a><a href="#15-comparing-the-results-against-orange">15 Comparing the results against Orange</a><a href="#16-the-work-that-was-set">16 The work that was set</a><a href="#glossary">Glossary</a><a href="#chapter-summary">Chapter summary</a></nav></aside></div>
+<footer class="site-footer"><span>INT182 · Data Science & AI<br>Study summaries based on course materials</span><a href="https://github.com/Phakinza007/int182-study-notes">GitHub ↗</a></footer>
+<dialog id="search-dialog" aria-labelledby="search-title"><div class="dialog-heading"><h2 id="search-title">Search the notes</h2><button data-close-dialog aria-label="Close search">×</button></div><label for="search-input">Keyword, e.g. precision, PEAS, kNN</label><input id="search-input" type="search" autocomplete="off"><p id="search-status" role="status">Type a keyword to start</p><ul id="search-results"></ul></dialog>
+<dialog id="image-dialog" aria-labelledby="image-title"><div class="dialog-heading"><h2 id="image-title">Diagram</h2><button data-close-dialog aria-label="Close image">×</button></div><div class="image-controls"><button data-zoom="out" aria-label="Zoom out">−</button><button data-zoom="in" aria-label="Zoom in">+</button><button data-zoom="reset">Fit</button><a id="image-original" target="_blank" rel="noopener">Open original ↗</a></div><div class="image-stage"><img id="zoom-image" alt=""></div><p id="image-caption"></p></dialog>
+</body></html>

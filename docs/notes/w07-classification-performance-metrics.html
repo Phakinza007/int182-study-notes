@@ -1,0 +1,334 @@
+<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="สรุป INT182 Data Science และ AI สัปดาห์ 1–9 พร้อมไดอะแกรมและสูตรสำคัญ"><meta name="theme-color" content="#f7f6f3"><title>Classification Performance Metrics และการเลือกวิธีประเมิน · INT182</title><link rel="icon" href="../favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="../style.css"><script src="../app.js" defer></script></head>
+<body data-base="../" data-page="note"><a class="skip" href="#main">ข้ามไปเนื้อหา</a>
+<header class="topbar"><div class="topbar-inner"><a class="brand" href="../index.html"><span class="brand-mark">182</span><span>INT182 <small>Study notes</small></span></a><nav aria-label="เมนูหลัก"><button class="search-trigger" data-search-open aria-haspopup="dialog">ค้นหาเนื้อหา <kbd>/</kbd></button><a class="lang" href="w07-classification-performance-metrics.en.html" lang="en">English</a></nav></div></header>
+<div class="reader-layout"><aside class="reader-sidebar"><details class="week-menu" open><summary>ทุกสัปดาห์</summary><nav aria-label="เลือกสัปดาห์"><a href="w01-course-intro.html" ><span class="week-no">01</span><span>แนะนำวิชา + โครงสร้างโปรเจกต์</span></a><a href="w02-ds-ai-landscape-and-tools.html" ><span class="week-no">02</span><span>ภาพรวม DS/AI (ต่อ) + เครื่องมือ Orange</span></a><a href="w03-eda-and-model-fitting.html" ><span class="week-no">03</span><span>EDA และ Model Fitting — Box Plot, Correlation, Linear Regression</span></a><a href="w04-association-rules.html" ><span class="week-no">04</span><span>Association Rules — Market Basket Analysis, Apriori และ Support/Confidence/Lift</span></a><a href="w05-decision-trees-and-k-means.html" ><span class="week-no">05</span><span>Decision Trees, K-means Clustering และการทวนขอบเขต Exam 1</span></a><a href="w06-classification-and-model-validation.html" ><span class="week-no">06</span><span>Classification และการตรวจสอบโมเดล</span></a><a href="w07-classification-performance-metrics.html" aria-current="page"><span class="week-no">07</span><span>Classification Performance Metrics และการเลือกวิธีประเมิน</span></a><a href="w08-introduction-to-ai-and-agents.html" ><span class="week-no">08</span><span>พื้นฐาน AI, Rational Agents และ PEAS</span></a><a href="w09-introduction-to-ml-and-nearest-neighbors.html" ><span class="week-no">09</span><span>พื้นฐาน Machine Learning, k-NN และ AI Search</span></a></nav></details></aside><main id="main" class="reader"><div class="note-meta">WEEK 07 <span>2026-09-25</span></div><h1>Classification Performance Metrics และการเลือกวิธีประเมิน</h1><div class="reader-actions"><button data-read-week="7" aria-pressed="false">ทำเครื่องหมายว่าอ่านแล้ว</button><button data-print>พิมพ์บทนี้</button></div><article class="prose"><blockquote>
+<p>สรุปจาก <code>INT182_Lecture7_Classification-ModelEvaluation_V4.pdf</code> (48 หน้า) และบันทึกคาบ G2 วันที่ 25 ก.ย. 2026 อ้างเลขหน้าจริงของ PDF เพราะหมายเลขสไลด์เดิมจากหลายแหล่งไม่ต่อกัน ตัวอย่างคำนวณด้านล่างคำนวณจากข้อมูลในสไลด์</p>
+</blockquote>
+<h2 id="01-การจำแนกและความสามารถกับข้อมูลใหม่">01 การจำแนกและความสามารถกับข้อมูลใหม่</h2>
+<p>Training set มี attributes และคลาสที่รู้คำตอบแล้ว อัลกอริทึมใช้ข้อมูลนี้สร้างโมเดล (<strong>induction</strong>) แล้วนำโมเดลไปใช้กับข้อมูลใหม่ (<strong>deduction</strong>) เป้าหมายคือทายตัวอย่างที่ไม่เคยเห็นได้ถูกต้อง (PDF หน้า 5–16)</p>
+<p>ตัวอย่างต้นไม้ Refund → Marital Status → Taxable Income มีต้นไม้หลายโครงสร้างที่ fit ข้อมูลเดียวกันได้ เมื่อนำ record <code>Refund = No, Married, Income = 80K</code> ไปตามต้นไม้ จะหยุดที่ Married → <strong>Cheat = No</strong> โดยไม่ต้องถาม Income ต่อ</p>
+<p>การประเมินมี 3 คำถาม: วัดด้วย metric ใด, สุ่ม/แบ่งข้อมูลอย่างไรให้คะแนนน่าเชื่อถือ, และเปรียบเทียบโมเดลอย่างไร <em>(จาก transcript)</em> อาจารย์เชื่อมกับข้อจำกัดเวลา งบประมวลผล และการใช้งานจริงด้วย</p>
+<h2 id="02-underfitting-overfitting-และ-occams-razor">02 Underfitting, overfitting และ Occam’s Razor</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>สภาพ</th><th>Training error</th><th>Test error</th><th>ความหมาย</th></tr></thead><tbody><tr><td>Underfitting</td><td>สูง</td><td>สูง</td><td>โมเดลง่ายจนจับ pattern สำคัญไม่ได้</td></tr><tr><td>Generalization ที่ดี</td><td>ต่ำเหมาะสม</td><td>ใกล้ training</td><td>จับ pattern ที่ใช้กับข้อมูลใหม่ได้</td></tr><tr><td>Overfitting</td><td>ต่ำมาก</td><td>สูงกว่า training มาก</td><td>จับ noise หรือรายละเอียดเฉพาะ training</td></tr></tbody></table></div>
+<p>PDF หน้า 20–23 ยกสาเหตุ overfitting จาก noise และตัวอย่างฝึกไม่พอในบางบริเวณ ส่วน <strong>Occam’s Razor</strong> ให้เลือกโมเดลที่ง่ายกว่าเมื่อ generalization error ใกล้กัน เพราะความซับซ้อนเพิ่มโอกาส fit ความบังเอิญของข้อมูล การจัดการ missing values และต้นทุนจำแนกก็เป็น practical issues ในหน้า 18</p>
+<h2 id="03-confusion-matrix-ดูจริงและทาย">03 Confusion Matrix: ดูจริงและทาย</h2>
+<p>กำหนด Positive เป็นคลาสที่สนใจก่อน จากนั้นแยกว่าคำทำนายตรงกับความจริงหรือไม่ (PDF หน้า 26–28)</p>
+<figure class="figure"><a href="../assets/w07-classification-performance-metrics/w7-confusion.svg" target="_blank" rel="noopener" class="diagram-link" aria-label="ขยายภาพ: Confusion Matrix แถวคือ Actual คอลัมน์คือ Predicted พร้อมตัวหารของแต่ละ metric"><img src="../assets/w07-classification-performance-metrics/w7-confusion.svg" alt="Confusion Matrix แถวคือ Actual คอลัมน์คือ Predicted พร้อมตัวหารของแต่ละ metric" loading="lazy" decoding="async"></a><figcaption>Confusion Matrix แถวคือ Actual คอลัมน์คือ Predicted พร้อมตัวหารของแต่ละ metric<a href="../assets/w07-classification-performance-metrics/w7-confusion.svg" target="_blank" rel="noopener" class="diagram-link figure-open">ขยายภาพ ↗</a></figcaption></figure>
+<ul>
+<li><mark>True Positive (TP)</mark>: จริงเป็นบวก ทายเป็นบวก</li>
+<li><mark>True Negative (TN)</mark>: จริงเป็นลบ ทายเป็นลบ</li>
+<li><mark>False Positive (FP)</mark>: จริงเป็นลบ แต่ทายเป็นบวก — false alarm</li>
+<li><mark>False Negative (FN)</mark>: จริงเป็นบวก แต่ทายเป็นลบ — missed case</li>
+</ul>
+<p>แบบฝึกหน้า 29 มี 12 records: TP = 4, TN = 4, FP = 2, FN = 2 จึงได้ Accuracy, Precision และ Recall เท่ากับ 4/6 หรือ 8/12 = <strong>66.67%</strong> ในตัวอย่างนี้ ค่าที่เท่ากันเกิดจากจำนวนในโจทย์ ไม่ใช่กฎทั่วไป</p>
+<h2 id="04-สูตรที่ต้องอ่านความหมายออก">04 สูตรที่ต้องอ่านความหมายออก</h2>
+<p>ให้ <code>N = TP + TN + FP + FN</code> (PDF หน้า 27–28, 33–34)</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>Metric</th><th>สูตร</th><th>ถามว่าอะไร</th></tr></thead><tbody><tr><td>Accuracy</td><td><code>(TP + TN) / N</code></td><td>ถูกทั้งหมดกี่ส่วน</td></tr><tr><td>Error rate</td><td><code>(FP + FN) / N</code></td><td>ผิดทั้งหมดกี่ส่วน</td></tr><tr><td>Precision</td><td><code>TP / (TP + FP)</code></td><td>ในสิ่งที่ทายบวก เป็นบวกจริงเท่าไร</td></tr><tr><td>Recall / Sensitivity / TPR</td><td><code>TP / (TP + FN)</code></td><td>ในบวกจริงทั้งหมด จับได้เท่าไร</td></tr><tr><td>Specificity / TNR</td><td><code>TN / (TN + FP)</code></td><td>ในลบจริงทั้งหมด ปฏิเสธได้ถูกเท่าไร</td></tr><tr><td>FPR</td><td><code>FP / (FP + TN)</code></td><td>ในลบจริงทั้งหมด เตือนผิดเท่าไร</td></tr><tr><td>FNR</td><td><code>FN / (FN + TP)</code></td><td>ในบวกจริงทั้งหมด พลาดเท่าไร</td></tr><tr><td>F1</td><td><code>2PR / (P + R)</code> หรือ <code>2TP / (2TP + FP + FN)</code></td><td>สมดุล precision กับ recall</td></tr></tbody></table></div>
+<p><mark>F1</mark> เป็น harmonic mean และไม่ใช้ TN โดยตรง จึงไม่ใช่คะแนนเดียวที่ตอบได้ครบทุกสถานการณ์ ถ้าตัวหารเป็นศูนย์ต้องระบุวิธีจัดการของเครื่องมือที่ใช้ แทนการคำนวณเป็นค่าปกติ</p>
+<h2 id="05-ทำไม-accuracy-สูงยังพลาดได้">05 ทำไม Accuracy สูงยังพลาดได้</h2>
+<p>PDF หน้า 30 ให้ข้อมูล Class 0 จำนวน 9,990 ตัวและ Class 1 จำนวน 10 ตัว หากทายทุกตัวเป็น Class 0 จะได้ Accuracy <strong>99.9%</strong> แต่จับ Class 1 ไม่ได้เลย จึงต้องดู <mark>class imbalance</mark> และชนิดความผิดพลาด</p>
+<p>แบบฝึกหน้า 36: TP = 90, FN = 210, FP = 140, TN = 9,560 รวม 10,000 ตัว คำนวณได้:</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>Metric</th><th>คำนวณ</th><th>ผล</th></tr></thead><tbody><tr><td>Accuracy</td><td>9650/10000</td><td>96.50%</td></tr><tr><td>Error rate</td><td>350/10000</td><td>3.50%</td></tr><tr><td>Precision</td><td>90/230</td><td>39.13%</td></tr><tr><td>Recall / Sensitivity</td><td>90/300</td><td>30.00%</td></tr><tr><td>Specificity</td><td>9560/9700</td><td>98.56%</td></tr><tr><td>F1</td><td>180/530</td><td>33.96%</td></tr></tbody></table></div>
+<p>Accuracy ดูดีเพราะคลาสลบมีมาก แต่ Recall แสดงว่าพลาดบวกจริง 210 จาก 300 ตัว การรายงานหลาย metric จึงช่วยเห็นปัญหาที่ค่าเดียวซ่อนไว้</p>
+<h2 id="06-ต้นทุนและเป้าหมายธุรกิจ">06 ต้นทุนและเป้าหมายธุรกิจ</h2>
+<p>Cost matrix กำหนด <code>C(i | j)</code> เป็นต้นทุนเมื่อจริงเป็น j แต่ทายเป็น i (PDF หน้า 31–35) ในตัวอย่างหน้า 32 ให้ต้นทุน TP = −1, FN = 100, FP = 1, TN = 0:</p>
+<ul>
+<li>M1: TP 150, FN 40, FP 60, TN 250 → Accuracy 80%; Cost = <code>−150 + 4000 + 60 = 3910</code></li>
+<li>M2: TP 250, FN 45, FP 5, TN 200 → Accuracy 90%; Cost = <code>−250 + 4500 + 5 = 4255</code></li>
+</ul>
+<p>ดังนั้น M2 แม่นยำกว่ารวม แต่แพงกว่าภายใต้ cost matrix นี้</p>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>สิ่งที่ต้องลด</th><th>Metric ที่ช่วยมอง</th></tr></thead><tbody><tr><td>False alarms / FP</td><td>Precision</td></tr><tr><td>Missed cases / FN</td><td>Recall</td></tr><tr><td>ต้องสมดุล FP และ FN</td><td>F1 พร้อมดู Precision/Recall แยก</td></tr><tr><td>ดู ranking หลาย threshold</td><td>ROC-AUC</td></tr><tr><td>ตรวจคุณภาพ probability</td><td>Log loss — สไลด์กล่าวถึง แต่ไม่ได้ให้สูตรคำนวณ</td></tr></tbody></table></div>
+<p><em>(จาก transcript)</em> ตัวอย่าง customer churn และสินเชื่อทำให้เห็นว่าต้นทุนของการเตือนผิดกับการพลาดลูกค้าไม่จำเป็นต้องเท่ากัน</p>
+<h2 id="07-แบ่งข้อมูลอย่างไรให้คะแนนน่าเชื่อถือ">07 แบ่งข้อมูลอย่างไรให้คะแนนน่าเชื่อถือ</h2>
+<p>PDF หน้า 38–42 แยก Training สำหรับ fit, Validation สำหรับเลือก และ Test สำหรับประเมินสุดท้าย ผลขึ้นกับ class distribution, misclassification cost และขนาดชุดข้อมูลด้วย</p>
+<figure class="figure"><a href="../assets/w07-classification-performance-metrics/w7-cross-validation.svg" target="_blank" rel="noopener" class="diagram-link" aria-label="ขยายภาพ: การหมุน validation fold สามรอบ โดยกัน final test ไว้ก่อน"><img src="../assets/w07-classification-performance-metrics/w7-cross-validation.svg" alt="การหมุน validation fold สามรอบ โดยกัน final test ไว้ก่อน" loading="lazy" decoding="async"></a><figcaption>การหมุน validation fold สามรอบ โดยกัน final test ไว้ก่อน<a href="../assets/w07-classification-performance-metrics/w7-cross-validation.svg" target="_blank" rel="noopener" class="diagram-link figure-open">ขยายภาพ ↗</a></figcaption></figure>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>วิธี</th><th>การทำงาน</th></tr></thead><tbody><tr><td>Holdout</td><td>แบ่ง train/test ครั้งเดียว เช่น 2/3 กับ 1/3</td></tr><tr><td>Random subsampling</td><td>ทำ holdout ซ้ำด้วยการสุ่มหลายครั้ง</td></tr><tr><td>k-fold CV</td><td>แบ่ง k ส่วน; train k−1 ส่วน แล้วทดสอบ fold ที่เหลือ หมุนจนครบ</td></tr><tr><td>Leave-one-out</td><td>กรณี k = N แต่ละครั้งเหลือหนึ่งตัวอย่างไว้ประเมิน</td></tr><tr><td>Stratified sampling</td><td>รักษาสัดส่วนคลาสในส่วนย่อยให้ใกล้กับข้อมูลรวม</td></tr><tr><td>Bootstrap</td><td>สุ่มแบบใส่กลับ จึงเลือก record เดิมซ้ำได้</td></tr></tbody></table></div>
+<p>ตัวอย่างหน้า 42 มี Yes 6 และ No 6 ตัว การแบ่ง <strong>3-fold แบบ stratified</strong> ทำได้โดยให้แต่ละ fold มี Yes 2 + No 2 เช่น folds <code>{1,2,3,4}</code>, <code>{6,9,5,7}</code>, <code>{10,11,8,12}</code> ตาม row numbers ของโจทย์ แล้วหมุนส่วนที่ใช้ประเมิน</p>
+<p><code>ระวัง</code> Fold ที่ใช้เปรียบเทียบ settings ทำหน้าที่ validation; final test ที่แยกไว้ต้องไม่ถูกนำมาเลือก hyperparameters ซ้ำ</p>
+<h2 id="08-learning-curve">08 Learning Curve</h2>
+<p><mark>Learning curve</mark> แสดงว่า accuracy เปลี่ยนอย่างไรเมื่อขนาดตัวอย่างฝึกเพิ่มขึ้น (PDF หน้า 40) ใช้ sampling schedule เช่น arithmetic หรือ geometric เพื่อสร้างชุดขนาดต่าง ๆ ขนาดตัวอย่างเล็กอาจทำให้ทั้ง bias และ variance ของค่าประมาณสูง จึงต้องดูวิธีเก็บข้อมูลควบคู่กับคะแนน</p>
+<h2 id="09-roc-threshold-และ-auc">09 ROC, threshold และ AUC</h2>
+<p><mark>ROC</mark> แสดง trade-off ของ <strong>TPR บนแกน Y</strong> กับ <strong>FPR บนแกน X</strong> เมื่อเปลี่ยน threshold (PDF หน้า 44–48) ไม่ใช่จำนวน TP/FP ดิบ</p>
+<figure class="figure"><a href="../assets/w07-classification-performance-metrics/w7-roc.svg" target="_blank" rel="noopener" class="diagram-link" aria-label="ขยายภาพ: ROC แบบ schematic: จุดดีที่สุดคือ FPR 0, TPR 1 และเส้นทแยงเป็น random baseline"><img src="../assets/w07-classification-performance-metrics/w7-roc.svg" alt="ROC แบบ schematic: จุดดีที่สุดคือ FPR 0, TPR 1 และเส้นทแยงเป็น random baseline" loading="lazy" decoding="async"></a><figcaption>ROC แบบ schematic: จุดดีที่สุดคือ FPR 0, TPR 1 และเส้นทแยงเป็น random baseline<a href="../assets/w07-classification-performance-metrics/w7-roc.svg" target="_blank" rel="noopener" class="diagram-link figure-open">ขยายภาพ ↗</a></figcaption></figure>
+<ul>
+<li><code>(FPR, TPR) = (0,0)</code>: ทายทุกตัวเป็น negative</li>
+<li><code>(1,1)</code>: ทายทุกตัวเป็น positive</li>
+<li><code>(0,1)</code>: จุดอุดมคติ</li>
+<li>เส้นทแยง: random baseline</li>
+<li><mark>AUC</mark> = พื้นที่ใต้ ROC; อุดมคติ 1, random baseline 0.5</li>
+</ul>
+<p>เมื่อ ROC สองเส้นตัดกัน อาจไม่มีโมเดลที่ชนะทุกช่วง FPR ต้องเลือกตาม operating region และต้นทุนจริง AUC ช่วยสรุปภาพรวมแต่ไม่เลือก threshold ให้แทนเรา</p>
+<p><code>ระวัง</code> หน้า 45 มีข้อความ <code>FN = 0.88</code> ซ้ำชื่อ FN; จากผลรวมของฝั่ง negative ค่านี้ควรเป็น TN ส่วน FN = 0.5 อยู่ฝั่ง positive</p>
+<h2 id="10-สิ่งที่ประกาศในคาบ">10 สิ่งที่ประกาศในคาบ</h2>
+<p><em>(จาก transcript)</em> อาจารย์จะส่ง feedback โปรเจกต์ Phase 1 ผ่านตัวแทนกลุ่ม ให้นำไปปรับ Phase 2/3 โดยเฉพาะ references และความชัดเจนของระบบ ส่วนรูปแบบ final exam ในคาบนี้ยังอยู่ระหว่างหารือ: กล่าวถึงโน้ต A4, เครื่องคิดเลข และพจนานุกรมแบบเล่ม รายละเอียดที่อาจารย์ย้ำชัดขึ้นอยู่ใน W08 จึงควรยึดประกาศล่าสุดของรายวิชา</p>
+<h2 id="อภิธานศัพท์-glossary">อภิธานศัพท์ (Glossary)</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>คำ</th><th>ความหมาย</th></tr></thead><tbody><tr><td>Confusion matrix</td><td>ตารางเทียบคลาสจริงกับคลาสที่ทาย</td></tr><tr><td>Precision</td><td>TP/(TP+FP): สัดส่วนบวกจริงในสิ่งที่ทายบวก</td></tr><tr><td>Recall</td><td>TP/(TP+FN): สัดส่วนบวกจริงที่โมเดลจับได้</td></tr><tr><td>Specificity</td><td>TN/(TN+FP): สัดส่วนลบจริงที่ปฏิเสธถูก</td></tr><tr><td>F1</td><td>Harmonic mean ของ precision และ recall</td></tr><tr><td>Class imbalance</td><td>จำนวนตัวอย่างของแต่ละคลาสต่างกันมาก</td></tr><tr><td>Stratified sampling</td><td>แบ่งข้อมูลโดยรักษาสัดส่วนคลาส</td></tr><tr><td>Bootstrap</td><td>สุ่มข้อมูลแบบใส่กลับ</td></tr><tr><td>ROC</td><td>กราฟ TPR เทียบ FPR ที่ threshold ต่าง ๆ</td></tr><tr><td>AUC</td><td>พื้นที่ใต้ ROC สรุปคุณภาพการจัดอันดับ</td></tr><tr><td>Learning curve</td><td>กราฟ performance เทียบขนาดชุดฝึก</td></tr></tbody></table></div>
+<h2 id="สรุปท้ายบท">สรุปท้ายบท</h2>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="table-scroll" tabindex="0" role="region" aria-label="ตาราง เลื่อนแนวนอนได้"><table><thead><tr><th>หัวข้อ</th><th>สิ่งที่ต้องจำ</th></tr></thead><tbody><tr><td>Confusion Matrix</td><td>กำหนด positive; แยก actual/predicted แล้วนับ TP/TN/FP/FN</td></tr><tr><td>Metrics</td><td>ดูตัวหารและต้นทุนของความผิดพลาด</td></tr><tr><td>Accuracy</td><td>อาจหลอกตาเมื่อคลาสไม่สมดุล</td></tr><tr><td>Estimation</td><td>แบ่งข้อมูล, หมุน folds, รักษาสัดส่วนคลาส</td></tr><tr><td>ROC-AUC</td><td>TPR เทียบ FPR หลาย threshold; ยังต้องเลือก operating point</td></tr></tbody></table></div></article><nav class="pagination" aria-label="บทก่อนหน้าและถัดไป"><a href="w06-classification-and-model-validation.html"><small>← บทก่อนหน้า</small>Classification และการตรวจสอบโมเดล</a><a href="w08-introduction-to-ai-and-agents.html"><small>บทถัดไป →</small>พื้นฐาน AI, Rational Agents และ PEAS</a></nav></main><aside class="toc-sidebar"><nav class="toc" aria-label="สารบัญบทนี้"><strong>ในบทนี้</strong><a href="#01-การจำแนกและความสามารถกับข้อมูลใหม่">01 การจำแนกและความสามารถกับข้อมูลใหม่</a><a href="#02-underfitting-overfitting-และ-occams-razor">02 Underfitting, overfitting และ Occam’s Razor</a><a href="#03-confusion-matrix-ดูจริงและทาย">03 Confusion Matrix: ดูจริงและทาย</a><a href="#04-สูตรที่ต้องอ่านความหมายออก">04 สูตรที่ต้องอ่านความหมายออก</a><a href="#05-ทำไม-accuracy-สูงยังพลาดได้">05 ทำไม Accuracy สูงยังพลาดได้</a><a href="#06-ต้นทุนและเป้าหมายธุรกิจ">06 ต้นทุนและเป้าหมายธุรกิจ</a><a href="#07-แบ่งข้อมูลอย่างไรให้คะแนนน่าเชื่อถือ">07 แบ่งข้อมูลอย่างไรให้คะแนนน่าเชื่อถือ</a><a href="#08-learning-curve">08 Learning Curve</a><a href="#09-roc-threshold-และ-auc">09 ROC, threshold และ AUC</a><a href="#10-สิ่งที่ประกาศในคาบ">10 สิ่งที่ประกาศในคาบ</a><a href="#อภิธานศัพท์-glossary">อภิธานศัพท์ (Glossary)</a><a href="#สรุปท้ายบท">สรุปท้ายบท</a></nav></aside></div>
+<footer class="site-footer"><span>INT182 · Data Science & AI<br>สรุปเพื่อทบทวนจากเอกสารประกอบการเรียน</span><a href="https://github.com/Phakinza007/int182-study-notes">GitHub ↗</a></footer>
+<dialog id="search-dialog" aria-labelledby="search-title"><div class="dialog-heading"><h2 id="search-title">ค้นหาในสรุป</h2><button data-close-dialog aria-label="ปิดการค้นหา">×</button></div><label for="search-input">คำค้น เช่น precision, PEAS, kNN</label><input id="search-input" type="search" autocomplete="off"><p id="search-status" role="status">พิมพ์คำเพื่อเริ่มค้นหา</p><ul id="search-results"></ul></dialog>
+<dialog id="image-dialog" aria-labelledby="image-title"><div class="dialog-heading"><h2 id="image-title">ภาพประกอบ</h2><button data-close-dialog aria-label="ปิดภาพ">×</button></div><div class="image-controls"><button data-zoom="out" aria-label="ย่อภาพ">−</button><button data-zoom="in" aria-label="ขยายภาพ">+</button><button data-zoom="reset">พอดีจอ</button><a id="image-original" target="_blank" rel="noopener">เปิดภาพต้นฉบับ ↗</a></div><div class="image-stage"><img id="zoom-image" alt=""></div><p id="image-caption"></p></dialog>
+</body></html>
