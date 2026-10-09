@@ -51,6 +51,10 @@ document.querySelector('[data-search-open]')?.addEventListener('click',() => {
 });
 searchInput?.addEventListener('input',showResults);
 document.addEventListener('keydown',e => {
+  if (e.key==='Escape') {
+    const dialog=document.querySelector('dialog[open]');
+    if(dialog) { e.preventDefault(); dialog.close(); return; }
+  }
   if (e.key==='/' && !e.ctrlKey && !e.metaKey && !e.altKey && !/INPUT|TEXTAREA|SELECT/.test(e.target.tagName) && !e.target.isContentEditable && !document.querySelector('dialog[open]')) {
     e.preventDefault(); searchDialog.showModal(); searchInput.focus();
   }
